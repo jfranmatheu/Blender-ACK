@@ -1,6 +1,6 @@
 from typing import Set
 
-from bpy.types import Context, Event, UILayout, Operator
+from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
 from ....utils.operator import OpsReturn
 from ..base import BaseType
@@ -39,6 +39,39 @@ class Generic(DescriptorProps_PropsTuple, BaseType):
                 setattr(new_cls, name, new_descriptor)
 
         return new_cls
+
+    @classmethod
+    def run(cls, **operator_properties: dict) -> None:
+        eval("bpy.ops." + cls.bl_idname)(**operator_properties)
+
+    @classmethod
+    def run_invoke(cls, **operator_properties: dict) -> None:
+        eval("bpy.ops." + cls.bl_idname)("INVOKE_DEFAULT", **operator_properties)
+
+    @classmethod
+    def draw_in_layout(
+        cls,
+        layout: UILayout,
+        text: str = None,
+        icon: str | int = None,
+        depress: bool = False,
+        emboss: bool = False,
+        op_props: dict | None = None,
+        **draw_kwargs: dict,
+    ) -> OperatorProperties:
+        op = layout.operator(
+            cls.bl_idname,
+            text=text if text is not None else cls.label,
+            icon=icon if isinstance(icon, str) else "NONE",
+            icon_value=icon if isinstance(icon, int) else 0,
+            depress=depress,
+            emboss=emboss,
+            **draw_kwargs
+        )
+        if op_props:
+            for key, value in op_props.items():
+                setattr(op, key, value)
+        return op
 
     @classmethod
     def poll(cls, context: Context) -> bool:

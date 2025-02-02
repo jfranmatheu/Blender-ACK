@@ -7,5 +7,5 @@ class GenericOperator(types.Operator):
     new_name = Property.STRING(name="Object Name")
 
     def invoke(self, context, event) -> None:
-        context.active_object.location.z = self.my_value
-        self.report({'INFO'}, f"Value {self.my_value}")
+        context.active_object.location.z = self.new_name
+        self.report({'INFO'}, f"New Name {self.new_name}")

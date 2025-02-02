@@ -62,3 +62,26 @@ class Generic(DescriptorProps_PropsTuple, BaseType):
 
     def modal(self, context: Context, event: Event) -> Set[str]:
         return OpsReturn.FINISH
+
+
+    ''' Report. '''
+    def report_debug(self, message: str) -> None:
+        self.report({"DEBUG"}, message)
+
+    def report_info(self, message: str) -> None:
+        self.report({"INFO"}, message)
+
+    def report_warning(self, message: str) -> None:
+        self.report({"WARNING"}, message)
+
+    def report_error(self, message: str) -> None:
+        self.report({"ERROR"}, message)
+        return OpsReturn.CANCEL
+
+    def report_error_invalid_context(self, message: str = "Invalid Context") -> None:
+        self.report({"ERROR_INVALID_CONTEXT"}, message)
+        return OpsReturn.CANCEL
+
+    def report_error_invalid_input(self, message: str = "Invalid Input") -> None:
+        self.report({"ERROR_INVALID_INPUT"}, message)
+        return OpsReturn.CANCEL

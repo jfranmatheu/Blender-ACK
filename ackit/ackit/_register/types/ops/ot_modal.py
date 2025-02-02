@@ -5,7 +5,7 @@ from bpy.types import Context, Event, UILayout, Area, Region, Space, SpaceNodeEd
 from .ot_generic import Generic
 from ....utils.operator import OpsReturn, add_modal_handler, SubmodalReturn
 from ....utils.cursor import ModalCursor
-from ...decorators.ops_modal_flags import ModalFlags
+# from ...decorators.ops_modal_flags import ModalFlags  # commented to fix circular import error
 
 
 __all__ = ['Modal']
@@ -22,7 +22,7 @@ class Modal(ModalCursor, Generic):
     _region: Region = None
     _area: Area = None
 
-    _modal_flags: Set[ModalFlags]
+    _modal_flags: Set[Type]  # ModalFlags
     _draw_postpixel_space: Space = None
     _draw_preview_space: Space = None
     _draw_postview_space: Space = None
@@ -110,7 +110,7 @@ class Modal(ModalCursor, Generic):
 
     ''' Modal Draw. '''
     def tag_redraw(self, context: Context | None = None) -> None:
-        region: Region = context.region is context is not None else self._region
+        region: Region = context.region if context is not None else self._region
         region.tag_redraw()
 
     def _start_drawing(self, context: Context) -> None:

@@ -4,7 +4,7 @@ from typing import Type
 from ..types.ops import T
 
 
-__all__ = ['OperatorTypeFlags']
+__all__ = ['OperatorOptionsDecorators']
 
 
 class OperatorTypeFlags(Enum):

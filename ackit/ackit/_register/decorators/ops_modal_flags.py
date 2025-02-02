@@ -6,7 +6,7 @@ import bpy
 from ..types.ops import T
 
 
-__all__ = ['OperatorFunctionsDecorators']
+__all__ = ['ModalFlagsDecorators']
 
 
 class ModalFlags(Enum):

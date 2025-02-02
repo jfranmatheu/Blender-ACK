@@ -11,9 +11,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from .ackit import AddonLoader
+from .ackit import AddonLoader, AutoCode
 
-AddonLoader.init_modules(use_autoload=False)
+AddonLoader.init_modules(
+    use_autoload=False,
+    auto_code={AutoCode.OPS},
+    auto_code_prefix='ack_')
 
 
 def register():

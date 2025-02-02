@@ -90,7 +90,7 @@ class Generic(DescriptorProps_PropsTuple, BaseType):
     def invoke(self, context: Context, event: Event) -> Set[str]:
         return self.execute(context)
 
-    def execute(self, context: Context, event: Event) -> Set[str]:
+    def execute(self, context: Context) -> Set[str]:
         return OpsReturn.FINISH
 
     def modal(self, context: Context, event: Event) -> Set[str]:

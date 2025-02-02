@@ -5,6 +5,7 @@ from bpy.utils import register_class, unregister_class
 from ._globals import GLOBALS
 from .utils.modules import get_all_submodules
 from .utils.classes import get_ordered_classes_to_register
+from ._auto_code import AutoCode
 
 
 __all__ = [
@@ -83,7 +84,7 @@ class AddonLoader:
     ordered_classes = None  # If using AutoLoad.
 
     @classmethod
-    def init_modules(cls, use_autoload: bool = False):
+    def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set(), auto_code_prefix: str | None = None):
         cls.use_autoload = use_autoload
 
         if cls.modules is not None:
@@ -104,6 +105,12 @@ class AddonLoader:
             # When you need to initialize something that depends on another module initialization.
             if hasattr(module, "late_init"):
                 module.late_init()
+
+        sys.modules[GLOBALS.ADDON_MODULE_SHORT] = sys.modules[GLOBALS.ADDON_MODULE]
+
+        if auto_code:
+            for auto_code_func in auto_code:
+                auto_code_func(filename_prefix=auto_code_prefix)
 
     @classmethod
     def register_modules(cls):

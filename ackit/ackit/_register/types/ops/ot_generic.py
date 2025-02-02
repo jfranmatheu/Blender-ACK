@@ -4,8 +4,8 @@ from bpy.types import Context, Event, UILayout, Operator
 
 from ....utils.operator import OpsReturn
 from ..base import BaseType
-from ..props.layout import DescriptorProps_PropsTuple, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
-from ..props.descriptors import BlenderPropertyDescriptor
+from ...props.layout import DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
+from ...props.descriptors import BlenderPropertyDescriptor
 
 
 __all__ = ['Generic']

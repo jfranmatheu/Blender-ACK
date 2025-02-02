@@ -4,6 +4,11 @@ import bpy
 from bpy.types import Context
 
 
+__all__ = [
+    'Cursor',
+    'ModalCursor',
+]
+
 class Cursor(Enum):
     DEFAULT       =      'DEFAULT'
     NONE          =         'NONE'
@@ -38,11 +43,12 @@ class Cursor(Enum):
         context.window.cursor_modal_restore()
 
 
-class OperatorCursorUtils:
+class ModalCursor:
+    ''' Use at modal classes that. '''
     _current_cursor: Cursor | None = None
     _previous_cursor: Cursor | None = None
 
-    def set_cursor(self, cursor_type: Cursor, context: Context | None = None) -> None:
+    def set_cursor(self, cursor_type: Cursor) -> None:
         """Set the cursor type for the modal operator.
         
         Args:
@@ -50,19 +56,25 @@ class OperatorCursorUtils:
             context: Optional context override
         """
         # Store the current cursor type if we haven't stored one yet
-        if self._previous_cursor is None and self._current_cursor is not None:
-            # We can't actually get the current cursor type from Blender,
-            # so we'll just use DEFAULT as a fallback
+        if self._current_cursor is not None:
             self._previous_cursor = self._current_cursor
 
         self._current_cursor = cursor_type
-        cursor_type.set_icon(context)
+        cursor_type.set_icon(getattr(self, '_context', None))
 
-    def restore_cursor(self, context: Context | None = None) -> None:
-        """Restore the cursor to its previous state."""
-        if self._previous_cursor is not None:
-            Cursor.restore(context)
+    def restore_cursor(self) -> None:
+        """Restore the cursor to its previous state.
+        
+        Args:
+            context: Optional context override
+        """
+        if self._current_cursor is not None:
+            Cursor.restore(getattr(self, '_context', None))
 
-    def wrap_cursor(self, x: int, y: int, context: Context | None = None) -> None:
-        """Wrap the cursor to specified coordinates."""
-        Cursor.wrap(x, y, context)
+    def wrap_cursor(self, x: int, y: int) -> None:
+        """Wrap the cursor to specified coordinates.
+        
+        Args:
+            context: Optional context override
+        """
+        Cursor.wrap(x, y, getattr(self, '_context', None))

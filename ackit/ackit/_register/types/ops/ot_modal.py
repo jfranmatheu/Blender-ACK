@@ -1,0 +1,163 @@
+from typing import Set, Callable, Type
+
+from bpy.types import Context, Event, UILayout, Area, Region, Space, SpaceNodeEditor
+
+from .ot_generic import Generic
+from ....utils.operator import OpsReturn, add_modal_handler, SubmodalReturn
+from ....utils.cursor import ModalCursor
+from ...decorators.ops_modal_flags import ModalFlags
+
+
+__all__ = ['Modal']
+
+
+class Modal(ModalCursor, Generic):
+    modal_finish_keymaps = {}
+    modal_cancel_keymaps = {}
+
+    _modal_instance: 'Modal' = None
+    _context: Context
+    _event: Event
+    _submodal: Callable = None
+    _region: Region = None
+    _area: Area = None
+
+    _modal_flags: Set[ModalFlags]
+    _draw_postpixel_space: Space = None
+    _draw_preview_space: Space = None
+    _draw_postview_space: Space = None
+    _draw_backdrop_treetype: str | None = None
+
+    @classmethod
+    def get_modal_instance(cls) -> 'Modal':
+        return cls._modal_instance
+
+
+    ''' Modal Start. '''
+    def invoke(self, context: Context, event: Event) -> Set[str]:
+        """ Internal method! """
+        ok, ret = add_modal_handler(self, context)
+        if ok:
+            self._modal_enter(context, event)
+        return ret
+
+    def execute(self, context: Context) -> Set[str]:
+        """ Unused method! """
+        raise NotImplementedError("Call modal via invoke!")
+
+    def _modal_enter(self, context: Context, event: Event) -> None:
+        """ Internal method! Use modal_enter() instead. """
+        self._context = context
+        self._event = event
+        self._area = context.area
+        self._region = context.region
+        self.__class__._modal_instance = self
+        self._start_drawing(context)
+        context.area.tag_redraw()  # full editor redraw.
+        self.modal_enter(context, event)
+
+    def modal_enter(self, context: Context, event: Event) -> None:
+        pass
+
+    ''' Modal Update. '''
+    def inject_submodal(self, submodal: Callable) -> None:
+        """ Injects a submodal callable.
+        This submodal function should return SubmodalReturn item.
+        """
+        self._submodal = submodal
+
+    def modal(self, context: Context, event: Event) -> Set[str]:
+        """ Internal method! Use modal_update() instead. """
+        self._context = context
+        self._event = event
+
+        # Submodal processing.
+        if self._submodal is not None:
+            ret = self._submodal(context, event)
+            assert ret is not None and isinstance(ret, SubmodalReturn), \
+                "Submodal needs to return a {SubmodalReturn} type from {SubmodalReturn.__module__}."
+            if ret == SubmodalReturn.STOP:
+                self._submodal = None
+            return OpsReturn.RUN
+
+        # Modal processing.
+        ret = self.modal_update(context, event)
+        if ret is None:
+            return OpsReturn.RUN
+        if isinstance(ret, set):
+            if ret == OpsReturn.FINISH:
+                self._modal_exit(context, cancel=False)
+            elif ret == OpsReturn.CANCEL:
+                self._modal_exit(context, cancel=True)
+            return ret
+        return OpsReturn.FINISH
+
+    def modal_update(self, context: Context, event: Event) -> OpsReturn | None:
+        pass
+
+
+    ''' Modal End. '''
+    def _modal_exit(self, context: 'Context', cancel: bool) -> None:
+        """ Internal method! Use modal_exit() instead. """
+        self.restore_cursor(context)
+        self._stop_drawing()
+        context.area.tag_redraw()  # full editor redraw.
+        self.modal_exit(context, cancel)
+
+    def modal_exit(self, context: 'Context', cancel: bool) -> None:
+        pass
+
+
+    ''' Modal Draw. '''
+    def tag_redraw(self, context: Context | None = None) -> None:
+        region: Region = context.region is context is not None else self._region
+        region.tag_redraw()
+
+    def _start_drawing(self, context: Context) -> None:
+        if ModalFlags.DRAW_POST_PIXEL in self._modal_flags and self._draw_postpixel_space is not None:
+            self._draw_postpixel_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='POST_PIXEL')
+        if ModalFlags.DRAW_POST_VIEW in self._modal_flags and self._draw_postview_space is not None:
+            self._draw_postview_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='POST_VIEW')
+        if ModalFlags.DRAW_PRE_VIEW in self._modal_flags and self._draw_preview_space is not None:
+            self._draw_preview_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='PRE_PIXEL')
+        if ModalFlags.DRAW_BACKDROP in self._modal_flags and self._draw_backdrop_treetype is not None:
+            SpaceNodeEditor.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='BACKDROP')
+
+    def _stop_drawing(self) -> None:
+        if ModalFlags.DRAW_POST_PIXEL in self._modal_flags and self._draw_postpixel_space is not None:
+            self._draw_postpixel_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
+        if ModalFlags.DRAW_POST_VIEW in self._modal_flags and self._draw_postview_space is not None:
+            self._draw_postview_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
+        if ModalFlags.DRAW_PRE_VIEW in self._modal_flags and self._draw_preview_space is not None:
+            self._draw_preview_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
+        if ModalFlags.DRAW_BACKDROP in self._modal_flags and self._draw_backdrop_treetype is not None:
+            SpaceNodeEditor.draw_handler_remove(self._draw_2d, region_type='WINDOW')
+
+    def _draw_3d(self, context: Context, area: Area) -> None:
+        """ Internal method! Use draw_3d() instead. """
+        if context.area != self._area:
+            return
+        self.draw_3d(context)
+
+    def _draw_2d(self, context: Context) -> None:
+        """ Internal method! Use draw_2d() instead. """
+        if context.area != self._area:
+            return
+        self.draw_2d(context)
+
+    def _draw_backdrop(self, context: Context) -> None:
+        """ Internal method! Use draw_backdrop() instead. """
+        if context.area != self._area:
+            return
+        if context.space_data.tree_type != self._draw_backdrop_treetype:
+            return
+        self.draw_backdrop(context)
+
+    def draw_3d(self, context: Context) -> None:
+        pass
+
+    def draw_2d(self, context: Context) -> None:
+        pass
+
+    def draw_backdrop(self, context: Context) -> None:
+        pass

@@ -1,7 +1,7 @@
 from .ops_options import OperatorOptionsDecorators as OpsOptions
 from .polling import Polling as Poll
-from .ops import OperatorDecorators as RegisterOperator
 
+__all__ = ['Poll', 'OpsOptions']
 
 ''' EXAMPLE OF OPERATOR DEFINITION:
 

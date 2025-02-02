@@ -1,11 +1,11 @@
-from ..ackit import OperatorTypes, Property, OpsOptions, Poll
+from ..ackit import types, props, OpsOptions, Poll, Property
 
 
 @OpsOptions.REGISTER
 @OpsOptions.UNDO
 @Poll.ACTIVE_OBJECT.MESH
 @Poll.MODE.OBJECT
-class ActionOperator(OperatorTypes.ACTION):
+class ActionOperator(types.Action):
     use_something = Property.BOOL(name="Use Something")
     my_value = Property.FLOAT(name="Value")
 

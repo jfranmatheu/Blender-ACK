@@ -123,7 +123,7 @@ def generate_ops_py(filename_prefix: str | None = None):
             "    @classmethod",
             "    def run(",
             "        cls,",
-            "        *,  # Force keyword arguments",
+            "        *,  # Force keyword arguments" if properties else "        # No properties.",
         ])
         
         # Add parameters
@@ -166,7 +166,7 @@ def generate_ops_py(filename_prefix: str | None = None):
             "    @classmethod",
             "    def run_invoke(",
             "        cls,",
-            "        *,  # Force keyword arguments",
+            "        *,  # Force keyword arguments" if properties else "        # No properties",
         ])
         
         # Add parameters

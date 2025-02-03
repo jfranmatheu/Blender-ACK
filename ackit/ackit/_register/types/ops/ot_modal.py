@@ -36,7 +36,7 @@ class Modal(ModalCursor, Generic):
     ''' Modal Start. '''
     def invoke(self, context: Context, event: Event) -> Set[str]:
         """ Internal method! """
-        if not context.window_manager.modal_handler_add(operator):
+        if not context.window_manager.modal_handler_add(self):
             print("WARN! Operator failed to add modal handler!")
             return OpsReturn.CANCEL
         self._modal_enter(context, event)

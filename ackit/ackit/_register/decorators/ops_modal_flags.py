@@ -31,7 +31,7 @@ class ModalFlagsDecorators:
         def wrapper(cls: Type[T]) -> Type[T]:
             if not hasattr(cls, '_modal_flags') or cls._modal_flags is None:
                 cls._modal_flags = set()
-            cls._modal_flags.add(flag.name)
+            cls._modal_flags.add(flag)
             for key, value in kwargs.items():
                 setattr(cls, key, value)
             return cls
@@ -58,8 +58,8 @@ class ModalFlagsDecorators:
         UV_EDITOR = bpy.types.SpaceUVEditor
         
         def __call__(self, _deco_cls):
-            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_VIEW, _draw_postpixel_space=self.value)(_deco_cls)
-    
+            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_PIXEL, _draw_postpixel_space=self.value)(_deco_cls)
+
     class DRAW_POST_VIEW(Enum):
         """ Enables draw_3d() function in the modal for the selected space. """
         VIEW_3D = bpy.types.SpaceView3D

@@ -123,26 +123,25 @@ class Modal(ModalCursor, Generic):
             return
         from ...decorators.ops_modal_flags import ModalFlags
         if ModalFlags.DRAW_POST_PIXEL in self._modal_flags and self._draw_postpixel_space is not None:
-            self._draw_postpixel_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='POST_PIXEL')
+            self._draw_handler_postpixel = self._draw_postpixel_space.draw_handler_add(self._draw_2d, (context, ), 'WINDOW', 'POST_PIXEL')
         if ModalFlags.DRAW_POST_VIEW in self._modal_flags and self._draw_postview_space is not None:
-            self._draw_postview_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='POST_VIEW')
+            self._draw_handler_postview = self._draw_postview_space.draw_handler_add(self._draw_2d, (context, ), 'WINDOW', 'POST_VIEW')
         if ModalFlags.DRAW_PRE_VIEW in self._modal_flags and self._draw_preview_space is not None:
-            self._draw_preview_space.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='PRE_PIXEL')
+            self._draw_handler_preview = self._draw_preview_space.draw_handler_add(self._draw_2d, (context, ), 'WINDOW', 'PRE_PIXEL')
         if ModalFlags.DRAW_BACKDROP in self._modal_flags and self._draw_backdrop_treetype is not None:
-            SpaceNodeEditor.draw_handler_add(self._draw_2d, (context, ), region_type='WINDOW', draw_type='BACKDROP')
+            self._draw_handler_backdrop = SpaceNodeEditor.draw_handler_add(self._draw_2d, (context, ), 'WINDOW', 'BACKDROP')
 
     def _stop_drawing(self) -> None:
         if self._modal_flags is None:
             return
-        from ...decorators.ops_modal_flags import ModalFlags
-        if ModalFlags.DRAW_POST_PIXEL in self._modal_flags and self._draw_postpixel_space is not None:
-            self._draw_postpixel_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
-        if ModalFlags.DRAW_POST_VIEW in self._modal_flags and self._draw_postview_space is not None:
-            self._draw_postview_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
-        if ModalFlags.DRAW_PRE_VIEW in self._modal_flags and self._draw_preview_space is not None:
-            self._draw_preview_space.draw_handler_remove(self._draw_2d, region_type='WINDOW')
-        if ModalFlags.DRAW_BACKDROP in self._modal_flags and self._draw_backdrop_treetype is not None:
-            SpaceNodeEditor.draw_handler_remove(self._draw_2d, region_type='WINDOW')
+        if hasattr(self, '_draw_handler_postpixel') and self._draw_handler_postpixel is not None:
+            self._draw_postpixel_space.draw_handler_remove(self._draw_handler_postpixel, 'WINDOW')
+        if hasattr(self, '_draw_handler_postview') and self._draw_handler_postview is not None:
+            self._draw_postview_space.draw_handler_remove(self._draw_handler_postview, 'WINDOW')
+        if hasattr(self, '_draw_handler_preview') and self._draw_handler_preview is not None:
+            self._draw_preview_space.draw_handler_remove(self._draw_handler_preview, 'WINDOW')
+        if hasattr(self, '_draw_handler_backdrop') and self._draw_handler_backdrop is not None:
+            SpaceNodeEditor.draw_handler_remove(self._draw_handler_backdrop, 'WINDOW')
 
     def _draw_3d(self, context: Context, area: Area) -> None:
         """ Internal method! Use draw_3d() instead. """

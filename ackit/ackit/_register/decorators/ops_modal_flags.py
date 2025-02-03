@@ -58,7 +58,7 @@ class ModalFlagsDecorators:
         UV_EDITOR = bpy.types.SpaceUVEditor
         
         def __call__(self, _deco_cls):
-            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_VIEW)(_deco_cls, _draw_postpixel_space=self.value)
+            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_VIEW, _draw_postpixel_space=self.value)(_deco_cls)
     
     class DRAW_POST_VIEW(Enum):
         """ Enables draw_3d() function in the modal for the selected space. """
@@ -81,7 +81,7 @@ class ModalFlagsDecorators:
         UV_EDITOR = bpy.types.SpaceUVEditor
         
         def __call__(self, _deco_cls):
-            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_VIEW)(_deco_cls, _draw_postview_space=self.value)
+            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_POST_VIEW, _draw_postview_space=self.value)(_deco_cls)
 
     class DRAW_PRE_VIEW(Enum):
         """ Enables draw_3d() function in the modal for the selected space. """
@@ -104,7 +104,7 @@ class ModalFlagsDecorators:
         UV_EDITOR = bpy.types.SpaceUVEditor
 
         def __call__(self, _deco_cls):
-            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_PRE_VIEW)(_deco_cls, _draw_preview_space=self.value)
+            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_PRE_VIEW, _draw_preview_space=self.value)(_deco_cls)
 
     class DRAW_BACKDROP(Enum):
         """ Enables draw_backdrop() function in the modal for the selected node editor type. """
@@ -113,4 +113,4 @@ class ModalFlagsDecorators:
         TEXTURE_NODE_TREE = 'TextureNodeTree'
 
         def __call__(self, _deco_cls):
-            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_BACKDROP)(_deco_cls, _draw_backdrop_treetype=self.value)
+            return ModalFlagsDecorators._decorator(ModalFlags.DRAW_BACKDROP, _draw_backdrop_treetype=self.value)(_deco_cls)

@@ -3,7 +3,7 @@ from typing import Set, Callable, Type
 from bpy.types import Context, Event, UILayout, Area, Region, Space, SpaceNodeEditor
 
 from .ot_generic import Generic
-from ....utils.operator import OpsReturn, add_modal_handler, SubmodalReturn
+from ....utils.operator import OpsReturn, SubmodalReturn
 from ....utils.cursor import ModalCursor
 # from ...decorators.ops_modal_flags import ModalFlags  # commented to fix circular import error
 
@@ -94,6 +94,10 @@ class Modal(ModalCursor, Generic):
         return OpsReturn.FINISH
 
     def modal_update(self, context: Context, event: Event) -> OpsReturn | None:
+        '''
+            Return:
+                OpsReturn | None.
+        '''
         pass
 
 

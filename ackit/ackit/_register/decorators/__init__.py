@@ -1,5 +1,6 @@
 from .ops_options import OperatorOptionsDecorators as OpsOptions
 from .polling import Polling as Poll
+from .ops_modal_flags import ModalFlagsDecorators as ModalFlags
 
 __all__ = ['Poll', 'OpsOptions']
 

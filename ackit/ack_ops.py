@@ -101,6 +101,47 @@ class ActionOperator(__base_op):
         bpy.ops.ackit.action_operator('INVOKE_DEFAULT', **props)
 
 
+class ModalDrawOperator(__base_op):
+    """
+    Modal Draw Operator
+
+
+    """
+    bl_idname: ClassVar[str] = 'ackit.modal_draw_operator'
+
+    @classmethod
+    def run(
+        cls,
+        # No properties.
+    ) -> None:
+        """Execute the Modal Draw Operator operator.
+
+        Args:
+        """
+        props = {
+        }
+        # Filter out None values
+        props = {k: v for k, v in props.items() if v is not None}
+        bpy.ops.ackit.modal_draw_operator(**props)
+
+    @classmethod
+    def run_invoke(
+        cls,
+        # No properties
+    ) -> None:
+        """Execute the Modal Draw Operator operator in INVOKE_DEFAULT mode.
+
+        This mode shows the operator's UI if it has one.
+
+        Args:
+        """
+        props = {
+        }
+        # Filter out None values
+        props = {k: v for k, v in props.items() if v is not None}
+        bpy.ops.ackit.modal_draw_operator('INVOKE_DEFAULT', **props)
+
+
 class GenericOperator(__base_op):
     """
     Generic Operator

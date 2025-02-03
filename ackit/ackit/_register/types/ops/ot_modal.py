@@ -104,7 +104,7 @@ class Modal(ModalCursor, Generic):
     ''' Modal End. '''
     def _modal_exit(self, context: 'Context', cancel: bool) -> None:
         """ Internal method! Use modal_exit() instead. """
-        self.restore_cursor(context)
+        self.restore_cursor()
         self._stop_drawing()
         context.area.tag_redraw()  # full editor redraw.
         self.modal_exit(context, cancel)

@@ -62,6 +62,7 @@ class BaseType(object):
             if bpy_type == bpy.types.AddonPreferences:
                 # We override the original's class name for a name convention one.
                 cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
+                cls.bl_idname = GLOBALS.ADDON_MODULE
             else:
                 # This case is for unhandled bpy_types. We re-use the original's class name.
                 cls_name = cls.__name__ # f'{GLOBALS.ADDON_MODULE_UPPER}_{idname}'

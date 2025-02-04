@@ -106,12 +106,6 @@ class AddonLoader:
             if hasattr(module, "late_init"):
                 module.late_init()
 
-        sys.modules[GLOBALS.ADDON_MODULE_SHORT] = sys.modules[GLOBALS.ADDON_MODULE]
-
-        if auto_code:
-            for auto_code_func in auto_code:
-                auto_code_func(filename_prefix=auto_code_prefix)
-
     @classmethod
     def register_modules(cls):
         if cls.modules is None:

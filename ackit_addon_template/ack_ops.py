@@ -54,7 +54,7 @@ class ActionOperator(__base_op):
 
 
     """
-    bl_idname: ClassVar[str] = 'ackit.action_operator'
+    bl_idname: ClassVar[str] = 'ackit_addon_template.action_operator'
 
     @classmethod
     def run(
@@ -75,7 +75,7 @@ class ActionOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.action_operator(**props)
+        bpy.ops.ackit_addon_template.action_operator(**props)
 
     @classmethod
     def run_invoke(
@@ -98,7 +98,7 @@ class ActionOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.action_operator('INVOKE_DEFAULT', **props)
+        bpy.ops.ackit_addon_template.action_operator('INVOKE_DEFAULT', **props)
 
 
 class ModalDrawOperator(__base_op):
@@ -107,7 +107,7 @@ class ModalDrawOperator(__base_op):
 
 
     """
-    bl_idname: ClassVar[str] = 'ackit.modal_draw_operator'
+    bl_idname: ClassVar[str] = 'ackit_addon_template.modal_draw_operator'
 
     @classmethod
     def run(
@@ -122,7 +122,7 @@ class ModalDrawOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.modal_draw_operator(**props)
+        bpy.ops.ackit_addon_template.modal_draw_operator(**props)
 
     @classmethod
     def run_invoke(
@@ -139,7 +139,7 @@ class ModalDrawOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.modal_draw_operator('INVOKE_DEFAULT', **props)
+        bpy.ops.ackit_addon_template.modal_draw_operator('INVOKE_DEFAULT', **props)
 
 
 class GenericOperator(__base_op):
@@ -148,7 +148,7 @@ class GenericOperator(__base_op):
 
 
     """
-    bl_idname: ClassVar[str] = 'ackit.generic_operator'
+    bl_idname: ClassVar[str] = 'ackit_addon_template.generic_operator'
 
     @classmethod
     def run(
@@ -166,7 +166,7 @@ class GenericOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.generic_operator(**props)
+        bpy.ops.ackit_addon_template.generic_operator(**props)
 
     @classmethod
     def run_invoke(
@@ -186,4 +186,4 @@ class GenericOperator(__base_op):
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
-        bpy.ops.ackit.generic_operator('INVOKE_DEFAULT', **props)
+        bpy.ops.ackit_addon_template.generic_operator('INVOKE_DEFAULT', **props)

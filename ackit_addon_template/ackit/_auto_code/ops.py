@@ -35,10 +35,10 @@ def _format_prop_docstring(name: str, prop: 'BlenderPropertyDescriptor') -> str:
     description = prop._kwargs.get('description', '')
     return f"        - `{name}` ({type_hint}): {description}"
 
-def generate_ops_py(filename_prefix: str | None = None):
+def generate_ops_py(filename: str = 'ops.py'):
     """Generate an {prefix}_ops.py file with typed operator classes"""
 
-    output_path = GLOBALS.ADDON_SOURCE_PATH / f'{filename_prefix}ops.py'
+    output_path = GLOBALS.ADDON_SOURCE_PATH / f'{filename}.py'
 
     # Get all operator classes
     operator_classes = BTypes.Operator.get_classes()

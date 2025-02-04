@@ -259,9 +259,9 @@ def generate_icons_py(filename: str = 'icons.py'):
         return
 
     # Generate icons.py file.
-
     icons_py_code = template_icons_py.substitute(
-        package=__package__,
+        # get relative package path to ackit module.
+        package=__package__[__package__.index('.ackit.'):], # __package__ : for absolute package path.
         icons_dirpath=icons_path.relative_to(GLOBALS.ADDON_SOURCE_PATH).as_posix(),
         icon_enums=''.join(
             [

@@ -24,6 +24,7 @@ class GLOBALS:
     ADDON_SOURCE_PATH = Path(__file__).parent.parent
     ADDON_MODULE_NAME = ADDON_MODULE_SHORT.replace('_', ' ').title().replace(' ', '')
     ICONS_PATH = ADDON_SOURCE_PATH / 'lib' / 'icons'
+    IMAGES_PATH = ADDON_SOURCE_PATH / 'lib' / 'images'
 
     check_in_development = lambda : (hasattr(sys, 'gettrace') and sys.gettrace() is not None) and is_junction(GLOBALS.ADDON_SOURCE_PATH)
     check_in_production = lambda : not GLOBALS.check_in_development()

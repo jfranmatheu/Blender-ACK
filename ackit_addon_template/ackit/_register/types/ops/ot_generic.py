@@ -4,6 +4,7 @@ from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
 from ....utils.operator import OpsReturn
 from ..base import BaseType
+from ..layout import Layout
 from ...props.layout import DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
 from ...props.descriptors import BlenderPropertyDescriptor
 
@@ -11,7 +12,7 @@ from ...props.descriptors import BlenderPropertyDescriptor
 __all__ = ['Generic']
 
 
-class Generic(DescriptorProps_PropsTuple, BaseType):
+class Generic(DescriptorProps_PropsTuple, BaseType, Layout):
     bl_idname: str
     bl_label: str
     bl_description: str
@@ -80,12 +81,6 @@ class Generic(DescriptorProps_PropsTuple, BaseType):
                 if not func(context):
                     return False
         return True
-
-    def draw(self, context):
-        self.draw_ui(context, self.layout)
-
-    def draw_ui(self, context: Context, layout: UILayout) -> None:
-        pass
 
     def invoke(self, context: Context, event: Event) -> Set[str]:
         return self.execute(context)

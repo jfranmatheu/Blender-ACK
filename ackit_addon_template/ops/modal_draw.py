@@ -1,4 +1,4 @@
-from ..ackit import types, props, Poll, Property, OpsReturn, ModalFlags
+from ..ackit import types, Poll, OpsReturn, ModalFlags
 
 import blf
 

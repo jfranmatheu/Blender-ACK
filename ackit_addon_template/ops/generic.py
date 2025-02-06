@@ -1,4 +1,4 @@
-from ..ackit import types, props, Poll, Property, OpsReturn
+from ..ackit import types, Poll, Property, OpsReturn
 
 
 @Poll.ACTIVE_OBJECT.ANY

@@ -1,4 +1,4 @@
-from ..ackit import types, props, OpsOptions, Poll, Property
+from ..ackit import types, OpsOptions, Poll, Property
 
 
 @OpsOptions.REGISTER

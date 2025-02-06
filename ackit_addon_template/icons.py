@@ -1,7 +1,7 @@
 # /icons.py
 # Code automatically generated!
 from pathlib import Path
-from .ackit._auto_code.icons import IconsEnum, IconsViewer
+from .ackit.auto_code.icons import IconsEnum, IconsViewer
 
 icons_dirpath = Path("lib/icons")
 

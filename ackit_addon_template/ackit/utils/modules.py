@@ -1,7 +1,7 @@
 import importlib
 import pkgutil
 
-from .._globals import GLOBALS
+from ..globals import GLOBALS
 
 
 # Import modules

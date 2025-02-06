@@ -3,8 +3,8 @@ from typing import Set, Callable, Type
 from bpy.types import Context, Event, Area, Region, Space, SpaceNodeEditor
 
 from .generic import Generic
-from ackit_addon_template.ackit.utils.operator import OpsReturn, SubmodalReturn
-from ackit_addon_template.ackit.utils.cursor import ModalCursor
+from ....utils.operator import OpsReturn, SubmodalReturn
+from ....utils.cursor import ModalCursor
 # from ...decorators.ops_modal_flags import ModalFlags  # commented to fix circular import error
 
 

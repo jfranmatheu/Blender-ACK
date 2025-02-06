@@ -15,7 +15,7 @@ from gpu.types import GPUTexture, Buffer as GPUBuffer
 from bpy.utils import previews
 
 from ..globals import GLOBALS
-from ackit_addon_template.ackit.debug.output import print_debug
+from ..debug.output import print_debug
 
 
 icon_previews = {}

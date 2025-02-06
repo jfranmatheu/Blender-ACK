@@ -4,6 +4,7 @@ import pstats
 from pathlib import Path
 from typing import Optional, Callable, Any
 from functools import wraps
+
 from ..globals import GLOBALS
 from .logger import get_logger
 

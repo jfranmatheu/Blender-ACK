@@ -3,11 +3,10 @@ from typing import Type, List
 
 import bpy
 
-from ackit_addon_template.ackit.globals import GLOBALS
-from ackit_addon_template.ackit.debug.output import print_debug
-from ackit_addon_template.ackit.utils.classes import get_subclasses_recursive
-from ackit_addon_template.ackit.registry.btypes import BTypes
-
+from ...globals import GLOBALS
+from ...debug.output import print_debug
+from ...registry.utils import get_subclasses_recursive
+from ...registry.btypes import BTypes
 
 __all__ = [
     'BaseType'

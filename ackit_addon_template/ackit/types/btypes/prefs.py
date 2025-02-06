@@ -1,15 +1,15 @@
 from bpy import types as bpy_types
 
 from .base import BaseType
-from ackit_addon_template.ackit.types.common.layout import Layout
-from ackit_addon_template.ackit.utils.previews import get_preview_id_from_image_path
-from ackit_addon_template.ackit.globals import GLOBALS
+from ..uilayout_drawer import UILayoutDrawer
+from ...utils.previews import get_preview_id_from_image_path
+from ...globals import GLOBALS
 
 
 __all__ = ['AddonPreferences']
 
 
-class AddonPreferences(BaseType, Layout):
+class AddonPreferences(BaseType, UILayoutDrawer):
     logo_scale: int = 10
 
     @classmethod
@@ -21,7 +21,7 @@ class AddonPreferences(BaseType, Layout):
         return context.preferences.addons[cls.bl_idname].preferences
     
     def draw(self, context: bpy_types.Context) -> None:
-        layout: UILayout = self.layout
+        layout: bpy_types.UILayout = self.layout
 
         # DRAW LOGO.
         # ----------------------------------------------------------------

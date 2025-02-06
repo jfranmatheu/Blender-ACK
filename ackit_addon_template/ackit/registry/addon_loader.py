@@ -2,10 +2,10 @@ import sys
 
 from bpy.utils import register_class, unregister_class
 
-from ackit_addon_template.ackit.globals import GLOBALS
-from ackit_addon_template.ackit.utils.modules import get_all_submodules
-from ackit_addon_template.ackit.utils.classes import get_ordered_classes_to_register
-from ackit_addon_template.ackit.auto_code import AutoCode
+from ..globals import GLOBALS
+from .utils import get_all_submodules
+from .utils import get_ordered_classes_to_register
+from ..auto_code import AutoCode
 
 
 __all__ = [

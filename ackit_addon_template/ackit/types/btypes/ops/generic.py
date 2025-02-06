@@ -2,17 +2,16 @@ from typing import Set
 
 from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
-from ackit_addon_template.ackit.utils.operator import OpsReturn
+from ....utils.operator import OpsReturn
 from ..base import BaseType
-from ackit_addon_template.ackit.types.common.layout import Layout
-from ackit_addon_template.ackit._register.props import DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
-from ackit_addon_template.ackit._register.props import BlenderPropertyDescriptor
+from ...uilayout_drawer import UILayoutDrawer
+from ..props import BlenderPropertyDescriptor, DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
 
 
 __all__ = ['Generic']
 
 
-class Generic(DescriptorProps_PropsTuple, BaseType, Layout):
+class Generic(DescriptorProps_PropsTuple, BaseType, UILayoutDrawer):
     bl_idname: str
     bl_label: str
     bl_description: str

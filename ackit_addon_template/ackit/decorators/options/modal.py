@@ -3,7 +3,7 @@ from typing import Type
 
 import bpy
 
-from ..types.operators import T
+from ...types.btypes.ops import T
 
 
 __all__ = ['ModalFlagsDecorators']

@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Type
 
-from ..types.operators import T
+from ...types.btypes.ops import T
 
 
 __all__ = ['OperatorOptionsDecorators']

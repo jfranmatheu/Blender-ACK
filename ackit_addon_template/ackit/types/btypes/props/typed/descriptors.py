@@ -3,6 +3,7 @@ from typing import Any, TypeVar, Generic, Type, Optional, Tuple
 
 
 __all__ = [
+    'BlenderPropertyDescriptor',
     'BoolProperty',
     'BoolVectorProperty',
     'CollectionProperty',

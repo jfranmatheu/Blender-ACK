@@ -7,8 +7,8 @@ from typing import Dict, List, Type, Callable
 from collections import defaultdict
 from dataclasses import dataclass
 
-from ackit_addon_template.ackit.debug.output import print_debug
-from ackit_addon_template.ackit.utils.classes import get_ordered_pg_classes_to_register
+from ..debug.output import print_debug
+from .utils import get_ordered_pg_classes_to_register
 
 __all__ = [
     'BTypes',

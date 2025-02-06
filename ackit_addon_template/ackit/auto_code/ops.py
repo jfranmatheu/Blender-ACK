@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Dict
 
 from ..globals import GLOBALS
-from ackit_addon_template.ackit.registry.btypes import BTypes
-from ackit_addon_template.ackit._register.props import BlenderPropertyDescriptor
+from ..registry.btypes import BTypes
+from ..types.btypes.props import BlenderPropertyDescriptor
 
 
 def _get_property_type_hint(prop: 'BlenderPropertyDescriptor') -> str:

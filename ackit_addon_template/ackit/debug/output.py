@@ -1,6 +1,7 @@
-from ..globals import GLOBALS
 import pprint
 from typing import Any, Dict
+
+from ..globals import GLOBALS
 
 
 def print_debug(*args) -> None:

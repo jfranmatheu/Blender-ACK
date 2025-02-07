@@ -5,8 +5,8 @@ from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 from ...operator import OpsReturn
 from ..base import BaseType
 from ...uilayout_drawer import UILayoutDrawer
-from ..props import BlenderPropertyDescriptor, DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
-
+from ..data.props.typed.layout import DescriptorProps_PropsTuple #, DescriptorProps_Props, DescriptorProps_DrawProps, DescriptorProps_DrawUILayout
+from ..data.props.typed.descriptors import BlenderPropertyDescriptor
 
 __all__ = ['Generic']
 

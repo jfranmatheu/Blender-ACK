@@ -1,11 +1,11 @@
 from .modal import ModalFlagsDecorators as ModalFlags
 from .operator import OperatorOptionsDecorators as OperatorOptions
-from .polling import Polling as Poll
+from .panel import PanelOptions
 
 __all__ = [
-    'Poll',
     'OperatorOptions',
-    'ModalFlags'
+    'ModalFlags',
+    'PanelOptions'
 ]
 
 ''' EXAMPLE OF OPERATOR DEFINITION:

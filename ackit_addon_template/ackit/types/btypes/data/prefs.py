@@ -1,9 +1,9 @@
 from bpy import types as bpy_types
 
-from .base import BaseType
-from ..uilayout_drawer import UILayoutDrawer
-from ...utils.previews import get_preview_id_from_image_path
-from ...globals import GLOBALS
+from ..base import BaseType
+from ...uilayout_drawer import UILayoutDrawer
+from ....utils.previews import get_preview_id_from_image_path
+from ....globals import GLOBALS
 
 
 __all__ = ['AddonPreferences']

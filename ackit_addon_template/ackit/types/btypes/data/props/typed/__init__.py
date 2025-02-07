@@ -1,6 +1,7 @@
 from .descriptors import *
 from .layout import *
 
+
 class TypedProperty:
     BOOL = BoolProperty
     FLOAT = FloatProperty

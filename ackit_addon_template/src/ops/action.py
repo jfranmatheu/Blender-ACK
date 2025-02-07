@@ -1,13 +1,13 @@
-from ..ackit import types, OpsOptions, Poll, Property
+from ...ackit import ACK
 
 
-@OpsOptions.REGISTER
-@OpsOptions.UNDO
-@Poll.ACTIVE_OBJECT.MESH
-@Poll.MODE.OBJECT
-class ActionOperator(types.Action):
-    use_something = Property.BOOL(name="Use Something")
-    my_value = Property.FLOAT(name="Value")
+@ACK.Deco.Options.OPERATOR.REGISTER
+@ACK.Deco.Options.OPERATOR.UNDO
+@ACK.Deco.Poll.ACTIVE_OBJECT.MESH
+@ACK.Deco.Poll.MODE.OBJECT
+class ActionOperator(ACK.Types.Ops.ACTION):
+    use_something = ACK.Props.Typed.BoolProperty(name="Use Something")
+    my_value = ACK.Props.Typed.FloatProperty(name="Value")
 
     def draw_ui(self, context, layout):
         # print(self.props.__dict__)  # This will show you all properties in the DescriptorPropertyCollection

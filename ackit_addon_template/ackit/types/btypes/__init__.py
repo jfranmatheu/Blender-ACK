@@ -1,4 +1,6 @@
 from .ops import *
-from .prefs import *
-from .ui import *
-from .prefs import AddonPreferences
+from .data.prefs import *
+from .ui import *   
+from .data.prop_group import *
+from .data.prefs import AddonPreferences
+from .data.props import wrapped as wrapped_props, typed as typed_props

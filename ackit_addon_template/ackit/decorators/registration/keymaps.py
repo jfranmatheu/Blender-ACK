@@ -43,7 +43,7 @@ def _register_shortcut__operator(keymap_idname: str,
 ###########################################
 
 
-class ShortcutRegister:
+class RegisterKeymap:
     OPERATOR = _register_shortcut__operator
     MODAL = None # Not Implemented
     TOOL = None # Not Implemented

@@ -1,7 +1,7 @@
 from typing import Type
 from enum import Enum, auto
 
-from ...types.btypes.ops import T  # Operator type.
+from ..types.btypes.ops import T  # Operator type.
 
 
 __all__ = ['Polling']

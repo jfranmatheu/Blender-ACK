@@ -1,2 +1,2 @@
-from .operator import OpsReturn, SubmodalReturn
-from .cursor import Cursor
+from ..types.operator import OpsReturn, SubmodalReturn
+from ..types.cursor import Cursor

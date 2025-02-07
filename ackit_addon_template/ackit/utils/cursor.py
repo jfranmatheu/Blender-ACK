@@ -6,7 +6,6 @@ from bpy.types import Context
 
 __all__ = [
     'Cursor',
-    'ModalCursor',
 ]
 
 class Cursor(Enum):
@@ -41,40 +40,3 @@ class Cursor(Enum):
     def restore(context: Context | None = None) -> None:
         context = context if context is not None else bpy.context
         context.window.cursor_modal_restore()
-
-
-class ModalCursor:
-    ''' Use at modal classes that. '''
-    _current_cursor: Cursor | None = None
-    _previous_cursor: Cursor | None = None
-
-    def set_cursor(self, cursor_type: Cursor) -> None:
-        """Set the cursor type for the modal operator.
-        
-        Args:
-            cursor_type: The Cursor enum value to set
-            context: Optional context override
-        """
-        # Store the current cursor type if we haven't stored one yet
-        if self._current_cursor is not None:
-            self._previous_cursor = self._current_cursor
-
-        self._current_cursor = cursor_type
-        cursor_type.set_icon(getattr(self, '_context', None))
-
-    def restore_cursor(self) -> None:
-        """Restore the cursor to its previous state.
-        
-        Args:
-            context: Optional context override
-        """
-        if self._current_cursor is not None:
-            Cursor.restore(getattr(self, '_context', None))
-
-    def wrap_cursor(self, x: int, y: int) -> None:
-        """Wrap the cursor to specified coordinates.
-        
-        Args:
-            context: Optional context override
-        """
-        Cursor.wrap(x, y, getattr(self, '_context', None))

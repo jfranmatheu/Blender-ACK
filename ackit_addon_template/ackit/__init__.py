@@ -7,6 +7,7 @@ from .globals import GLOBALS
 from .auto_code import AutoCode
 from .utils.operator import OpsReturn, SubmodalReturn
 from .utils.cursor import Cursor
+from .utils import math as mathutils
 
 
 __version__ = (0, 1, 0)

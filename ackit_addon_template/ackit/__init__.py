@@ -5,7 +5,7 @@ Addon Creator Kit (ackit or ACKit) - A comprehensive toolkit for Blender addon d
 from .registry import AutoLoad, AddonLoader
 from .globals import GLOBALS
 from .auto_code import AutoCode
-from .types.operator import OpsReturn, SubmodalReturn
+from .enums.operator import OpsReturn, SubmodalReturn
 from .utils.cursor import Cursor
 from .utils import math as mathutils
 from ._ack import *

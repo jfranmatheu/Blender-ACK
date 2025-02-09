@@ -2,7 +2,7 @@ from typing import Set, Callable
 
 from bpy.types import Context, Event, UILayout
 
-from ....types.operator import OpsReturn
+from ....enums.operator import OpsReturn
 from .generic import Generic
 
 

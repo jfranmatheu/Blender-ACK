@@ -3,7 +3,7 @@ from typing import Set
 from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
 from ..base_type import BaseType
-from ....types.operator import OpsReturn
+from ....enums.operator import OpsReturn
 from ...props.typed.layout import DescriptorProps_PropsTuple
 from ...props.typed.descriptors import BlenderPropertyDescriptor
 

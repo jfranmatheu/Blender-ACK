@@ -5,7 +5,7 @@ from .registry.reg_types import *
 from .registry.reg_deco import *
 from .registry.flags import *
 from .registry.props import *
-from .types import *
+from .enums import *
 from .registry.polling import *
 
 __all__ = [

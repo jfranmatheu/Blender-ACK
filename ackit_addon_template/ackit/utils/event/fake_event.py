@@ -3,7 +3,7 @@ from typing import Tuple
 from bpy import types as bpy_types
 
 from ..math.vector import Vector2i
-from ...types.event import EventType, EventValue
+from ...enums.event import EventType, EventValue
 
 
 

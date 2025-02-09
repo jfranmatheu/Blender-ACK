@@ -3,7 +3,7 @@ from typing import Set, Callable, Type
 from bpy.types import Context, Event, Area, Region, Space, SpaceNodeEditor
 
 from .generic import Generic
-from ....types.operator import OpsReturn, SubmodalReturn
+from ....enums.operator import OpsReturn, SubmodalReturn
 from ....utils.cursor import Cursor
 # from ...deco.ops_modal_flags import ModalFlags  # commented to fix circular import error
 

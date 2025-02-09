@@ -1,11 +1,11 @@
-from ..ackit import types, Poll, Property, OpsReturn
+from ...ackit import ACK
 
 
-@Poll.ACTIVE_OBJECT.ANY
-class GenericOperator(types.Operator):
-    new_name = Property.STRING(name="Object Name", default="Best Name Ever")
+@ACK.Poll.ACTIVE_OBJECT.ANY
+class GenericOperator(ACK.Types.Ops.Generic):
+    new_name = ACK.Props.Typed.STRING(name="Object Name", default="Best Name Ever")
 
     def invoke(self, context, event) -> None:
         context.active_object.name = self.new_name
         self.report({'INFO'}, f"New Name {self.new_name}")
-        return OpsReturn.FINISH
+        return ACK.Returns.Operator.FINISH

@@ -1,12 +1,12 @@
-from ..ackit import types, Poll, OpsReturn, ModalFlags
+from ...ackit import ACK, OpsReturn
 
 import blf
 
 
 # @ModalFlags.USE_MOUSE
-@ModalFlags.DRAW_POST_PIXEL.VIEW_3D
-@Poll.ACTIVE_OBJECT.ANY
-class ModalDrawOperator(types.Modal):
+@ACK.Flags.MODAL.DRAW_POST_PIXEL.VIEW_3D
+@ACK.Poll.ACTIVE_OBJECT.ANY
+class ModalDrawOperator(ACK.Types.Ops.Modal):
     def modal_enter(self, context, event):
         self.text = "Hello, world!"
 

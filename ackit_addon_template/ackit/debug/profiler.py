@@ -2,7 +2,7 @@ import time
 import cProfile
 import pstats
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Union
 from functools import wraps
 
 from ..globals import GLOBALS

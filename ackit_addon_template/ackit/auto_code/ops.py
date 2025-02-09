@@ -5,7 +5,7 @@ from typing import Dict
 
 from ..globals import GLOBALS
 from ..registry.btypes import BTypes
-from ..types.btypes.data.props.typed.descriptors import BlenderPropertyDescriptor
+from ..registry.props.typed.descriptors import BlenderPropertyDescriptor
 
 def _get_property_type_hint(prop: 'BlenderPropertyDescriptor') -> str:
     """Get the appropriate type hint for a property descriptor"""

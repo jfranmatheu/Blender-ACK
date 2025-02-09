@@ -1,6 +1,5 @@
-from .ackit import types
+from .ackit import ACK
 
 
-class AddonPreferences(types.AddonPreferences):
-
+class AddonPreferences(ACK.Types.Data.AddonPreferences):
     pass

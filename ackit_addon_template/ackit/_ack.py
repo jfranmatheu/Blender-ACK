@@ -1,9 +1,12 @@
 from enum import Enum, auto
 from typing import Callable, Type
 
-from .types.btypes import *
-from .decorators import *
-from .helpers import *
+from .registry.reg_types import *
+from .registry.reg_deco import *
+from .registry.flags import *
+from .registry.props import *
+from .types import *
+from .registry.polling import *
 
 __all__ = [
     'ACK',
@@ -13,45 +16,43 @@ __all__ = [
 class ACK:
     class Types:
         class Ops:
-            GENERIC = Operator      # Base operator type
-            ACTION = Action         # Simple operators with single action
-            MODAL = Modal           # Complex operators with modal loop
-
+            Generic = Operator
+            Action = Action
+            Modal = Modal
+            
+        class UI:
+            Panel = Panel
+            Menu = Menu
+            PieMenu = PieMenu
+            Popover = Popover
+            UIList = UIList
+            
         class Data:
-            PREFS = AddonPreferences   # Addon preferences
-            PROP_GROUP = PropertyGroup # Property group definitions
+            AddonPreferences = AddonPreferences
+            PropertyGroup = PropertyGroup
         
-        class UI:
-            PANEL = Panel       # Regular panels
-            MENU = Menu         # Regular menus
-            PIE_MENU = PieMenu  # Pie menus
-            POPOVER = Popover   # Popover panels
-            LIST = UIList       # UI Lists
-        
-        # class Tools:
-        #     TOOL = Tool                 # Tool system definitions
-        #     GIZMO = Gizmo               # Individual gizmos
-        #     GIZMO_GROUP = GizmoGroup    # Gizmo collections
-    
+        Event = FakeEvent
+        EventType = EventType
+        EventValue = EventValue
+
+    class Returns:
+        Operator = OpsReturn
+        Submodal = SubmodalReturn
+
     class Props:
-        Typed = typed_props
-        Wrapped = wrapped_props
+        Typed = TypedProperty
+        Wrapped = wrapped
+
+    class FromFunction:
+        ACTION = Action.from_function
+        PANEL = PanelFromFunction
+        MENU = Menu.from_function
+        PIE_MENU = PieMenu.from_function
+        POPOVER = Popover.from_function
     
-    class Deco:
-        class UI:
-            PANEL = PanelFromFunction
-            MENU = menu_from_function
-
-        class Options:
-            OPERATOR = OperatorOptions  # Operator options (register, undo, etc)
-            MODAL = ModalFlags          # Modal flags (mouse, raycast, draw3d, draw2d, etc)
-            PANEL = PanelOptions        # Panel options (default_closed, hide_header, etc)
-            # GIZMO = GizmoFlags          # Gizmo flags (raycast, mouse, draw3d, draw2d, etc)
-        
-        Poll = Poll
-
-
-
-
-# --------------------------------------------------------------
-
+    class Flags:
+        OPERATOR = OperatorOptions
+        MODAL = ModalFlags
+        PANEL = PanelOptions
+    
+    Poll = Polling

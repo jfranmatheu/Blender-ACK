@@ -50,9 +50,9 @@ class __base_op:
 
 class ActionOperator(__base_op):
     """
-    Action Operator
+    Test Action
 
-
+    Transforms active mesh object location in Z axis
     """
     bl_idname: ClassVar[str] = 'ackit_addon_template.action_operator'
 
@@ -60,18 +60,18 @@ class ActionOperator(__base_op):
     def run(
         cls,
         *,  # Force keyword arguments
-        use_something: Optional[bool] = None,
-        my_value: Optional[float] = None,
+        enable: Optional[bool] = None,
+        z_location: Optional[float] = None,
     ) -> None:
-        """Execute the Action Operator operator.
+        """Execute the Test Action operator.
 
         Args:
-        - `use_something` (bool): 
-        - `my_value` (float): 
+        - `enable` (bool): 
+        - `z_location` (float): 
         """
         props = {
-            'use_something': use_something if use_something is not None else None,
-            'my_value': my_value if my_value is not None else None,
+            'enable': enable if enable is not None else None,
+            'z_location': z_location if z_location is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
@@ -81,20 +81,20 @@ class ActionOperator(__base_op):
     def run_invoke(
         cls,
         *,  # Force keyword arguments
-        use_something: Optional[bool] = None,
-        my_value: Optional[float] = None,
+        enable: Optional[bool] = None,
+        z_location: Optional[float] = None,
     ) -> None:
-        """Execute the Action Operator operator in INVOKE_DEFAULT mode.
+        """Execute the Test Action operator in INVOKE_DEFAULT mode.
 
         This mode shows the operator's UI if it has one.
 
         Args:
-        - `use_something` (bool): 
-        - `my_value` (float): 
+        - `enable` (bool): 
+        - `z_location` (float): 
         """
         props = {
-            'use_something': use_something if use_something is not None else None,
-            'my_value': my_value if my_value is not None else None,
+            'enable': enable if enable is not None else None,
+            'z_location': z_location if z_location is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}

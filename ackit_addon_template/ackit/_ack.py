@@ -31,9 +31,9 @@ class ACK:
             AddonPreferences = AddonPreferences
             PropertyGroup = PropertyGroup
         
-        Event = FakeEvent
-        EventType = EventType
-        EventValue = EventValue
+        # Event = FakeEvent
+        # EventType = EventType
+        # EventValue = EventValue
 
     class Returns:
         Operator = OpsReturn

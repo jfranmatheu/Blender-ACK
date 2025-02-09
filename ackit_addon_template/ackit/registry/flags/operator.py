@@ -30,7 +30,7 @@ class OperatorOptionsDecorators:
     """
 
     @staticmethod
-    def _decorator(flag: OperatorTypeFlags, **kwargs):
+    def _decorator(*flags: OperatorTypeFlags, **kwargs):
         """
         Base decorator to add Blender operator type flags.
         
@@ -43,7 +43,8 @@ class OperatorOptionsDecorators:
         def wrapper(cls: Type[T]) -> Type[T]:
             if not hasattr(cls, 'bl_options'):
                 cls.bl_options = set()
-            cls.bl_options.add(flag.name)
+            for flag in flags:
+                cls.bl_options.add(flag.name)
             for key, value in kwargs.items():
                 setattr(cls, key, value)
             return cls
@@ -66,6 +67,15 @@ class OperatorOptionsDecorators:
         Crucial for operators that change scene state.
         """
         return cls._decorator(OperatorTypeFlags.UNDO)(_deco_cls)
+
+    @classmethod
+    def REGISTER_UNDO(cls, _deco_cls):
+        """
+        Enables display in info window and redo panel.
+        Supports operator history tracking.
+        Creates an undo event for data-modifying operators.
+        """
+        return cls._decorator(OperatorTypeFlags.REGISTER)(_deco_cls)
 
     @classmethod
     def UNDO_GROUPED(cls, _deco_cls):

@@ -1,4 +1,5 @@
 from ...ackit import ACK, OpsReturn
+from ...ackit.utils import EventType, EventValue
 
 import blf
 
@@ -17,7 +18,7 @@ class ModalDrawOperator(ACK.Types.Ops.Modal):
             self.text += event.unicode
             self.tag_redraw(context)
             return OpsReturn.RUN
-        elif event.type == 'BACKSPACE' and self.text != '':
+        elif event.value == EventType.RET and event.type == 'BACKSPACE' and self.text != '':
             self.text = self.text[:-1]
             self.tag_redraw(context)
             return OpsReturn.RUN

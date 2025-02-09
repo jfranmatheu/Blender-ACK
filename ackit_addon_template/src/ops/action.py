@@ -1,8 +1,7 @@
 from ...ackit import ACK
 
 
-@ACK.Flags.OPERATOR.REGISTER
-@ACK.Flags.OPERATOR.UNDO
+@ACK.Flags.OPERATOR.REGISTER_UNDO
 @ACK.Poll.ACTIVE_OBJECT.MESH
 @ACK.Poll.MODE.OBJECT
 class ActionOperator(ACK.Types.Ops.Action):
@@ -18,4 +17,4 @@ class ActionOperator(ACK.Types.Ops.Action):
     def action(self, context) -> None:
         if self.use_something:
             context.active_object.location.z = self.my_value
-            self.report({'INFO'}, f"Value {self.my_value}")
+            self.report_info(f"Value {self.my_value}")

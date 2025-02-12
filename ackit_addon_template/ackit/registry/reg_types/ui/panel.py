@@ -37,9 +37,9 @@ class PanelFromFunction(Enum):
     OUTLINER = auto()
     FILE_BROWSER = auto()
 
-    def __call__(self, tab: str = None, flags: PanelOptions = None) -> Callable[[Type], Type]:
+    def __call__(self, tab: str = None, flags: PanelOptions = None, order: int = 0) -> Callable[[Type], Type]:
         """Returns decorator that sets space type and optional tab"""
-        return Panel.from_function(self.name, 'UI', tab=tab, flags=flags)
+        return Panel.from_function(self.name, 'UI', tab=tab, flags=flags, order=order)
 
 
     class Properties(Enum):
@@ -56,9 +56,9 @@ class PanelFromFunction(Enum):
         SCENE = auto()
         WORLD = auto()
 
-        def __call__(self, tab: str = None, flags: PanelOptions = None) -> Callable[[Type], Type]:
+        def __call__(self, tab: str = None, flags: PanelOptions = None, order: int = 0) -> Callable[[Type], Type]:
             """Returns decorator that sets properties context and optional tab"""
-            return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower(), flags=flags)
+            return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower(), flags=flags, order=order)
 
 
 class Panel(BaseUI, DrawExtension):
@@ -81,7 +81,8 @@ class Panel(BaseUI, DrawExtension):
                       region_type: str = 'UI',
                       tab: str | None = GLOBALS.ADDON_MODULE_UPPER,
                       context: str = '',
-                      flags: PanelOptions = None) -> 'Panel':
+                      flags: PanelOptions = None,
+                      order: int = 0) -> 'Panel':
         """ Decorator to create a panel from a function. """
         def decorator(func: Callable) -> Panel:
             cls = type(
@@ -94,6 +95,7 @@ class Panel(BaseUI, DrawExtension):
                     'bl_category': tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
                     'bl_context': context,
                     'bl_options': {flag.name for flag in flags} if flags else set(),
+                    'bl_order': order,
                     'draw_ui': func,
                 }
             )

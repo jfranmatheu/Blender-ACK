@@ -37,9 +37,9 @@ class PanelFromFunction(Enum):
     OUTLINER = auto()
     FILE_BROWSER = auto()
 
-    def __call__(self, tab: str = None) -> Callable[[Type], Type]:
+    def __call__(self, tab: str = None, flags: PanelOptions = None) -> Callable[[Type], Type]:
         """Returns decorator that sets space type and optional tab"""
-        return Panel.from_function(self.name, 'UI', tab=tab)
+        return Panel.from_function(self.name, 'UI', tab=tab, flags=flags)
 
 
     class Properties(Enum):
@@ -56,9 +56,9 @@ class PanelFromFunction(Enum):
         SCENE = auto()
         WORLD = auto()
 
-        def __call__(self, tab: str = None) -> Callable[[Type], Type]:
+        def __call__(self, tab: str = None, flags: PanelOptions = None) -> Callable[[Type], Type]:
             """Returns decorator that sets properties context and optional tab"""
-            return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower())
+            return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower(), flags=flags)
 
 
 class Panel(BaseUI, DrawExtension):
@@ -76,11 +76,12 @@ class Panel(BaseUI, DrawExtension):
 
     @classmethod
     def from_function(cls,
-                      label: str,
-                      space_type: str,
-                      region_type: str,
+                      label: str = '',
+                      space_type: str = 'EMPTY',
+                      region_type: str = 'UI',
                       tab: str | None = GLOBALS.ADDON_MODULE_UPPER,
-                      context: str = '') -> 'Panel':
+                      context: str = '',
+                      flags: PanelOptions = None) -> 'Panel':
         """ Decorator to create a panel from a function. """
         def decorator(func: Callable) -> Panel:
             cls = type(
@@ -92,6 +93,7 @@ class Panel(BaseUI, DrawExtension):
                     'bl_region_type': region_type,
                     'bl_category': tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
                     'bl_context': context,
+                    'bl_options': {flag.name for flag in flags} if flags else set(),
                     'draw_ui': func,
                 }
             )

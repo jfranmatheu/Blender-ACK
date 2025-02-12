@@ -38,7 +38,7 @@ class AddonLoader:
     ordered_classes = None  # If using AutoLoad.
 
     @classmethod
-    def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set(), auto_code_prefix: str | None = None):
+    def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set()):
         cls.use_autoload = use_autoload
 
         if cls.modules is not None:
@@ -59,6 +59,10 @@ class AddonLoader:
             # When you need to initialize something that depends on another module initialization.
             if hasattr(module, "late_init"):
                 module.late_init()
+
+        if auto_code:
+            for auto_code_func in auto_code:
+                auto_code_func()
 
     @classmethod
     def register_modules(cls):

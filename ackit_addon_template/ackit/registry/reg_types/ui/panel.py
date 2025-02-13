@@ -26,7 +26,7 @@ class PanelFromFunction(Enum):
             layout.label(text="My Panel 2")
         ```
     """
-    VIEW3D = auto()
+    VIEW_3D = auto()
     NODE_EDITOR = auto()
     IMAGE_EDITOR = auto()
     SEQUENCE_EDITOR = auto()
@@ -69,15 +69,14 @@ class Panel(BaseUI, DrawExtension):
     bl_options: set[str]
 
     @classmethod
-    def tag_register(deco_cls) -> 'Panel':
+    def tag_register(deco_cls, *subtypes, **kwargs) -> 'Panel':
         return super().tag_register(
-            BlPanel, 'PT'
+            BlPanel, 'PT', *subtypes, **kwargs
         )
 
     @classmethod
     def from_function(cls,
-                      label: str = '',
-                      space_type: str = 'EMPTY',
+                      space_type: str = 'VIEW_3D',
                       region_type: str = 'UI',
                       tab: str | None = GLOBALS.ADDON_MODULE_UPPER,
                       context: str = '',
@@ -85,26 +84,21 @@ class Panel(BaseUI, DrawExtension):
                       order: int = 0) -> 'Panel':
         """ Decorator to create a panel from a function. """
         def decorator(func: Callable) -> Panel:
-            cls = type(
-                func.__name__,
-                (Panel, ),
-                {
-                    'label': label,
-                    'bl_space_type': space_type,
-                    'bl_region_type': region_type,
-                    'bl_category': tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
-                    'bl_context': context,
-                    'bl_options': {flag.name for flag in flags} if flags else set(),
-                    'bl_order': order,
-                    'draw_ui': func,
-                }
+            return cls.tag_register(
+                from_function=func,
+                # ---------------------------------
+                bl_space_type=space_type,
+                bl_region_type=region_type,
+                bl_category=tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
+                bl_context=context,
+                bl_options={flag.name for flag in flags} if flags else set(),
+                bl_order=order,
+                draw_ui=lambda self, ctx, layout: func(ctx, layout),
             )
-            cls.tag_register()
-            return cls
         return decorator
 
-    def draw_header(self, context: Context):
-        super().draw_header(context)
+    # def draw_header(self, context: Context):
+    #     super().draw_header(context)
 
     @classmethod
     def draw_in_layout(cls, layout: UILayout, label: str = 'Panel', as_popover: bool = False):

@@ -76,8 +76,8 @@ class Panel(BaseUI, DrawExtension):
 
     @classmethod
     def from_function(cls,
-                      space_type: str = 'VIEW_3D',
-                      region_type: str = 'UI',
+                      space_type: str = 'TOPBAR',
+                      region_type: str = 'HEADER',
                       tab: str | None = GLOBALS.ADDON_MODULE_UPPER,
                       context: str = '',
                       flags: PanelOptions = None,

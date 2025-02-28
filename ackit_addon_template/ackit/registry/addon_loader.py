@@ -7,7 +7,7 @@ from ..globals import GLOBALS
 from .utils import get_all_submodules
 from .utils import get_ordered_classes_to_register
 from ..auto_code import AutoCode
-from ..utils.callback_set import CallbackSet
+from ..utils.callback import CallbackDict
 
 
 __all__ = [
@@ -41,7 +41,7 @@ class AddonLoader:
     registered = False
     use_autoload = False
     ordered_classes = None  # If using AutoLoad.
-    module_callbacks = CallbackSet()
+    module_callbacks = CallbackDict()
 
     @classmethod
     def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set()):

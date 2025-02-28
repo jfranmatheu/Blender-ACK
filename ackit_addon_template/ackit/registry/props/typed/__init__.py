@@ -1,7 +1,11 @@
 from .descriptors import *
+from .wrapped import WrappedTypedPropertyTypes
 
 
-class TypedProperty:
+__all__ = ['DescriptorTypedPropertyTypes', 'WrappedTypedPropertyTypes']
+
+
+class DescriptorTypedPropertyTypes:
     BOOL = BoolProperty
     FLOAT = FloatProperty
     VECTOR_FLOAT = FloatVectorProperty

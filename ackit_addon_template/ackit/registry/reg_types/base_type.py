@@ -7,6 +7,7 @@ from ...globals import GLOBALS
 from ...debug.output import print_debug
 from ..utils import get_subclasses_recursive
 from ..btypes import BTypes
+from ..props.typed.descriptors import BlenderPropertyDescriptor
 
 __all__ = [
     'BaseType'
@@ -67,7 +68,7 @@ class BaseType(object):
                 # Operator types idname should have an specific naming convention.
                 kwargs['bl_idname'] = f"{GLOBALS.ADDON_MODULE_SHORT.lower()}.{idname}"
 
-            elif bpy_type in {bpy.types.Menu, bpy.types.Panel, bpy.types.UIList}:
+            elif bpy_type in {bpy.types.Menu, bpy.types.Panel, bpy.types.UIList, bpy.types.Node, bpy.types.NodeSocket, bpy.types.NodeTreeInterfaceSocket}:
                 # In the case of interface bpy.types, we can re-use the class name for the idname.
                 kwargs['bl_idname'] = cls_name
         else:
@@ -87,17 +88,58 @@ class BaseType(object):
         original_cls.registered = True
         kwargs['registered'] = True
 
-        # Create new Blender type to be registered.
-        new_cls = type(
-            cls_name,
-            (cls, *subtypes, bpy_type),
-            kwargs
-        )
+        def create_new_cls():
+            # Create new class.
+            if isinstance(cls, bpy_type):
+                if len(subtypes) == 0:
+                    # for key, value in kwargs.items():
+                    #     setattr(cls, key, value)
+                    # return cls
+                    # NOTE: we don't need to create a new class, we can use the original one.
+                    # BUT, since it might be possible to have wrapped properties in the original class,
+                    # we need to create a new class to avoid issues with the annotations.
+                    _subtypes = (cls,)
+                else:
+                    _subtypes = (cls, *subtypes)
+            else:
+                _subtypes = (cls, *subtypes, bpy_type)
 
-        # Preserve original module to avoid issues excluding new classes due to being inside of '/types' directory!
-        new_cls.__module__ = original_cls_module
+            # Create new Blender type
+            new_cls = type(
+                cls_name,
+                _subtypes,
+                kwargs
+            )
+            # Preserve original module to avoid issues excluding new classes due to being inside of '/types' directory!
+            new_cls.__module__ = original_cls_module
 
-        # Add this new class to be registered as a new BType (Blender type).
+            # Handle wrapped properties in annotations
+            if hasattr(original_cls, '__annotations__'):
+                if not hasattr(new_cls, '__annotations__'):
+                    new_cls.__annotations__ = {}
+
+                for name, value in original_cls.__annotations__.items():
+                    if hasattr(value, 'create_property'):
+                        # Create actual property from wrapped property
+                        new_cls.__annotations__[name] = value.create_property(new_cls)
+                    elif name not in new_cls.__annotations__:
+                        # Keep non-wrapped properties as is
+                        new_cls.__annotations__[name] = value
+
+                # Manually initialize descriptors
+                # to FIX self.props.{prop_name} accesor.
+                for name, value in original_cls.__dict__.items():
+                    if isinstance(value, BlenderPropertyDescriptor):
+                        # Create a new copy of the descriptor
+                        new_descriptor = value.copy()
+                        new_descriptor.initialize(new_cls, name)
+                        setattr(new_cls, name, new_descriptor)
+
+            return new_cls
+
+        new_cls = create_new_cls()
+
+        # Add to BTypes registry
         btype: BTypes = getattr(BTypes, bpy_type.__name__)
         btype.add_class(new_cls)
 

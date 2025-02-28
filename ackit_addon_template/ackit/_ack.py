@@ -14,45 +14,58 @@ __all__ = [
 
 
 class ACK:
-    class Types:
-        class Ops:
-            Generic = Operator
-            Action = Action
-            Modal = Modal
+    
+    class Register:
+        class Types:
+            class Ops:
+                Generic = Operator
+                Action = Action
+                Modal = Modal
+                
+            class UI:
+                Panel = Panel
+                Menu = Menu
+                PieMenu = PieMenu
+                Popover = Popover
+                UIList = UIList
+                
+            class Data:
+                AddonPreferences = AddonPreferences
+                PropertyGroup = PropertyGroup
             
-        class UI:
-            Panel = Panel
-            Menu = Menu
-            PieMenu = PieMenu
-            Popover = Popover
-            UIList = UIList
-            
-        class Data:
-            AddonPreferences = AddonPreferences
-            PropertyGroup = PropertyGroup
-        
-        # Event = FakeEvent
-        # EventType = EventType
-        # EventValue = EventValue
+            class Nodes:
+                Node = Node
+                Tree = NodeTree
+                Socket = NodeSocket
+
+        class FromFunction:
+            ACTION = Action.from_function
+            PANEL = PanelFromFunction
+            MENU = Menu.from_function
+            PIE_MENU = PieMenu.from_function
+            POPOVER = Popover.from_function
+
+    '''class Types:
+        Event = FakeEvent
+        EventType = EventType
+        EventValue = EventValue'''
 
     class Returns:
         Operator = OpsReturn
         Submodal = SubmodalReturn
 
-    class Props:
-        Typed = TypedProperty
-        Wrapped = wrapped
+    Props = PropertyTypes
+    PropsWrapped = WrappedTypedPropertyTypes
+    PropsLayout = DescriptorTypedPropertyTypes
 
-    class FromFunction:
-        ACTION = Action.from_function
-        PANEL = PanelFromFunction
-        MENU = Menu.from_function
-        PIE_MENU = PieMenu.from_function
-        POPOVER = Popover.from_function
-    
     class Flags:
         OPERATOR = OperatorOptions
         MODAL = ModalFlags
         PANEL = PanelOptions
-    
+        NODE_CATEGORY = node_category
+
     Poll = Polling
+
+    class Nodes:
+        Socket = NodeSocketAnnotation
+        SocketTypes = NodeSocketTypes

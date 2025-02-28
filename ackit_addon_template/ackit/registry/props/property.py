@@ -38,8 +38,8 @@ class PropertyTypes:
     VECTOR_AXISANGLE = lambda default = (0, 0, 0), **kwargs: FloatVectorProperty(default=default, size=3, subtype='AXISANGLE', **kwargs)
     VECTOR_N = lambda default, **kwargs: FloatVectorProperty(default=default, size=len(default), **kwargs)
 
-    COLOR_RGB = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=3, subtype='COLOR', **kwargs)
-    COLOR_RGBA = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=4, subtype='COLOR', **kwargs)
+    COLOR_RGB = lambda name, default_color = (0.0, 0.0, 0.0), **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=3, subtype='COLOR', **kwargs)
+    COLOR_RGBA = lambda name, default_color = (0.0, 0.0, 0.0, 1.0), **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=4, subtype='COLOR', **kwargs)
 
     MATRIX_2 = lambda name, **kwargs: FloatVectorProperty(name=name, default=IdentityMatrix_2, size=(2, 2), **kwargs)
     MATRIX_3 = lambda name, **kwargs: FloatVectorProperty(name=name, default=IdentityMatrix_3, size=(3, 3), **kwargs)

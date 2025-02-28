@@ -7,7 +7,7 @@ import blf
 # @ModalFlags.USE_MOUSE
 @ACK.Flags.MODAL.DRAW_POST_PIXEL.VIEW_3D
 @ACK.Poll.ACTIVE_OBJECT.ANY
-class ModalDrawOperator(ACK.Types.Ops.Modal):
+class ModalDrawOperator(ACK.Register.Types.Ops.Modal):
     def modal_enter(self, context, event):
         self.text = "Hello, world!"
 

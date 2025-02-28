@@ -5,7 +5,6 @@ from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 from ..base_type import BaseType
 from ....enums.operator import OpsReturn
 from ...props.typed.layout import DescriptorProps_PropsTuple
-from ...props.typed.descriptors import BlenderPropertyDescriptor
 
 __all__ = ['Generic']
 
@@ -22,22 +21,7 @@ class Generic(DescriptorProps_PropsTuple, BaseType):
 
     @classmethod
     def tag_register(cls):
-        new_cls = super().tag_register(Operator, 'OT')
-
-        # Ensure annotations exist
-        if not hasattr(new_cls, '__annotations__'):
-            new_cls.__annotations__ = {}
-
-        # Manually initialize descriptors
-        # to FIX self.props.{prop_name} accesor.
-        for name, value in cls.__dict__.items():
-            if isinstance(value, BlenderPropertyDescriptor):
-                # Create a new copy of the descriptor
-                new_descriptor = value.copy()
-                new_descriptor.initialize(new_cls, name)
-                setattr(new_cls, name, new_descriptor)
-
-        return new_cls
+        return super().tag_register(Operator, 'OT')
 
     @classmethod
     def run(cls, **operator_properties: dict) -> None:

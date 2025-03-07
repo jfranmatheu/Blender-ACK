@@ -59,19 +59,13 @@ class ActionOperator(__base_op):
     @classmethod
     def run(
         cls,
-        *,  # Force keyword arguments
-        enable: Optional[bool] = None,
-        z_location: Optional[float] = None,
+        # No properties.
     ) -> None:
         """Execute the Test Action operator.
 
         Args:
-        - `enable` (bool): 
-        - `z_location` (float): 
         """
         props = {
-            'enable': enable if enable is not None else None,
-            'z_location': z_location if z_location is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
@@ -80,21 +74,15 @@ class ActionOperator(__base_op):
     @classmethod
     def run_invoke(
         cls,
-        *,  # Force keyword arguments
-        enable: Optional[bool] = None,
-        z_location: Optional[float] = None,
+        # No properties
     ) -> None:
         """Execute the Test Action operator in INVOKE_DEFAULT mode.
 
         This mode shows the operator's UI if it has one.
 
         Args:
-        - `enable` (bool): 
-        - `z_location` (float): 
         """
         props = {
-            'enable': enable if enable is not None else None,
-            'z_location': z_location if z_location is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
@@ -153,16 +141,13 @@ class GenericOperator(__base_op):
     @classmethod
     def run(
         cls,
-        *,  # Force keyword arguments
-        new_name: Optional[str] = 'Best Name Ever',
+        # No properties.
     ) -> None:
         """Execute the Generic Operator operator.
 
         Args:
-        - `new_name` (str): 
         """
         props = {
-            'new_name': new_name if new_name is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}
@@ -171,18 +156,15 @@ class GenericOperator(__base_op):
     @classmethod
     def run_invoke(
         cls,
-        *,  # Force keyword arguments
-        new_name: Optional[str] = 'Best Name Ever',
+        # No properties
     ) -> None:
         """Execute the Generic Operator operator in INVOKE_DEFAULT mode.
 
         This mode shows the operator's UI if it has one.
 
         Args:
-        - `new_name` (str): 
         """
         props = {
-            'new_name': new_name if new_name is not None else None,
         }
         # Filter out None values
         props = {k: v for k, v in props.items() if v is not None}

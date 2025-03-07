@@ -56,7 +56,6 @@ class ACK:
 
     Props = PropertyTypes
     PropsWrapped = WrappedTypedPropertyTypes
-    PropsLayout = DescriptorTypedPropertyTypes
 
     class Flags:
         OPERATOR = OperatorOptions

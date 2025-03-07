@@ -7,6 +7,7 @@ from bpy import types as bpy_types
 from ..base_type import BaseType
 from ....globals import GLOBALS
 from .node_socket import NodeSocket
+from .sockets.annotation import NodeSocketWrapper
 
 __all__ = ['Node']
 
@@ -77,10 +78,6 @@ class Node(BaseType):
         return self.id_data.bl_idname
 
     def init(self, context: bpy_types.Context) -> None:
-        self.init_inputs()
-        self.init_outputs()
-
-    def init_inputs(self) -> None:
         add_input = self.inputs.new
         add_output = self.outputs.new
         for socket_name, socket in self.__annotations__.items():
@@ -89,9 +86,6 @@ class Node(BaseType):
                     add_input(socket.bl_idname, socket_name)
                 else:
                     add_output(socket.bl_idname, socket_name)
-
-    def init_outputs(self) -> None:
-        pass
 
     def copy(self, original_node: bpy_types.Node) -> None:
         pass
@@ -136,7 +130,7 @@ class Node(BaseType):
         """
         # Get input values
         inputs = self.get_input_values()
-        
+
         # Evaluate this node
         self.evaluate(inputs)
         

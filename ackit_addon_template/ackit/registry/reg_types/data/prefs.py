@@ -1,14 +1,13 @@
 from bpy import types as bpy_types
 
 from ..base_type import BaseType
-from ...props.typed.layout import DescriptorProps_DrawUILayout
 from ....utils.previews import get_preview_id_from_image_path
 from ....globals import GLOBALS
 
 __all__ = ['AddonPreferences']
 
 
-class AddonPreferences(BaseType, DescriptorProps_DrawUILayout):
+class AddonPreferences(BaseType):
     logo_scale: int = 10
 
     @classmethod

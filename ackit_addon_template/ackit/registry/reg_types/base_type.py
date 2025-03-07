@@ -7,7 +7,7 @@ from ...globals import GLOBALS
 from ...debug.output import print_debug
 from ..utils import get_subclasses_recursive
 from ..btypes import BTypes
-from ..props.typed.descriptors import BlenderPropertyDescriptor
+
 
 __all__ = [
     'BaseType'
@@ -125,15 +125,6 @@ class BaseType(object):
                     elif name not in new_cls.__annotations__:
                         # Keep non-wrapped properties as is
                         new_cls.__annotations__[name] = value
-
-                # Manually initialize descriptors
-                # to FIX self.props.{prop_name} accesor.
-                for name, value in original_cls.__dict__.items():
-                    if isinstance(value, BlenderPropertyDescriptor):
-                        # Create a new copy of the descriptor
-                        new_descriptor = value.copy()
-                        new_descriptor.initialize(new_cls, name)
-                        setattr(new_cls, name, new_descriptor)
 
             return new_cls
 

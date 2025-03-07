@@ -4,12 +4,11 @@ from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
 from ..base_type import BaseType
 from ....enums.operator import OpsReturn
-from ...props.typed.layout import DescriptorProps_PropsTuple
 
 __all__ = ['Generic']
 
 
-class Generic(DescriptorProps_PropsTuple, BaseType):
+class Generic(BaseType):
     bl_idname: str
     bl_label: str
     bl_description: str

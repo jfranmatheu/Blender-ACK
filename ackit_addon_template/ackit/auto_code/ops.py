@@ -5,34 +5,36 @@ from typing import Dict
 
 from ..globals import GLOBALS
 from ..registry.btypes import BTypes
-from ..registry.props.typed.descriptors import BlenderPropertyDescriptor
+from ..registry.props.typed.wrapped import WrappedPropertyDescriptor
 
-def _get_property_type_hint(prop: 'BlenderPropertyDescriptor') -> str:
+def _get_property_type_hint(prop: 'WrappedPropertyDescriptor') -> str:
     """Get the appropriate type hint for a property descriptor"""
     type_map = {
-        'BoolProperty': 'bool',
-        'BoolVectorProperty': 'Tuple[bool, ...]',
-        'FloatProperty': 'float', 
-        'FloatVectorProperty': 'Tuple[float, ...]',
+        'FloatProperty': 'float',
         'IntProperty': 'int',
+        'BoolProperty': 'bool',
+        'FloatVectorProperty': 'Tuple[float, ...]',
         'IntVectorProperty': 'Tuple[int, ...]',
+        'BoolVectorProperty': 'Tuple[bool, ...]',
         'StringProperty': 'str',
         'EnumProperty': 'str',
         'PointerProperty': 'Any',
         'CollectionProperty': 'Any'
     }
-    return type_map.get(prop.__class__.__name__, 'Any')
+    # Get the property type from the wrapped descriptor
+    prop_type = prop.property_type.__name__
+    return type_map.get(prop_type, 'Any')
 
-def _get_property_default(prop: 'BlenderPropertyDescriptor') -> str:
+def _get_property_default(prop: 'WrappedPropertyDescriptor') -> str:
     """Get the default value for a property descriptor"""
-    if not prop._kwargs.get('default'):
+    if not prop.kwargs.get('default'):
         return 'None'
-    return repr(prop._kwargs['default'])
+    return repr(prop.kwargs['default'])
 
-def _format_prop_docstring(name: str, prop: 'BlenderPropertyDescriptor') -> str:
+def _format_prop_docstring(name: str, prop: 'WrappedPropertyDescriptor') -> str:
     """Format a property's docstring"""
     type_hint = _get_property_type_hint(prop)
-    description = prop._kwargs.get('description', '')
+    description = prop.kwargs.get('description', '')
     return f"        - `{name}` ({type_hint}): {description}"
 
 def generate_ops_py(filename: str = 'ops.py'):
@@ -98,9 +100,9 @@ def generate_ops_py(filename: str = 'ops.py'):
 
     for op_cls in operator_classes:
         # Get properties from class
-        properties: Dict[str, 'BlenderPropertyDescriptor'] = {
+        properties: Dict[str, 'WrappedPropertyDescriptor'] = {
             name: value for name, value in op_cls.__dict__.items() 
-            if isinstance(value, BlenderPropertyDescriptor)
+            if isinstance(value, WrappedPropertyDescriptor)
         }
 
         # Generate class

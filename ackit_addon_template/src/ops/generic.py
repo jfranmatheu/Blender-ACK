@@ -3,7 +3,7 @@ from ...ackit import ACK
 
 @ACK.Poll.ACTIVE_OBJECT.ANY
 class GenericOperator(ACK.Register.Types.Ops.Generic):
-    new_name = ACK.PropsLayout.STRING(name="Object Name", default="Best Name Ever")
+    new_name = ACK.PropsWrapped.String("Object Name").default("Best Name Ever")
 
     def invoke(self, context, event) -> None:
         context.active_object.name = self.new_name

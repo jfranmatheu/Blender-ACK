@@ -9,18 +9,14 @@ class Add(ACK.Register.Types.Nodes.Node):
     bl_label = "Add"
     bl_description = "Add two numbers"
 
-    # Using descriptor (with typing and method chaining)
-    value_a = ACK.PropsWrapped.Float("Value A").default(0.5).min(0).max(1)
-    vector_a = ACK.PropsWrapped.Vector("Vector A").default((0,0,0))
+    a: ACK.Nodes.Socket.INPUT(ACK.Nodes.SocketTypes.FLOAT)
+    b: ACK.Nodes.Socket.INPUT(ACK.Nodes.SocketTypes.FLOAT)
+    result: ACK.Nodes.Socket.OUTPUT(ACK.Nodes.SocketTypes.FLOAT)
 
-    def init(self, context: bpy_types.Context) -> None:
+    '''def init(self, context: bpy_types.Context) -> None:
         self.inputs.new("NodeSocketFloat", "A")
         self.inputs.new("NodeSocketFloat", "B")
-        self.outputs.new("NodeSocketFloat", "Result")
-        
-        # value_a has typing, value_b doesn't
-        self.inputs[0].default_value = self.value_a  # IDE knows this is float
-        self.inputs[1].default_value = self.vector_a[0]  # No type hints
+        self.outputs.new("NodeSocketFloat", "Result")'''
 
     def evaluate(self, inputs) -> None:
         result = round(inputs["A"] + inputs["B"], 6)
@@ -98,7 +94,7 @@ class Power(ACK.Register.Types.Nodes.Node):
         self.outputs.new("NodeSocketFloat", "Result")
 
     def evaluate(self, inputs) -> None:
-        result = round(inputs["A"] ** inputs["B"], 6)
+        result = round(inputs["Base"] ** inputs["Exponent"], 6)
         self.outputs[0].default_value = result
         self.outputs[0].name = str(result)
 
@@ -113,7 +109,7 @@ class SquareRoot(ACK.Register.Types.Nodes.Node):
         self.outputs.new("NodeSocketFloat", "Result")
 
     def evaluate(self, inputs) -> None:
-        result = round(math.sqrt(inputs["A"]), 6)
+        result = round(math.sqrt(inputs["Number"]), 6)
         self.outputs[0].default_value = result
         self.outputs[0].name = str(result)
 
@@ -129,7 +125,7 @@ class Logarithm(ACK.Register.Types.Nodes.Node):
         self.outputs.new("NodeSocketFloat", "Result")
 
     def evaluate(self, inputs) -> None:
-        result = round(math.log(inputs["A"], inputs["B"]), 6)
+        result = round(math.log(inputs["Number"], inputs["Base"]), 6)
         self.outputs[0].default_value = result
         self.outputs[0].name = str(result)
 
@@ -144,6 +140,6 @@ class Exponential(ACK.Register.Types.Nodes.Node):
         self.outputs.new("NodeSocketFloat", "Result")
 
     def evaluate(self, inputs) -> None:
-        result = round(math.exp(inputs["A"]), 6)
+        result = round(math.exp(inputs["Number"]), 6)
         self.outputs[0].default_value = result
         self.outputs[0].name = str(result)

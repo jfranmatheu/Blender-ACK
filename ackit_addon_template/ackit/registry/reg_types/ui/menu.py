@@ -16,10 +16,7 @@ class Menu(BaseUI):
     '''
     A class for creating a menu.
     '''
-
-    @classmethod
-    def tag_register(deco_cls) -> 'Menu':
-        return super().tag_register(BlMenu, 'MT')
+    _bpy_type = BlMenu
 
     @classmethod
     def from_function(cls, label: str, **kwargs) -> 'Menu':

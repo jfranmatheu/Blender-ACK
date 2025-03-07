@@ -14,17 +14,59 @@ __all__ = [
 ]
 
 
+type_key_per_bpy_type = {
+    bpy.types.Operator: 'OT',
+    bpy.types.Panel: 'PT',
+    bpy.types.Menu: 'MT',
+    bpy.types.UIList: 'UL',
+    bpy.types.Gizmo: 'GZ',
+    bpy.types.GizmoGroup: 'GZG',
+    bpy.types.Node: 'ND',
+    bpy.types.NodeSocket: 'NDSK',
+    bpy.types.NodeTreeInterfaceSocket: 'NTISK',
+    bpy.types.NodeTree: 'NT',
+    bpy.types.AddonPreferences: 'AP',
+}
+
+
 class BaseType(object):
     original_name: str
     original_cls: Type
     registered: bool = False
+    _bpy_type: Type
 
     @classmethod
     def __subclasses_recursive__(cls) -> List['BaseType']:
         return get_subclasses_recursive(cls, only_outermost=True)
 
     @classmethod
-    def tag_register(cls, bpy_type: type | str, type_key: str | None, *subtypes, **kwargs):
+    def get_idname(cls) -> str:
+        if hasattr(cls, 'bl_idname') and cls.bl_idname:
+            return cls.bl_idname
+
+        type_key = type_key_per_bpy_type.get(cls._bpy_type, None)
+
+        if type_key is None:
+            return cls.__name__
+        if cls._bpy_type == bpy.types.AddonPreferences:
+            return f"{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences"
+
+        # Identify the words at the original class name,
+        # useful to create unique identifiers in the correct naming convention.
+        pattern = r'[A-Z][a-z0-9]*|[a-zA-Z0-9]+'
+        keywords = re.findall(pattern, cls.__name__)
+        idname: str = '_'.join([word.lower() for word in keywords])
+
+        if cls._bpy_type == bpy.types.Operator:
+            return f"{GLOBALS.ADDON_MODULE_UPPER.lower()}.{idname}"
+
+        return f"{GLOBALS.ADDON_MODULE_UPPER}_{type_key}_{idname}"
+
+    @classmethod
+    def tag_register(cls, *subtypes, **kwargs):
+        bpy_type = cls._bpy_type
+        type_key = type_key_per_bpy_type.get(bpy_type, None)
+
         if 'from_function' in kwargs:
             from_function = kwargs.pop('from_function')
             original_cls = from_function
@@ -44,8 +86,13 @@ class BaseType(object):
 
         print_debug(f"--> Tag-Register class '{original_cls_name}' of type '{bpy_type.__name__} (from fn? {from_function is not None}) --> Package: {original_cls_module}'")
 
+        kwargs['bl_idname'] = cls.get_idname()
+
         # Modify/Extend original class.
-        if type_key is not None:
+        if bpy_type == bpy.types.AddonPreferences:
+            # We override the original's class name for a name convention one.
+            cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
+        elif type_key is not None:
             # Identify the words at the original class name,
             # useful to create unique identifiers in the correct naming convention.
             pattern = r'[A-Z][a-z0-9]*|[a-zA-Z0-9]+'
@@ -62,23 +109,9 @@ class BaseType(object):
                 kwargs['bl_label'] = cls.label if hasattr(cls, 'label') else ' '.join(keywords)
             if not hasattr(cls, 'bl_description') or not cls.bl_label:
                 kwargs['bl_description'] = cls.tooltip if hasattr(cls, 'tooltip') else cls.description if hasattr(cls, 'description') else ''
-
-            # Some bpy types may require a bl_idname.
-            if bpy_type == bpy.types.Operator:
-                # Operator types idname should have an specific naming convention.
-                kwargs['bl_idname'] = f"{GLOBALS.ADDON_MODULE_SHORT.lower()}.{idname}"
-
-            elif bpy_type in {bpy.types.Menu, bpy.types.Panel, bpy.types.UIList, bpy.types.Node, bpy.types.NodeSocket, bpy.types.NodeTreeInterfaceSocket}:
-                # In the case of interface bpy.types, we can re-use the class name for the idname.
-                kwargs['bl_idname'] = cls_name
         else:
-            if bpy_type == bpy.types.AddonPreferences:
-                # We override the original's class name for a name convention one.
-                cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
-                kwargs['bl_idname'] = GLOBALS.ADDON_MODULE
-            else:
-                # This case is for unhandled bpy_types. We re-use the original's class name.
-                cls_name = original_cls_name # f'{GLOBALS.ADDON_MODULE_UPPER}_{idname}'
+            # This case is for unhandled bpy_types. We re-use the original's class name.
+            cls_name = original_cls_name # f'{GLOBALS.ADDON_MODULE_UPPER}_{idname}'
 
         # Preserve original class data.
         kwargs['original_name'] = original_cls_name

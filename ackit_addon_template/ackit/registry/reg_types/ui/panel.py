@@ -62,17 +62,13 @@ class PanelFromFunction(Enum):
 
 
 class Panel(BaseUI, DrawExtension):
+    _bpy_type = BlPanel
+
     bl_category: str = GLOBALS.ADDON_MODULE_UPPER
     bl_context: str = ''
     bl_space_type: str = 'VIEW_3D'
     bl_region_type: str = 'UI'
     bl_options: set[str]
-
-    @classmethod
-    def tag_register(deco_cls, *subtypes, **kwargs) -> 'Panel':
-        return super().tag_register(
-            BlPanel, 'PT', *subtypes, **kwargs
-        )
 
     @classmethod
     def from_function(cls,

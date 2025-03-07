@@ -34,6 +34,8 @@ class InputValues(Dict[str, Any], Sequence):
 
 
 class Node(BaseType):
+    _bpy_type = bpy_types.Node
+
     bl_idname: str
     bl_label: str
     bl_description: str
@@ -60,10 +62,6 @@ class Node(BaseType):
     # Use default tree type value.
     _node_tree_type: str = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
     _node_category: str
-
-    @classmethod
-    def tag_register(cls):
-        return super().tag_register(bpy_types.Node, 'NODE')
 
     @classmethod
     def poll(cls, node_tree: bpy_types.NodeTree) -> bool:

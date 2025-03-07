@@ -9,6 +9,8 @@ __all__ = ['Generic']
 
 
 class Generic(BaseType):
+    _bpy_type = Operator
+
     bl_idname: str
     bl_label: str
     bl_description: str
@@ -17,10 +19,6 @@ class Generic(BaseType):
 
     # Polling functions added via Polling decorators utility.
     _polling_functions: Set[callable] | None = None
-
-    @classmethod
-    def tag_register(cls):
-        return super().tag_register(Operator, 'OT')
 
     @classmethod
     def run(cls, **operator_properties: dict) -> None:

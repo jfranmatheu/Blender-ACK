@@ -10,7 +10,9 @@ from ....globals import GLOBALS
 __all__ = ['NodeTree']
 
 
-class NodeTree(BaseType, bpy_types.NodeTree):
+class NodeTree(BaseType):
+    _bpy_type = bpy_types.NodeTree
+
     bl_idname: str = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
     bl_label: str
     bl_description: str
@@ -26,10 +28,6 @@ class NodeTree(BaseType, bpy_types.NodeTree):
     links: bpy_types.NodeLinks
     nodes: bpy_types.Nodes
     view_center: Vector
-
-    @classmethod
-    def tag_register(cls):
-        return super().tag_register(bpy_types.NodeTree, 'NODETREE', bl_idname=cls.bl_idname)
 
     @classmethod
     def poll(cls, context: bpy_types.Context) -> bool:

@@ -6,8 +6,8 @@ __all__ = ['NodeSocketAnnotation', 'NodeSocketWrapper']
 
 
 class NodeSocketWrapper:
-    def __init__(self, idname: str, io: str):
-        self.idname = idname
+    def __init__(self, socket, io: str):
+        self.socket = socket
         self.io = io
 
     @property

@@ -8,11 +8,9 @@ __all__ = ['AddonPreferences']
 
 
 class AddonPreferences(BaseType):
-    logo_scale: int = 10
+    _bpy_type = bpy_types.AddonPreferences
 
-    @classmethod
-    def tag_register(cls, *subtypes, **kwargs):
-        return super().tag_register(bpy_types.AddonPreferences, None, *subtypes, **kwargs)
+    logo_scale: int = 10
 
     @classmethod
     def get_prefs(cls, context: bpy_types.Context) -> bpy_types.AddonPreferences:

@@ -11,6 +11,8 @@ __all__ = ['NodeSocket']
 
 
 class NodeSocket(BaseType):
+    _bpy_type = bpy_types.NodeSocket
+    
     bl_idname: str
     bl_label: str
     bl_subtype_label: str
@@ -33,11 +35,6 @@ class NodeSocket(BaseType):
     show_expanded: bool
     type: str
     links: bpy_types.NodeLinks
-
-
-    @classmethod
-    def tag_register(cls):
-        return super().tag_register(bpy_types.NodeSocket, 'SOCKET')
 
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str) -> None:
         pass

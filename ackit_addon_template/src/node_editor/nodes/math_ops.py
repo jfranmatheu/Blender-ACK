@@ -9,14 +9,10 @@ class Add(ACK.Register.Types.Nodes.Node):
     bl_label = "Add"
     bl_description = "Add two numbers"
 
-    a: ACK.Nodes.Socket.INPUT(ACK.Nodes.SocketTypes.FLOAT)
-    b: ACK.Nodes.Socket.INPUT(ACK.Nodes.SocketTypes.FLOAT)
-    result: ACK.Nodes.Socket.OUTPUT(ACK.Nodes.SocketTypes.FLOAT)
-
-    '''def init(self, context: bpy_types.Context) -> None:
+    def init(self, context: bpy_types.Context) -> None:
         self.inputs.new("NodeSocketFloat", "A")
         self.inputs.new("NodeSocketFloat", "B")
-        self.outputs.new("NodeSocketFloat", "Result")'''
+        self.outputs.new("NodeSocketFloat", "Result")
 
     def evaluate(self, inputs) -> None:
         result = round(inputs["A"] + inputs["B"], 6)

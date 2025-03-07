@@ -80,12 +80,12 @@ class Node(BaseType):
     def init(self, context: bpy_types.Context) -> None:
         add_input = self.inputs.new
         add_output = self.outputs.new
-        for socket_name, socket in self.__annotations__.items():
-            if isinstance(socket, NodeSocketWrapper):
-                if socket.is_input:
-                    add_input(socket.bl_idname, socket_name)
+        for socket_name, socket_wrapper in self.__annotations__.items():
+            if isinstance(socket_wrapper, NodeSocketWrapper):
+                if socket_wrapper.is_input:
+                    add_input(socket_wrapper.socket_id, socket_name)
                 else:
-                    add_output(socket.bl_idname, socket_name)
+                    add_output(socket_wrapper.socket_id, socket_name)
 
     def copy(self, original_node: bpy_types.Node) -> None:
         pass

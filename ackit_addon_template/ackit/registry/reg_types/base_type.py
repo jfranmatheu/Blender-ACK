@@ -130,19 +130,16 @@ class BaseType(object):
 
         def create_new_cls():
             # Create new class.
-            if isinstance(cls, bpy_type):
-                if len(subtypes) == 0:
-                    # for key, value in kwargs.items():
-                    #     setattr(cls, key, value)
-                    # return cls
-                    # NOTE: we don't need to create a new class, we can use the original one.
-                    # BUT, since it might be possible to have wrapped properties in the original class,
-                    # we need to create a new class to avoid issues with the annotations.
-                    _subtypes = (cls,)
-                else:
-                    _subtypes = (cls, *subtypes)
+            if len(subtypes) == 0:
+                # for key, value in kwargs.items():
+                #     setattr(cls, key, value)
+                # return cls
+                # NOTE: we don't need to create a new class, we can use the original one.
+                # BUT, since it might be possible to have wrapped properties in the original class,
+                # we need to create a new class to avoid issues with the annotations.
+                _subtypes = (cls,)
             else:
-                _subtypes = (cls, *subtypes, bpy_type)
+                _subtypes = (cls, *subtypes)
 
             # Create new Blender type
             new_cls = type(
@@ -182,6 +179,6 @@ class BaseType(object):
 def init():
     for subcls in BaseType.__subclasses_recursive__():
         if 'reg_types' in subcls.__module__:
-           # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'types'.
+           # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'reg_types'.
            continue
         subcls.tag_register()

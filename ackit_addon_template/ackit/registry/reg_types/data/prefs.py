@@ -7,9 +7,7 @@ from ....globals import GLOBALS
 __all__ = ['AddonPreferences']
 
 
-class AddonPreferences(BaseType):
-    _bpy_type = bpy_types.AddonPreferences
-
+class AddonPreferences(BaseType, bpy_types.AddonPreferences):
     logo_scale: int = 10
 
     @classmethod

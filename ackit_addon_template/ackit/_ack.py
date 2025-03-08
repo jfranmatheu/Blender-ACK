@@ -1,12 +1,14 @@
 from enum import Enum, auto
-from typing import Callable, Type
+from typing import Callable, Type, Any, Literal, overload, Union, Annotated
 
 from .registry.reg_types import *
 from .registry.reg_deco import *
 from .registry.flags import *
 from .registry.props import *
 from .enums import *
+from . import types as ack_types
 from .registry.polling import *
+from .registry.reg_types.nodes.sockets.annotation import NodeSocketWrapper, NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
 
 __all__ = [
     'ACK',
@@ -45,10 +47,10 @@ class ACK:
             PIE_MENU = PieMenu.from_function
             POPOVER = Popover.from_function
 
-    '''class Types:
-        Event = FakeEvent
-        EventType = EventType
-        EventValue = EventValue'''
+    Types = ack_types
+    '''Event = FakeEvent
+    EventType = EventType
+    EventValue = EventValue'''
 
     class Returns:
         Operator = OpsReturn
@@ -57,6 +59,35 @@ class ACK:
     Props = PropertyTypes
     PropsWrapped = WrappedTypedPropertyTypes
 
+    # Explicitly annotate the NodeInput and NodeOutput with proper signatures
+    @staticmethod
+    def NodeInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocketWrapperInstance:
+        """
+        Create an input socket annotation.
+        
+        Args:
+            socket_type: The type of node socket (e.g., NodeSocketFloat)
+            multi: Whether this is a multi-input socket
+            
+        Returns:
+            A NodeSocketWrapper descriptor for the input socket
+        """
+        return _NodeSocketInput(socket_type, multi) # type: ignore
+
+    @staticmethod
+    def NodeOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance:
+        """
+        Create an output socket annotation.
+        
+        Args:
+            socket_type: The type of node socket (e.g., NodeSocketFloat)
+            
+        Returns:
+            A NodeSocketWrapper descriptor for the output socket
+        """
+        return _NodeSocketOutput(socket_type) # type: ignore
+
+
     class Flags:
         OPERATOR = OperatorOptions
         MODAL = ModalFlags
@@ -64,7 +95,3 @@ class ACK:
         NODE_CATEGORY = node_category
 
     Poll = Polling
-
-    class Nodes:
-        Socket = NodeSocketAnnotation
-        SocketTypes = NodeSocketTypes

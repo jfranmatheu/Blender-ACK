@@ -8,9 +8,7 @@ from ....enums.operator import OpsReturn
 __all__ = ['Generic']
 
 
-class Generic(BaseType):
-    _bpy_type = Operator
-
+class Generic(BaseType, Operator):
     bl_idname: str
     bl_label: str
     bl_description: str

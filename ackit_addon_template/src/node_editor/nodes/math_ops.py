@@ -9,15 +9,18 @@ class Add(ACK.Register.Types.Nodes.Node):
     bl_label = "Add"
     bl_description = "Add two numbers"
 
-    def init(self, context: bpy_types.Context) -> None:
-        self.inputs.new("NodeSocketFloat", "A")
-        self.inputs.new("NodeSocketFloat", "B")
-        self.outputs.new("NodeSocketFloat", "Result")
+    # Inputs.
+    A = ACK.NodeInput(ACK.Types.NodeSocketFloat)
+    B = ACK.NodeInput(ACK.Types.NodeSocketFloat)
+
+    # Outputs.
+    Result = ACK.NodeOutput(ACK.Types.NodeSocketFloat)
 
     def evaluate(self, inputs) -> None:
-        result = round(inputs["A"] + inputs["B"], 6)
-        self.outputs[0].default_value = result
-        self.outputs[0].name = str(result)
+        return
+        result = round(self.A + self.B, 6)
+        self.Result = result
+        # self.Result.name = str(result)
 
 @ACK.Flags.NODE_CATEGORY("Math")
 class Subtract(ACK.Register.Types.Nodes.Node):

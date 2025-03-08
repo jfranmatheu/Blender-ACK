@@ -61,9 +61,7 @@ class PanelFromFunction(Enum):
             return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower(), flags=flags, order=order)
 
 
-class Panel(BaseUI, DrawExtension):
-    _bpy_type = BlPanel
-
+class Panel(BaseUI, DrawExtension, BlPanel):
     bl_category: str = GLOBALS.ADDON_MODULE_UPPER
     bl_context: str = ''
     bl_space_type: str = 'VIEW_3D'

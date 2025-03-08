@@ -33,22 +33,29 @@ class BaseType(object):
     original_name: str
     original_cls: Type
     registered: bool = False
-    _bpy_type: Type
 
     @classmethod
     def __subclasses_recursive__(cls) -> List['BaseType']:
         return get_subclasses_recursive(cls, only_outermost=True)
+    
+    @classmethod
+    def get_bpy_type(cls) -> Type:
+        for cls in cls.__mro__:
+            if cls in type_key_per_bpy_type:
+                return cls
+        raise ValueError(f"No bpy.types found in MRO of {cls.__name__}")
 
     @classmethod
     def get_idname(cls) -> str:
         if hasattr(cls, 'bl_idname') and cls.bl_idname:
             return cls.bl_idname
 
-        type_key = type_key_per_bpy_type.get(cls._bpy_type, None)
+        bpy_type = cls.get_bpy_type()
+        type_key = type_key_per_bpy_type.get(bpy_type, None)
 
         if type_key is None:
             return cls.__name__
-        if cls._bpy_type == bpy.types.AddonPreferences:
+        if bpy_type == bpy.types.AddonPreferences:
             return f"{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences"
 
         # Identify the words at the original class name,
@@ -57,14 +64,14 @@ class BaseType(object):
         keywords = re.findall(pattern, cls.__name__)
         idname: str = '_'.join([word.lower() for word in keywords])
 
-        if cls._bpy_type == bpy.types.Operator:
+        if bpy_type == bpy.types.Operator:
             return f"{GLOBALS.ADDON_MODULE_UPPER.lower()}.{idname}"
 
         return f"{GLOBALS.ADDON_MODULE_UPPER}_{type_key}_{idname}"
 
     @classmethod
     def tag_register(cls, *subtypes, **kwargs):
-        bpy_type = cls._bpy_type
+        bpy_type = cls.get_bpy_type()
         type_key = type_key_per_bpy_type.get(bpy_type, None)
 
         if 'from_function' in kwargs:
@@ -174,7 +181,7 @@ class BaseType(object):
 
 def init():
     for subcls in BaseType.__subclasses_recursive__():
-        if 'types' in subcls.__module__:
+        if 'reg_types' in subcls.__module__:
            # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'types'.
            continue
         subcls.tag_register()

@@ -12,11 +12,10 @@ __all__ = [
 ]
 
 
-class Menu(BaseUI):
+class Menu(BaseUI, BlMenu):
     '''
     A class for creating a menu.
     '''
-    _bpy_type = BlMenu
 
     @classmethod
     def from_function(cls, label: str, **kwargs) -> 'Menu':

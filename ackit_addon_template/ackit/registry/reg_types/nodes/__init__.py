@@ -5,12 +5,12 @@ import bpy
 from .node import Node
 from .node_tree import NodeTree
 from .node_socket import NodeSocket
-from .sockets import NodeSocketTypes, NodeSocketAnnotation
+from .sockets import NodeSocketInput, NodeSocketOutput, NodeSocketWrapper, NodeSocketWrapperInstance
 
 
 __all__ = [
     'Node', 'NodeTree', 'NodeSocket',
-    'NodeSocketTypes', 'NodeSocketAnnotation',
+    'NodeSocketInput', 'NodeSocketOutput', 'NodeSocketWrapper', 'NodeSocketWrapperInstance',
 ]
 
 # Create a virtual type that combines bpy and ackit Operator types for proper typing.

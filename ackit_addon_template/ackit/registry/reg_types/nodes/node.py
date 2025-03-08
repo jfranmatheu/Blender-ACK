@@ -33,31 +33,7 @@ class InputValues(Dict[str, Any], Sequence):
         return iter(self._values)
 
 
-class Node(BaseType):
-    _bpy_type = bpy_types.Node
-
-    bl_idname: str
-    bl_label: str
-    bl_description: str
-    bl_options: Set[str]
-    bl_icon: str
-    
-    # Attributes.
-    color: Color
-    width: int
-    height: int
-    location: Vector
-    label: str
-    name: str
-    mute: bool
-    select: bool
-    parent: bpy_types.Node
-    type: str
-    use_custom_color: bool
-    
-    inputs: bpy_types.NodeInputs
-    outputs: bpy_types.NodeOutputs
-    
+class Node(BaseType, bpy_types.Node):
     # Runtime.
     # Use default tree type value.
     _node_tree_type: str = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
@@ -76,20 +52,13 @@ class Node(BaseType):
         return self.id_data.bl_idname
 
     def init(self, context: bpy_types.Context) -> None:
-        add_input = self.inputs.new
-        add_output = self.outputs.new
-        for socket_name, socket_wrapper in self.__annotations__.items():
+        """When the node is created. """
+        print("Node.init:", self.name, self.original_cls.__dict__)
+        for name, socket_wrapper in self.original_cls.__dict__.items():
             if isinstance(socket_wrapper, NodeSocketWrapper):
-                if socket_wrapper.is_input:
-                    add_input(socket_wrapper.socket_id, socket_name)
-                else:
-                    add_output(socket_wrapper.socket_id, socket_name)
-
-    def copy(self, original_node: bpy_types.Node) -> None:
-        pass
-
-    def free(self) -> None:
-        pass
+                socket_wrapper_instance = socket_wrapper.create_instance(self)
+                setattr(self, name, socket_wrapper_instance)
+                # print(f"Node.init: new socket: {name}, {getattr(self, name)}, {socket_wrapper_instance.socket}")
 
     def get_dependent_nodes(self) -> List['Node']:
         """Get all nodes that depend on this node's outputs"""
@@ -135,23 +104,3 @@ class Node(BaseType):
         # Trigger updates for dependent nodes
         for dependent in self.get_dependent_nodes():
             dependent.process()
-
-    '''def update(self) -> None:
-        """Called when node or its inputs change"""
-        print("node update", self.name)
-        self.process()'''
-
-    '''def draw_buttons(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> None:
-        pass
-    
-    def draw_buttons_ext(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> None:
-        pass
-    
-    def draw_label(self) -> str:
-        pass
-
-    def debug_zone_body_lazy_function_graph(self) -> None:
-        pass
-    
-    def debug_zone_lazy_function_graph(self) -> None:
-        pass'''

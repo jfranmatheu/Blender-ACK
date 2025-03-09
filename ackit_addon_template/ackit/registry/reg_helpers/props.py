@@ -43,8 +43,7 @@ def batch_register_properties(bpy_type: Type, *properties: Tuple[str, WrappedPro
 def register():
     for bpy_type, properties in to_register_properties.items():
         for property_idname, property_wrapper in properties.items():
-            prop = property_wrapper.create_property()
-            setattr(bpy_type, property_idname, prop)
+            property_wrapper.create_property(property_idname, bpy_type)
 
 def unregister():
     for bpy_type, prop_idname in to_unregister_properties:

@@ -28,7 +28,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._prop_name = name
         if not hasattr(owner, '__annotations__'):
             owner.__annotations__ = {}
-        owner.__annotations__[name] = self.create_property(owner)
+        self.create_property(name, owner)
 
     def __get__(self, instance, owner) -> T:
         if instance is None:
@@ -42,7 +42,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._update_callback_set.add_callback(callback)
         return self
 
-    def create_property(self, owner_cls: Type = None) -> Any:
+    def create_property(self, idname: str | None = None, owner_cls: Type = None) -> Any:
         """Create the actual bpy property during registration"""
         kwargs = self.kwargs.copy()
 
@@ -56,15 +56,23 @@ class WrappedPropertyDescriptor(Generic[T]):
         # Add node/socket specific callbacks
         if owner_cls is not None:
             if issubclass(owner_cls, NodeSocket):
-                self.add_update_callback(lambda socket, context: socket.on_property_update())
+                self.add_update_callback(lambda socket, context: socket.on_property_update(context))
             elif issubclass(owner_cls, Node):
-                self.add_update_callback(lambda node, context: node.on_property_update())
+                self.add_update_callback(lambda node, context: node.on_property_update(context, idname))
 
         # Handle update callback
         if self._update_callback_set:
             kwargs['update'] = lambda instance, context: self._update_callback_set.call_callbacks(instance, context)
 
-        return self.property_type(**kwargs)
+        prop = self.property_type(**kwargs)
+        if owner_cls is not None:
+            if owner_cls.__module__ == 'bpy_types':
+                # BPY type.
+                setattr(owner_cls, idname, prop)
+            else:
+                # ACK type.
+                owner_cls.__annotations__[idname] = prop
+        return prop
 
     # Property attribute setters with proper return typing
     def min(self, value: Union[int, float]) -> 'WrappedPropertyDescriptor[T]':

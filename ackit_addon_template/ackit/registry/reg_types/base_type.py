@@ -158,7 +158,7 @@ class BaseType(object):
                 for name, value in original_cls.__annotations__.items():
                     if hasattr(value, 'create_property'):
                         # Create actual property from wrapped property
-                        new_cls.__annotations__[name] = value.create_property(new_cls)
+                        value.create_property(name, new_cls)
                     elif name not in new_cls.__annotations__:
                         # Keep non-wrapped properties as is
                         new_cls.__annotations__[name] = value

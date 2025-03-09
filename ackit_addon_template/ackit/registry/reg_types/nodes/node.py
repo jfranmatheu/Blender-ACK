@@ -57,8 +57,8 @@ class Node(BaseType, bpy_types.Node):
 
     def init(self, context: bpy_types.Context) -> None:
         """When the node is created. """
-        print("Node.init:", self.name, self.original_cls.__dict__)
-        for name, socket_wrapper in self.original_cls.__dict__.items():
+        print("Node.init:", self.name, self.__class__.__dict__)
+        for name, socket_wrapper in self.__class__.__dict__.items():
             if isinstance(socket_wrapper, NodeSocketWrapper):
                 socket_wrapper_instance = socket_wrapper.create_instance(self)
                 setattr(self, name, socket_wrapper_instance)

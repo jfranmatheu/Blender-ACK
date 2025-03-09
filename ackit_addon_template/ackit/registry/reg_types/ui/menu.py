@@ -20,17 +20,18 @@ class Menu(BaseUI, BlMenu):
     @classmethod
     def from_function(cls, label: str, **kwargs) -> 'Menu':
         def decorator(func: Callable) -> 'Menu':
-            cls = type(
+            new_cls = type(
                 func.__name__,
                 (Menu, ),
                 {
                     **kwargs,
                     'label': label,
-                    'draw_ui': func,
+                    'draw_ui': lambda self, ctx, layout: func(ctx, layout),
                 }
             )
-            cls.tag_register()
-            return cls
+            new_cls.__module__ = func.__module__
+            new_cls.tag_register()
+            return new_cls
         return decorator
 
     @classmethod

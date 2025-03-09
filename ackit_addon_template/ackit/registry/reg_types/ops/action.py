@@ -14,7 +14,7 @@ class Action(Generic):
     @classmethod
     def from_function(cls, label: str, **kwargs) -> 'Action':
         def decorator(func: Callable) -> 'Action':
-            cls = type(
+            new_cls = type(
                 func.__name__,
                 (Action, ),
                 {
@@ -23,8 +23,9 @@ class Action(Generic):
                     'action': func,
                 }
             )
-            cls.tag_register()
-            return cls
+            new_cls.__module__ = func.__module__
+            new_cls.tag_register()
+            return new_cls
         return decorator
 
     def execute(self, context: Context) -> Set[str]:

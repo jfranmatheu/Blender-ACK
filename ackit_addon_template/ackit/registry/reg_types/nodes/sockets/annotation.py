@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import TypeVar, Generic, Union, Optional, Type, Any
+from typing import TypeVar, Generic, Union, Optional, Type, Any, cast, overload, Generic
 
 from bpy import types as bpy_types
 
@@ -23,9 +23,9 @@ class NodeSocketWrapper(Generic[T]):
         print(f"Info: NodeSocketWrapper.__set_name__: {owner} - {name}, {self.socket_type}")
         self.name = name
 
-    def create_instance(self, node: bpy_types.Node | None = None) -> 'NodeSocketWrapperInstance':
+    def create_instance(self, node: bpy_types.Node | None = None) -> 'NodeSocketWrapperInstance[T]':
         print(f"Info: NodeSocketWrapper.create_instance: {self.name}, {self.socket_type}")
-        wrapper_instance = NodeSocketWrapperInstance(self.socket_type, self.io)
+        wrapper_instance = NodeSocketWrapperInstance[T](self.socket_type, self.io)
         wrapper_instance.name = self.name
         if node is not None:
             wrapper_instance._ensure_socket_exists(node)
@@ -44,6 +44,7 @@ class NodeSocketWrapperInstance(Generic[T]):
     def name(self) -> str:
         return self._name
     
+    @name.setter
     def name(self, value: str) -> None:
         self._name = value
         if self.is_input:
@@ -82,26 +83,27 @@ class NodeSocketWrapperInstance(Generic[T]):
         return self.socket
 
     # Implement descriptor protocol
-    def __get__(self, instance, owner) -> Union[T, 'NodeSocketWrapper[T]']:
-        print(f"NodeSocketWrapper.__get__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
+    def __get__(self, instance, owner) -> T:
         if instance is None:
-            return self
+            return cast(T, self)  # Return self when accessed on the class
+        
+        print(f"NodeSocketWrapper.__get__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
+        assert instance is not None, "NodeSocketWrapper.__get__: instance is None"
  
         # Ensure socket exists
         socket = self._ensure_socket_exists(instance)
         if socket is None:
             return None  # type: ignore
 
-        return self  # type: ignore
-        # Return the socket instead of self
-        # return socket.default_value  # type: ignore
+        # Return the actual socket value, not the wrapper
+        return socket.get_value()  # type: ignore
 
     def __set__(self, instance, value: T) -> None:
         print(f"NodeSocketWrapper.__set__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
         # Ensure socket exists
         socket = self._ensure_socket_exists(instance)
         if socket is not None:
-            socket.default_value = value
+            socket.set_value(value)
 
     def __delete__(self, instance) -> None:
         print(f"NodeSocketWrapper.__delete__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
@@ -111,7 +113,7 @@ class NodeSocketWrapperInstance(Generic[T]):
         return NodeSocketWrapper(self.socket_type, self.io)
 
 
-def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocketWrapperInstance:
+def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocketWrapperInstance[T]:
     """
     Create an input socket annotation.
     
@@ -122,9 +124,9 @@ def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeS
     Returns:
         A NodeSocketWrapper descriptor for the input socket
     """
-    return NodeSocketWrapper(socket_type, 'INPUT' if not multi else 'MULTI_INPUT')
+    return NodeSocketWrapper[T](socket_type, 'INPUT' if not multi else 'MULTI_INPUT')
 
-def NodeSocketOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance:
+def NodeSocketOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance[T]:
     """
     Create an output socket annotation.
     
@@ -134,4 +136,4 @@ def NodeSocketOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance
     Returns:
         A NodeSocketWrapper descriptor for the output socket
     """
-    return NodeSocketWrapper(socket_type, 'OUTPUT')
+    return NodeSocketWrapper[T](socket_type, 'OUTPUT')

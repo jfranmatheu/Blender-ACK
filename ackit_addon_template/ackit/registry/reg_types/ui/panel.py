@@ -78,17 +78,22 @@ class Panel(BaseUI, DrawExtension, BlPanel):
                       order: int = 0) -> 'Panel':
         """ Decorator to create a panel from a function. """
         def decorator(func: Callable) -> Panel:
-            return cls.tag_register(
-                from_function=func,
-                # ---------------------------------
-                bl_space_type=space_type,
-                bl_region_type=region_type,
-                bl_category=tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
-                bl_context=context,
-                bl_options={flag.name for flag in flags} if flags else set(),
-                bl_order=order,
-                draw_ui=lambda self, ctx, layout: func(ctx, layout),
+            new_cls = type(
+                func.__name__,
+                (Panel, ),
+                {
+                    'bl_space_type': space_type,
+                    'bl_region_type': region_type,
+                    'bl_category': tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
+                    'bl_context': context,
+                    'bl_options': {flag.name for flag in flags} if flags else set(),
+                    'bl_order': order,
+                    'draw_ui': lambda self, ctx, layout: func(ctx, layout),
+                }
             )
+            new_cls.__module__ = func.__module__
+            new_cls.tag_register()
+            return new_cls
         return decorator
 
     # def draw_header(self, context: Context):

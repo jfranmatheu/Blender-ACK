@@ -30,8 +30,11 @@ type_key_per_bpy_type = {
 
 
 class BaseType(object):
+    bl_idname: str
+    bl_label: str
+    bl_description: str
+
     original_name: str
-    original_cls: Type
     registered: bool = False
 
     @classmethod
@@ -70,108 +73,68 @@ class BaseType(object):
         return f"{GLOBALS.ADDON_MODULE_UPPER}_{type_key}_{idname}"
 
     @classmethod
-    def tag_register(cls, *subtypes, **kwargs):
+    def tag_register(cls, **kwargs):
+        # Check if already registered
+        if hasattr(cls, 'registered') and cls.registered:
+            return cls
+        
         bpy_type = cls.get_bpy_type()
         type_key = type_key_per_bpy_type.get(bpy_type, None)
 
-        if 'from_function' in kwargs:
-            from_function = kwargs.pop('from_function')
-            original_cls = from_function
-            original_cls_name = from_function.__name__
-            original_cls_module = from_function.__module__
-        else:
-            from_function = None
-            original_cls = cls
-            original_cls_name = cls.__name__
-            original_cls_module = cls.__module__
-        
-        if hasattr(original_cls, 'registered') and original_cls.registered:
-            return cls
+        # Store original name for reference
+        original_name = cls.__name__
 
-        if isinstance(bpy_type, str):
-            bpy_type = getattr(bpy.types, bpy_type)
+        # Set the bl_idname
+        idname = cls.get_idname()
+        setattr(cls, 'bl_idname', idname)
 
-        print_debug(f"--> Tag-Register class '{original_cls_name}' of type '{bpy_type.__name__} (from fn? {from_function is not None}) --> Package: {original_cls_module}'")
-
-        kwargs['bl_idname'] = cls.get_idname()
-
-        # Modify/Extend original class.
+        # Set required Blender attributes based on type
         if bpy_type == bpy.types.AddonPreferences:
-            # We override the original's class name for a name convention one.
-            cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
+            # AddonPreferences doesn't need additional attributes
+            new_cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
         elif type_key is not None:
-            # Identify the words at the original class name,
-            # useful to create unique identifiers in the correct naming convention.
+            # Identify the words in the class name for label generation
             pattern = r'[A-Z][a-z0-9]*|[a-zA-Z0-9]+'
-            keywords = re.findall(pattern, original_cls_name)
-            idname: str = '_'.join([word.lower() for word in keywords])
-
-            # CLass name if a bpy-type key is specified. (eg. UL, PT, MT, OT, GZ, GZG, etc.)
-            cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_{type_key}_{idname}'
-
-            print("\t- cls_name:", cls_name)
-
-            # Check if the original class has specified a label and description/tooltip attributes.
+            keywords = re.findall(pattern, original_name)  # Use original name for label generation
+            
+            # Set bl_label if not already set
             if not hasattr(cls, 'bl_label') or not cls.bl_label:
-                kwargs['bl_label'] = cls.label if hasattr(cls, 'label') else ' '.join(keywords)
-            if not hasattr(cls, 'bl_description') or not cls.bl_label:
-                kwargs['bl_description'] = cls.tooltip if hasattr(cls, 'tooltip') else cls.description if hasattr(cls, 'description') else ''
+                setattr(cls, 'bl_label', cls.label if hasattr(cls, 'label') else ' '.join(keywords))
+            
+            # Set bl_description if not already set
+            if not hasattr(cls, 'bl_description') or not cls.bl_description:
+                description = cls.tooltip if hasattr(cls, 'tooltip') else cls.description if hasattr(cls, 'description') else ''
+                setattr(cls, 'bl_description', description)
+
+            # Construct class name with addon prefix and type key
+            cls_name_sufix = '_'.join(keywords)
+            new_cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_{type_key}_{cls_name_sufix}'
         else:
-            # This case is for unhandled bpy_types. We re-use the original's class name.
-            cls_name = original_cls_name # f'{GLOBALS.ADDON_MODULE_UPPER}_{idname}'
+            new_cls_name = original_name
 
-        # Preserve original class data.
-        kwargs['original_name'] = original_cls_name
-        kwargs['original_cls'] = original_cls
+        # Apply the new name to the original class
+        cls.__name__ = new_cls_name
 
-        # Mark as registered, same for newly created type (based on bpy_types).
-        original_cls.registered = True
-        kwargs['registered'] = True
+        # Store original name in the class (like in the original implementation)
+        setattr(cls, 'original_name', original_name)
 
-        def create_new_cls():
-            # Create new class.
-            if len(subtypes) == 0:
-                # for key, value in kwargs.items():
-                #     setattr(cls, key, value)
-                # return cls
-                # NOTE: we don't need to create a new class, we can use the original one.
-                # BUT, since it might be possible to have wrapped properties in the original class,
-                # we need to create a new class to avoid issues with the annotations.
-                _subtypes = (cls,)
-            else:
-                _subtypes = (cls, *subtypes)
+        # Mark as registered
+        cls.registered = True
 
-            # Create new Blender type
-            new_cls = type(
-                cls_name,
-                _subtypes,
-                kwargs
-            )
-            # Preserve original module to avoid issues excluding new classes due to being inside of '/types' directory!
-            new_cls.__module__ = original_cls_module
-
-            # Handle wrapped properties in annotations
-            if hasattr(original_cls, '__annotations__'):
-                if not hasattr(new_cls, '__annotations__'):
-                    new_cls.__annotations__ = {}
-
-                for name, value in original_cls.__annotations__.items():
-                    if hasattr(value, 'create_property'):
-                        # Create actual property from wrapped property
-                        value.create_property(name, new_cls)
-                    elif name not in new_cls.__annotations__:
-                        # Keep non-wrapped properties as is
-                        new_cls.__annotations__[name] = value
-
-            return new_cls
-
-        new_cls = create_new_cls()
+        # Handle wrapped properties in annotations
+        if hasattr(cls, '__annotations__'):
+            for name, value in list(cls.__annotations__.items()):
+                if hasattr(value, 'create_property'):
+                    # Create actual property from wrapped property
+                    value.create_property(name, cls)
+                    
+        print_debug(f"--> Tag-Register class '{original_name}' (renamed to '{cls.__name__}') of type '{bpy_type.__name__}' --> Package: {cls.__module__}'")
 
         # Add to BTypes registry
         btype: BTypes = getattr(BTypes, bpy_type.__name__)
-        btype.add_class(new_cls)
+        btype.add_class(cls)
 
-        return new_cls
+        return cls
 
 
 # ----------------------------------------------------------------
@@ -180,5 +143,7 @@ def init():
     for subcls in BaseType.__subclasses_recursive__():
         if 'reg_types' in subcls.__module__:
            # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'reg_types'.
+           print(f"INFO! SKIP: {subcls.__name__} - {subcls.__module__}")
            continue
+        # print(f"INFO! tag register: {subcls.__name__} - {subcls.__module__}")
         subcls.tag_register()

@@ -106,7 +106,7 @@ def generate_ops_py(filename: str = 'ops.py'):
         }
 
         # Generate class
-        class_name = op_cls.original_name  # bl_idname.split('.')[-1].title()
+        class_name = op_cls.__name__  # bl_idname.split('.')[-1].title()
         
         output.extend([
             "",

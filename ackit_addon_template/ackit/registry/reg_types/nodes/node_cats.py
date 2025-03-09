@@ -76,7 +76,7 @@ def register():
         if hasattr(node_class, '_node_category') and node_class._node_category:
             # Split category path and create node item
             cat_path = node_class._node_category.split('/')
-            node_item = NodeItem(node_class.__name__)
+            node_item = NodeItem(node_class.get_idname())
             
             # Add to hierarchy
             create_category_hierarchy(category_hierarchy, cat_path, node_item)

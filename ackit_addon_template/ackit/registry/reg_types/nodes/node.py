@@ -46,10 +46,14 @@ class Node(BaseType, bpy_types.Node):
     @property
     def node_tree(self) -> bpy_types.NodeTree:
         return self.id_data
-    
+
     @property
     def node_tree_type(self) -> str:
         return self.id_data.bl_idname
+
+    def on_property_update(self, context: bpy_types.Context, prop_name: str):
+        print(f"Node.on_property_update: {prop_name}")
+        self.process()
 
     def init(self, context: bpy_types.Context) -> None:
         """When the node is created. """

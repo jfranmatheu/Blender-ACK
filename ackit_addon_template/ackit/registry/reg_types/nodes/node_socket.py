@@ -10,7 +10,6 @@ __all__ = ['NodeSocket']
 class NodeSocket(BaseType, bpy_types.NodeSocket):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
-    property: callable
     property_name: str = 'default_value'
 
     # Extended properties
@@ -46,4 +45,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
         return self.color
     
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
-        layout.prop(self, self.property_name, text=self.label)
+        if self.is_input:
+            layout.prop(self, self.property_name, text=self.label)
+        else:
+            layout.label(text=self.label)

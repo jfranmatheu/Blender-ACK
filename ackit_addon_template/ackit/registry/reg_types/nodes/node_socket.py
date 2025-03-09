@@ -1,19 +1,13 @@
-from typing import Set, Dict
-
-from mathutils import Color, Vector
-from bpy.types import NodeSocket as BlNodeSocket
-from bpy.props import BoolProperty
+from bpy import types as bpy_types
 
 from ..base_type import BaseType
-from ....globals import GLOBALS
-from ...reg_helpers import register_property, batch_register_properties
 from ...props.property import PropertyTypes as Prop
 
 
 __all__ = ['NodeSocket']
 
 
-class NodeSocket(BaseType, BlNodeSocket):
+class NodeSocket(BaseType, bpy_types.NodeSocket):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
     property: callable
@@ -46,3 +40,10 @@ class NodeSocket(BaseType, BlNodeSocket):
     def get_links(self):
         return self.links if self.is_linked else []
         # return (*self.links, *self.portal_links) if self.use_portal_links and self.is_linked else self.links if not self.use_portal_links and self.is_linked else self.portal_links if self.use_portal_links else []
+
+    def draw_color(self, context: bpy_types.Context, node: bpy_types.Node) -> tuple[float]:
+        # print(node, self, self.name, self.property_name, self.property, node.tree_prop_idname)
+        return self.color
+    
+    def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
+        layout.prop(self, self.property_name, text=self.label)

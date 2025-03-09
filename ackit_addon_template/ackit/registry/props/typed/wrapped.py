@@ -1,11 +1,7 @@
-from typing import Any, Callable, Optional, Type, TypeVar, Union, Generic
-from enum import Enum
-from functools import partial
+from typing import Any, Callable, Type, TypeVar, Union, Generic
 
 from bpy.props import *
-from mathutils import Matrix
 
-from ..property import PropertyTypes
 from ...reg_types.nodes import Node, NodeSocket
 from ....utils.callback import CallbackList
 

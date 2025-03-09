@@ -42,7 +42,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._update_callback_set.add_callback(callback)
         return self
 
-    def create_property(self, owner_cls: Type) -> Any:
+    def create_property(self, owner_cls: Type = None) -> Any:
         """Create the actual bpy property during registration"""
         kwargs = self.kwargs.copy()
 
@@ -54,10 +54,11 @@ class WrappedPropertyDescriptor(Generic[T]):
             self.add_update_callback(update_func)
 
         # Add node/socket specific callbacks
-        if issubclass(owner_cls, NodeSocket):
-            self.add_update_callback(lambda socket, context: socket.node.process())
-        elif issubclass(owner_cls, Node):
-            self.add_update_callback(lambda node, context: node.process())
+        if owner_cls is not None:
+            if issubclass(owner_cls, NodeSocket):
+                self.add_update_callback(lambda socket, context: socket.on_property_update())
+            elif issubclass(owner_cls, Node):
+                self.add_update_callback(lambda node, context: node.on_property_update())
 
         # Handle update callback
         if self._update_callback_set:

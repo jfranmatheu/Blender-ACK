@@ -9,6 +9,8 @@ from .enums import *
 from . import types as ack_types
 from .registry.polling import *
 from .registry.reg_types.nodes.sockets.annotation import NodeSocketWrapper, NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
+from .registry import reg_helpers
+
 
 __all__ = [
     'ACK',
@@ -16,8 +18,11 @@ __all__ = [
 
 
 class ACK:
-    
+
     class Register:
+        Property = reg_helpers.register_property
+        Properties = reg_helpers.batch_register_properties
+
         class Types:
             class Ops:
                 Generic = Operator

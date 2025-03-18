@@ -8,6 +8,7 @@ from .utils import get_all_submodules
 from .utils import get_ordered_classes_to_register
 from ..auto_code import AutoCode
 from ..utils.callback import CallbackDict
+from ..debug import print_debug
 
 
 __all__ = [
@@ -45,9 +46,11 @@ class AddonLoader:
 
     @classmethod
     def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set()):
+        print_debug("Initializing...")
         cls.use_autoload = use_autoload
 
         if cls.modules is not None:
+            print_debug("Cleaning old modules!")
             cls.cleanse_modules()
 
         cls.modules = get_all_submodules(GLOBALS.ADDON_SOURCE_PATH)
@@ -66,10 +69,13 @@ class AddonLoader:
 
     @classmethod
     def register_modules(cls):
+        print_debug("Registering...")
+
         if cls.modules is None:
             cls.init_modules()
 
         if cls.registered:
+            print_debug("Trying to register but it is already registered!")
             return
 
         if cls.use_autoload:
@@ -83,7 +89,10 @@ class AddonLoader:
 
     @classmethod
     def unregister_modules(cls):
+        print_debug("Unregistering...")
+
         if not cls.registered:
+            print_debug("Trying to unregister but it is not registered!")
             return
 
         if cls.use_autoload:

@@ -12,32 +12,14 @@ from .sockets.annotation import NodeSocketWrapper
 __all__ = ['Node']
 
 
-class InputValues(Dict[str, Any], Sequence):
-    """
-    A dictionary that also supports index access for node input values.
-    Can be accessed by input name (dict style) or by index (list style).
-    """
-    def __init__(self, names: list[str], values: list[Any]):
-        super().__init__(zip(names, values))
-        self._values = values
-    
-    def __getitem__(self, key: Union[int, str]) -> Any:
-        if isinstance(key, int):
-            return self._values[key]
-        return super().__getitem__(key)
-    
-    def __len__(self) -> int:
-        return len(self._values)
-    
-    def __iter__(self):
-        return iter(self._values)
-
 
 class Node(BaseType, bpy_types.Node):
     # Runtime.
     # Use default tree type value.
     _node_tree_type: str = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
     _node_category: str
+    _input_descriptors: Dict[str, NodeSocketWrapper] = {}
+    _output_descriptors: Dict[str, NodeSocketWrapper] = {}
 
     @classmethod
     def poll(cls, node_tree: bpy_types.NodeTree) -> bool:
@@ -57,12 +39,18 @@ class Node(BaseType, bpy_types.Node):
 
     def init(self, context: bpy_types.Context) -> None:
         """When the node is created. """
-        print("Node.init:", self.name, self.__class__.__dict__)
-        for name, socket_wrapper in self.__class__.__dict__.items():
-            if isinstance(socket_wrapper, NodeSocketWrapper):
-                socket_wrapper_instance = socket_wrapper.create_instance(self)
-                setattr(self, name, socket_wrapper_instance)
-                # print(f"Node.init: new socket: {name}, {getattr(self, name)}, {socket_wrapper_instance.socket}")
+        print("Node.init:", self.name)
+        self.setup_sockets()
+
+    def setup_sockets(self):
+        for input_name, input_wrapper in self._input_descriptors.items():
+            assert input_wrapper.socket is not None, f"InputNodeSocketWrapper.socket is not None! Maybe wrapper instance is shared with another node? - {self} vs {input_wrapper.socket.node}"
+            input_wrapper._ensure_socket_exists(self, input_name)
+            print("setup input socket!", input_name, input_wrapper)
+        for output_name, output_wrapper in self._output_descriptors.items():
+            assert output_wrapper.socket is not None, f"OutNodeSocketWrapper.socket is not None! Maybe wrapper instance is shared with another node? - {self} vs {output_wrapper.socket.node}"
+            output_wrapper._ensure_socket_exists(self, output_name)
+            print("setup output socket!", output_name, output_wrapper)
 
     def get_dependent_nodes(self) -> List['Node']:
         """Get all nodes that depend on this node's outputs"""
@@ -73,21 +61,7 @@ class Node(BaseType, bpy_types.Node):
                     dependent_nodes.append(link.to_node)
         return dependent_nodes
 
-    def get_input_values(self) -> InputValues:
-        """Get all input values, either from linked nodes or default values"""
-        names = [socket.name for socket in self.inputs]
-        values = []
-        
-        for input_socket in self.inputs:
-            if input_socket.links:
-                from_socket = input_socket.links[0].from_socket
-                values.append(from_socket.default_value)
-            else:
-                values.append(input_socket.default_value)
-                
-        return InputValues(names, values)
-
-    def evaluate(self, inputs: InputValues) -> None:
+    def evaluate(self) -> None:
         """
         Evaluate the node with the given input values.
         This method should be overridden by node subclasses.
@@ -99,11 +73,8 @@ class Node(BaseType, bpy_types.Node):
         Process this node and trigger updates to dependent nodes.
         This is the main entry point for node evaluation.
         """
-        # Get input values
-        inputs = self.get_input_values()
-
         # Evaluate this node
-        self.evaluate(inputs)
+        self.evaluate()
         
         # Trigger updates for dependent nodes
         for dependent in self.get_dependent_nodes():

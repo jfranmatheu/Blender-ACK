@@ -121,13 +121,21 @@ class BaseType(object):
         # Mark as registered
         cls.registered = True
 
-        # Handle wrapped properties in annotations
-        if hasattr(cls, '__annotations__'):
-            for name, value in list(cls.__annotations__.items()):
-                if hasattr(value, 'create_property'):
-                    # Create actual property from wrapped property
-                    value.create_property(name, cls)
-                    
+        # Handle wrapped properties (Descriptors).
+        for name, value in cls.__dict__.items():
+            # WrappedPropertyDescriptor.
+            if hasattr(value, 'create_property'):
+                value.create_property(name, cls)
+
+        if isinstance(cls, bpy.types.Node):
+            for name, value in cls.__dict__.items():
+                # NodeSocketWrapper.
+                if hasattr(value, '_ensure_socket_exists'):
+                    if value.is_input:
+                        cls._input_descriptors[name] = value
+                    else:
+                        cls._output_descriptors[name] = value
+
         print_debug(f"--> Tag-Register class '{original_name}' (renamed to '{cls.__name__}') of type '{bpy_type.__name__}' --> Package: {cls.__module__}'")
 
         # Add to BTypes registry

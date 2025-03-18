@@ -1,5 +1,6 @@
+from bpy.types import Context, Node, UILayout
 from ...registry.reg_types.nodes.node_socket import NodeSocket
-from ...registry.props.property import PropertyTypes
+from ...registry.props.typed import WrappedTypedPropertyTypes as Prop
 
 
 __all__ = [
@@ -17,31 +18,37 @@ __all__ = [
 
 
 class NodeSocketFloat(NodeSocket):
-    default_value: PropertyTypes.FLOAT(0.0, name="Value")
+    label = 'Value'
+    property = Prop.Float(name="Value", default=0.0)
 
 class NodeSocketFloatVector3(NodeSocket):
-    default_value: PropertyTypes.VECTOR_3((0.0, 0.0, 0.0), name="Vector")
+    label = 'Vector3'
+    property = Prop.Vector(name="Vector3", size=3, type=float)
 
 class NodeSocketFloatVector2(NodeSocket):
-    default_value: PropertyTypes.VECTOR_2((0.0, 0.0), name="Vector")
+    label = 'Vector2'
+    property = Prop.Vector(name="Vector2", size=2, type=float)
 
 class NodeSocketInt(NodeSocket):
-    default_value: PropertyTypes.INT(default=0, name="Value")
+    label = 'Value'
+    property = Prop.Int(name="Value", default=0)
+    value: int
 
 class NodeSocketIntVector3(NodeSocket):
-    default_value: PropertyTypes.IVECTOR_3((0, 0, 0), name="Vector")
+    label = 'Vector3'
+    property = Prop.Vector(name="Vector3", size=3, type=int)
 
 class NodeSocketIntVector2(NodeSocket):
-    default_value: PropertyTypes.IVECTOR_2((0, 0), name="Vector")
+    property = Prop.Vector(name="Vector2", size=2, type=int)
     
 class NodeSocketBool(NodeSocket):
-    default_value: PropertyTypes.BOOL(default=False, name="State")
+    property = Prop.Bool(name="State", default=False)
 
 class NodeSocketString(NodeSocket):
-    default_value: PropertyTypes.STRING(default="", name="Text")
+    property = Prop.String(name="Text", default="")
 
 class NodeSocketRGB(NodeSocket):
-    default_value: PropertyTypes.COLOR_RGB('Color', (0.0, 0.0, 0.0))
+    property = Prop.Color(name="RGB", use_alpha=False)
 
 class NodeSocketRGBA(NodeSocket):
-    default_value: PropertyTypes.COLOR_RGBA('Color', (0.0, 0.0, 0.0, 0.0))
+    property = Prop.Color(name="RGBA", use_alpha=True)

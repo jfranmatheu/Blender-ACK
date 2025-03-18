@@ -1,49 +1,83 @@
 from enum import Enum, auto
 from typing import TypeVar, Generic, Union, Optional, Type, Any, cast, overload, Generic
+import math
 
 from bpy import types as bpy_types
 
 from ..node_socket import NodeSocket
 
 
-__all__ = ['NodeSocketInput', 'NodeSocketOutput', 'NodeSocketWrapper', 'NodeSocketWrapperInstance']
+__all__ = ['NodeSocketInput', 'NodeSocketOutput', 'NodeSocketWrapper']
 
 
 T = TypeVar('T')  # Type variable for the socket value type
 
+# Option to completely remove debug prints
+DEBUG = False  # Set to True for debugging
+
 
 class NodeSocketWrapper(Generic[T]):
-    def __init__(self, socket_type: Type[NodeSocket], io: str):
+    def __init__(self, socket_type: Type[NodeSocket], io: str, label: str = ''):
         self.socket_type = socket_type
         self.io = io
-        self.name = ""
-
-    def __set_name__(self, owner, name):
-        """This is called when the descriptor is assigned to a class attribute"""
-        print(f"Info: NodeSocketWrapper.__set_name__: {owner} - {name}, {self.socket_type}")
-        self.name = name
-
-    def create_instance(self, node: bpy_types.Node | None = None) -> 'NodeSocketWrapperInstance[T]':
-        print(f"Info: NodeSocketWrapper.create_instance: {self.name}, {self.socket_type}")
-        wrapper_instance = NodeSocketWrapperInstance[T](self.socket_type, self.io)
-        wrapper_instance.name = self.name
-        if node is not None:
-            wrapper_instance._ensure_socket_exists(node)
-        return wrapper_instance
-
-
-class NodeSocketWrapperInstance(Generic[T]):
-    def __init__(self, socket_type: Type[NodeSocket], io: str):
-        self.socket_type = socket_type
-        self.io = io
-        self.socket = None
         self._name = ""
         self.socket_name = ""
+        self.label = label
+        # Don't store socket as instance attribute since it's node-specific
+
+    def __set_name__(self, owner, name):
+        """Called when the descriptor is assigned to a class attribute"""
+        print("NodeSocketWrapper.__set_name__()", owner, name)
+        self.name = name
+
+    '''def __get__(self, obj, objtype=None):
+        """Get the value of the socket from the node instance"""
+        print("NodeSocketWrapper.__get__()", obj, objtype, self.name)
+
+        if obj is None:  # Class access instead of instance access
+            return self
+            
+        # Ensure socket exists and is up-to-date
+        socket = self._ensure_socket_exists(obj)
+        
+        # Return the socket value
+        if socket is not None:
+            if hasattr(socket, "get_value"):
+                return socket.get_value()
+            return socket.default_value
+        return None
+
+    def __set__(self, obj, value):
+        """Set the value of the socket for the node instance"""
+        print("NodeSocketWrapper.__set__()", obj, value, self.name)
+
+        if obj is None:
+            return
+
+        # Ensure socket exists and is up-to-date
+        socket = self._ensure_socket_exists(obj)
+        
+        # Set the socket value
+        if socket is not None:
+            if hasattr(socket, "set_value"):
+                socket.set_value(value)
+            else:
+                socket.default_value = value'''
+
+    def __get__(self, obj, objtype=None):
+        """Get the wrapper itself"""
+        if obj is None:  # Class access instead of instance access
+            return self
+
+        # Ensure socket exists
+        socket = self._ensure_socket_exists(obj)
+        assert socket is not None, f"Socket not found for NodeSocketWrapper with name '{self.name}'"
+        return socket
 
     @property
     def name(self) -> str:
         return self._name
-    
+
     @name.setter
     def name(self, value: str) -> None:
         self._name = value
@@ -68,52 +102,28 @@ class NodeSocketWrapperInstance(Generic[T]):
     def bl_idname(self) -> str:
         return self.socket_type.get_idname()
 
-    def _ensure_socket_exists(self, node: bpy_types.Node):
+    def _ensure_socket_exists(self, node: bpy_types.Node, name: str | None = None):
         """Ensure the socket exists, creating it if necessary"""
         if self.is_input:
-            self.socket = node.inputs.get(self.socket_name)
-            if self.socket is None:
-                self.socket = node.inputs.new(self.socket_type.get_idname(), self.socket_name, use_multi_input=self.is_multi_input)
-                print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - InputSocket: {self.socket_name} - Type: {self.socket_type.get_idname()}")
+            socket = node.inputs.get(self.socket_name)
+            if socket is None:
+                socket = node.inputs.new(self.socket_type.get_idname(), self.label or self.name, identifier=self.socket_name, use_multi_input=self.is_multi_input)
+                if DEBUG:
+                    print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - InputSocket: {self.socket_name} - Type: {self.socket_type.get_idname()}")
         else:
-            self.socket = node.outputs.get(self.socket_name)
-            if self.socket is None:
-                self.socket = node.outputs.new(self.socket_type.get_idname(), self.socket_name)
-                print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - OutputSocket: {self.socket_name} - Type: {self.socket_type.get_idname()}")
-        return self.socket
-
-    # Implement descriptor protocol
-    def __get__(self, instance, owner) -> T:
-        if instance is None:
-            return cast(T, self)  # Return self when accessed on the class
-        
-        print(f"NodeSocketWrapper.__get__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
-        assert instance is not None, "NodeSocketWrapper.__get__: instance is None"
- 
-        # Ensure socket exists
-        socket = self._ensure_socket_exists(instance)
-        if socket is None:
-            return None  # type: ignore
-
-        # Return the actual socket value, not the wrapper
-        return socket.get_value()  # type: ignore
-
-    def __set__(self, instance, value: T) -> None:
-        print(f"NodeSocketWrapper.__set__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
-        # Ensure socket exists
-        socket = self._ensure_socket_exists(instance)
-        if socket is not None:
-            socket.set_value(value)
-
-    def __delete__(self, instance) -> None:
-        print(f"NodeSocketWrapper.__delete__: {instance} - for socket type '{self.socket_type.__name__ if self.socket_type else 'None'}', with name: '{self.socket_name}'")
+            socket = node.outputs.get(self.socket_name)
+            if socket is None:
+                socket = node.outputs.new(self.socket_type.get_idname(), self.label or self.name, identifier=self.socket_name)
+                if DEBUG:
+                    print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - OutputSocket: {self.socket_name} - Type: {self.socket_type.get_idname()}")
+        return socket
 
     def copy(self) -> 'NodeSocketWrapper':
         """Copy the socket wrapper. """
         return NodeSocketWrapper(self.socket_type, self.io)
 
 
-def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocketWrapperInstance[T]:
+def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocket:
     """
     Create an input socket annotation.
     
@@ -126,7 +136,7 @@ def NodeSocketInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeS
     """
     return NodeSocketWrapper[T](socket_type, 'INPUT' if not multi else 'MULTI_INPUT')
 
-def NodeSocketOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance[T]:
+def NodeSocketOutput(socket_type: Type[NodeSocket]) -> NodeSocket:
     """
     Create an output socket annotation.
     

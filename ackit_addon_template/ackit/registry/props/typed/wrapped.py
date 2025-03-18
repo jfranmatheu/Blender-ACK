@@ -1,6 +1,7 @@
 from typing import Any, Callable, Type, TypeVar, Union, Generic
 
 from bpy.props import *
+from mathutils import Color
 
 from ...reg_types.nodes import Node, NodeSocket
 from ....utils.callback import CallbackList
@@ -24,7 +25,9 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._prop_name = name
         if not hasattr(owner, '__annotations__'):
             owner.__annotations__ = {}
-        self.create_property(name, owner)
+        # if not self._prop_name:
+        #     return
+        # self.create_property(name, owner)
 
     def __get__(self, instance, owner) -> T:
         if instance is None:
@@ -132,6 +135,10 @@ class WrappedTypedPropertyTypes:
         else:
             raise ValueError(f"Unsupported vector type: {type}")
         return WrappedPropertyDescriptor[tuple[float, ...]](property_type, name=name, size=size, **kwargs)
+
+    @classmethod
+    def Color(cls, name: str = '', use_alpha: bool = False, **kwargs) -> WrappedPropertyDescriptor[Color]:
+        return WrappedPropertyDescriptor[Color](FloatVectorProperty, name=name, size=4 if use_alpha else 3, min=0.0, max=1.0, subtype='COLOR', **kwargs)
 
     # Preset types
     @classmethod

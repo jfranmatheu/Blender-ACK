@@ -10,6 +10,7 @@ from . import types as ack_types
 from .registry.polling import *
 from .registry.reg_types.nodes.sockets.annotation import NodeSocketWrapper, NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
 from .registry import reg_helpers
+from .registry import metadata
 
 
 __all__ = [
@@ -66,7 +67,7 @@ class ACK:
 
     # Explicitly annotate the NodeInput and NodeOutput with proper signatures
     @staticmethod
-    def NodeInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocketWrapperInstance:
+    def NodeInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocket:
         """
         Create an input socket annotation.
         
@@ -80,7 +81,7 @@ class ACK:
         return _NodeSocketInput(socket_type, multi) # type: ignore
 
     @staticmethod
-    def NodeOutput(socket_type: Type[NodeSocket]) -> NodeSocketWrapperInstance:
+    def NodeOutput(socket_type: Type[NodeSocket]) -> NodeSocket:
         """
         Create an output socket annotation.
         
@@ -98,5 +99,7 @@ class ACK:
         MODAL = ModalFlags
         PANEL = PanelOptions
         NODE_CATEGORY = node_category
+        
+    Metadata = metadata
 
     Poll = Polling

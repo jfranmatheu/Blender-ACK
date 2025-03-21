@@ -126,6 +126,14 @@ class Logarithm(ACK.Register.Types.Nodes.Node):
     Result = ACK.NodeOutput(ACK.Types.NodeSocketFloat)
 
     def evaluate(self) -> None:
+        if self.Base.value <= 1:
+            self.mute = True
+            return
+        if self.Number.value <= 0:
+            self.mute = True
+            return
+        elif self.mute:
+            self.mute = False
         result = round(math.log(self.Number.value, self.Base.value), 6)
         self.Result.value = result
         self.Result.name = str(result)

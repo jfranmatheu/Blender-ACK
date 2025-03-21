@@ -22,9 +22,6 @@ class Add(ACK.Register.Types.Nodes.Node):
 @ACK.Flags.NODE_CATEGORY("Math")
 @ACK.Metadata.Node(label="Math: Substract", tooltip="Substract 2 numbers", icon='REMOVE')
 class Subtract(ACK.Register.Types.Nodes.Node):
-    bl_label = "Subtract"
-    bl_description = "Subtract two numbers"
-
     # Inputs.
     A = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     B = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -40,9 +37,6 @@ class Subtract(ACK.Register.Types.Nodes.Node):
 @ACK.Flags.NODE_CATEGORY("Math")
 @ACK.Metadata.Node(label="Math: Multiply", tooltip="Multiply 2 numbers", icon='X')
 class Multiply(ACK.Register.Types.Nodes.Node):
-    bl_label = "Multiply"
-    bl_description = "Multiply two numbers"
-
     # Inputs.
     A = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     B = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -58,9 +52,6 @@ class Multiply(ACK.Register.Types.Nodes.Node):
 @ACK.Flags.NODE_CATEGORY("Math")
 @ACK.Metadata.Node(label="Math: Divide", tooltip="Substract 2 numbers", icon='FIXED_SIZE')
 class Divide(ACK.Register.Types.Nodes.Node):
-    bl_label = "Divide"
-    bl_description = "Divide two numbers"
-
     # Inputs.
     A = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     B = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -79,10 +70,8 @@ class Divide(ACK.Register.Types.Nodes.Node):
         self.Result.name = str(result)
 
 @ACK.Flags.NODE_CATEGORY("Math")
+@ACK.Metadata.Node(label="Math: Modulo", tooltip="Modulo 2 numbers")
 class Modulo(ACK.Register.Types.Nodes.Node):
-    bl_label = "Modulo"
-    bl_description = "Modulo two numbers"
-
     # Inputs.
     A = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     B = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -96,10 +85,8 @@ class Modulo(ACK.Register.Types.Nodes.Node):
         self.Result.name = str(result)
 
 @ACK.Flags.NODE_CATEGORY("Math")
+@ACK.Metadata.Node(label="Math: Power", tooltip="Power 2 numbers", icon='CON_TRANSLIKE')
 class Power(ACK.Register.Types.Nodes.Node):
-    bl_label = "Power"
-    bl_description = "Power two numbers"
-
     # Inputs.
     Base = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     Exponent = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -114,10 +101,8 @@ class Power(ACK.Register.Types.Nodes.Node):
 
 
 @ACK.Flags.NODE_CATEGORY("Math")
+@ACK.Metadata.Node(label="Math: Square Root", tooltip="Square root of a number", icon='IPO_QUAD')
 class SquareRoot(ACK.Register.Types.Nodes.Node):
-    bl_label = "Square Root"
-    bl_description = "Square root of a number"
-
     # Inputs.
     Number = ACK.NodeInput(ACK.Types.NodeSocketFloat)
 
@@ -131,10 +116,8 @@ class SquareRoot(ACK.Register.Types.Nodes.Node):
 
 
 @ACK.Flags.NODE_CATEGORY("Math")
+@ACK.Metadata.Node(label="Math: Logarithm", tooltip="Logarithm of a number")
 class Logarithm(ACK.Register.Types.Nodes.Node):
-    bl_label = "Logarithm"
-    bl_description = "Logarithm of a number"
-    
     # Inputs.
     Number = ACK.NodeInput(ACK.Types.NodeSocketFloat)
     Base = ACK.NodeInput(ACK.Types.NodeSocketFloat)
@@ -149,10 +132,8 @@ class Logarithm(ACK.Register.Types.Nodes.Node):
 
 
 @ACK.Flags.NODE_CATEGORY("Math")
+@ACK.Metadata.Node(label="Math: Exponential", tooltip="Exponential of a number", icon='IPO_CIRC')
 class Exponential(ACK.Register.Types.Nodes.Node):
-    bl_label = "Exponential"
-    bl_description = "Exponential of a number"
-
     # Inputs.
     Number = ACK.NodeInput(ACK.Types.NodeSocketFloat)
 

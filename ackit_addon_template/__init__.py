@@ -15,7 +15,7 @@ from .ackit import AddonLoader, AutoCode
 
 AddonLoader.init_modules(
     use_autoload=False,
-    auto_code={AutoCode.OPS, AutoCode.ICONS}
+    auto_code={AutoCode.OPS, AutoCode.ICONS, AutoCode.TYPES}
 )
 
 

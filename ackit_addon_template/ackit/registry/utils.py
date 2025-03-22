@@ -194,3 +194,19 @@ def toposort(deps_dict):
         sorted_list_sub.sort(key=lambda cls: getattr(cls, "bl_order", 0))
         sorted_list.extend(sorted_list_sub)
     return sorted_list
+
+
+
+# Special-dedicated functions.
+##################################################
+
+def get_ordered_pg_classes_to_register(pg_classes) -> list:
+    my_classes = set(pg_classes)
+    deps_dict = {}
+
+    for cls in my_classes:
+        deps_dict[cls] = set(
+            iter_my_deps_from_annotations(cls, my_classes)
+        )
+
+    return toposort(deps_dict)

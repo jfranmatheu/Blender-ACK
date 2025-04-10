@@ -80,7 +80,8 @@ class AddonLoader:
 
         if cls.use_autoload:
             for cls in cls.ordered_classes:
-                register_class(cls)
+                if not hasattr(cls, 'bl_rna'):
+                    register_class(cls)
 
         cls.module_callbacks.call_callbacks('register')
         cls.module_callbacks.call_callbacks('late_register')
@@ -97,7 +98,8 @@ class AddonLoader:
 
         if cls.use_autoload:
             for cls in reversed(cls.ordered_classes):
-                unregister_class(cls)
+                if hasattr(cls, 'bl_rna'):
+                    unregister_class(cls)
 
         cls.module_callbacks.call_callbacks('unregister')
         cls.module_callbacks.call_callbacks('late_unregister')

@@ -58,6 +58,8 @@ class BTypes(Enum):
             reg_factory.register()
         else:
             for cls in classes_per_type[self]:
+                if "bl_rna" in cls.__dict__:
+                    continue
                 print_debug(f"Register {self.name} class: {cls.__name__}")
                 register_class(cls)
 

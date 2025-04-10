@@ -1,5 +1,6 @@
 from typing import Any, Callable, Type, TypeVar, Union, Generic
 
+from bpy import types as bpy_types
 from bpy.props import *
 from mathutils import Color, Vector, Matrix
 
@@ -112,6 +113,18 @@ class WrappedTypedPropertyTypes:
     @staticmethod
     def String(name: str = '', **kwargs) -> WrappedPropertyDescriptor[str]:
         return WrappedPropertyDescriptor[str](StringProperty, name=name, **kwargs)
+    
+    @staticmethod
+    def DirPath(name: str = '', **kwargs) -> WrappedPropertyDescriptor[str]:
+        return WrappedPropertyDescriptor[str](StringProperty, name=name, subtype='DIR_PATH', **kwargs)
+    
+    @staticmethod
+    def FilePath(name: str = '', **kwargs) -> WrappedPropertyDescriptor[str]:
+        return WrappedPropertyDescriptor[str](StringProperty, name=name, subtype='FILE_PATH', **kwargs)
+    
+    @staticmethod
+    def FileName(name: str = '', **kwargs) -> WrappedPropertyDescriptor[str]:
+        return WrappedPropertyDescriptor[str](StringProperty, name=name, subtype='FILE_NAME', **kwargs)
 
     @staticmethod
     def Enum(name: str = '', items=[], multiple_selection: bool = False, **kwargs) -> WrappedPropertyDescriptor[str]:
@@ -162,3 +175,49 @@ class WrappedTypedPropertyTypes:
     @classmethod
     def Factor(cls, name: str = '', default: float = 0.0, **kwargs) -> WrappedPropertyDescriptor[float]:
         return cls.Float(name=name, default=default, **kwargs).min(0.0).max(1.0)
+
+    class Data:
+        
+        @staticmethod
+        def Object(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Object]:
+            return WrappedPropertyDescriptor[bpy_types.Object](PointerProperty, name=name, type=bpy_types.Object, **kwargs)
+
+        @staticmethod
+        def Material(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Material]:
+            return WrappedPropertyDescriptor[bpy_types.Material](PointerProperty, name=name, type=bpy_types.Material, **kwargs)
+
+        @staticmethod
+        def Mesh(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Mesh]:
+            return WrappedPropertyDescriptor[bpy_types.Mesh](PointerProperty, name=name, type=bpy_types.Mesh, **kwargs)
+
+        @staticmethod
+        def Texture(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Texture]:
+            return WrappedPropertyDescriptor[bpy_types.Texture](PointerProperty, name=name, type=bpy_types.Texture, **kwargs)
+
+        @staticmethod
+        def Collection(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Collection]:
+            return WrappedPropertyDescriptor[bpy_types.Collection](PointerProperty, name=name, type=bpy_types.Collection, **kwargs)
+
+        @staticmethod
+        def Scene(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Scene]:
+            return WrappedPropertyDescriptor[bpy_types.Scene](PointerProperty, name=name, type=bpy_types.Scene, **kwargs)
+
+        @staticmethod
+        def World(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.World]:
+            return WrappedPropertyDescriptor[bpy_types.World](PointerProperty, name=name, type=bpy_types.World, **kwargs)
+
+        @staticmethod
+        def Image(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Image]:
+            return WrappedPropertyDescriptor[bpy_types.Image](PointerProperty, name=name, type=bpy_types.Image, **kwargs)
+
+        @staticmethod
+        def Armature(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Armature]:
+            return WrappedPropertyDescriptor[bpy_types.Armature](PointerProperty, name=name, type=bpy_types.Armature, **kwargs)
+
+        @staticmethod
+        def Action(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Action]:
+            return WrappedPropertyDescriptor[bpy_types.Action](PointerProperty, name=name, type=bpy_types.Action, **kwargs)
+
+        @staticmethod
+        def Text(name: str = '', **kwargs) -> WrappedPropertyDescriptor[bpy_types.Text]:
+            return WrappedPropertyDescriptor[bpy_types.Text](PointerProperty, name=name, type=bpy_types.Text, **kwargs)

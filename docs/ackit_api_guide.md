@@ -4,23 +4,32 @@ Esta guía proporciona ejemplos prácticos y referencias para utilizar ACKit en 
 
 ## Tabla de Contenidos
 
-- [Guía de Referencia de la API ACKit](#guía-de-referencia-de-la-api-ackit)
-  - [Tabla de Contenidos](#tabla-de-contenidos)
-  - [Configuración Inicial del Addon](#configuración-inicial-del-addon)
-  - [Creación de Operadores](#creación-de-operadores)
-    - [Operadores Genéricos](#operadores-genéricos)
-    - [Operadores de Acción](#operadores-de-acción)
-    - [Operadores Modales](#operadores-modales)
-  - [Creación de Interfaces de Usuario](#creación-de-interfaces-de-usuario)
-    - [Paneles](#paneles)
-    - [Popovers](#popovers)
-  - [Sistema de Propiedades](#sistema-de-propiedades)
-    - [Propiedades Básicas](#propiedades-básicas)
-    - [Propiedades Avanzadas](#propiedades-avanzadas)
-  - [Sistema de Polling](#sistema-de-polling)
-  - [Integración con Extension Platform](#integración-con-extension-platform)
-  - [Generación Automática de Código](#generación-automática-de-código)
-  - [Prácticas Recomendadas](#prácticas-recomendadas)
+1. [Configuración Inicial del Addon](#configuración-inicial-del-addon)
+2. [Creación de Operadores](#creación-de-operadores)
+   - [Operadores Genéricos](#operadores-genéricos)
+   - [Operadores de Acción](#operadores-de-acción)
+   - [Operadores Modales](#operadores-modales)
+3. [Creación de Interfaces de Usuario](#creación-de-interfaces-de-usuario)
+   - [Paneles](#paneles)
+   - [Popovers](#popovers)
+   - [Menús](#menús)
+4. [Sistema de Propiedades](#sistema-de-propiedades)
+   - [Propiedades Básicas](#propiedades-básicas)
+   - [Propiedades Avanzadas](#propiedades-avanzadas)
+   - [Registro de Propiedades](#registro-de-propiedades)
+5. [Sistema de Polling](#sistema-de-polling)
+6. [Sistema de Registro](#sistema-de-registro)
+   - [BTypes](#btypes)
+   - [AddonLoader](#addonloader)
+   - [Ciclo de Vida del Addon](#ciclo-de-vida-del-addon)
+7. [Decoradores y Flags](#decoradores-y-flags)
+   - [Decoradores de Operadores](#decoradores-de-operadores)
+   - [Decoradores de UI](#decoradores-de-ui)
+   - [Otros Decoradores](#otros-decoradores)
+8. [Integración con Extension Platform](#integración-con-extension-platform)
+9. [Generación Automática de Código](#generación-automática-de-código)
+10. [Sistema de Debugging](#sistema-de-debugging)
+11. [Prácticas Recomendadas](#prácticas-recomendadas)
 
 ## Configuración Inicial del Addon
 
@@ -111,6 +120,14 @@ class ActionOperator(ACK.Register.Types.Ops.Action):
             self.report_info(f"Value {self.z_location}")  # Helper para self.report
 ```
 
+También es posible crear operadores de acción directamente a partir de funciones:
+
+```python
+@ACK.Register.FromFunction.ACTION("Mi Acción", tooltip="Descripción de la acción")
+def mi_accion(context):
+    context.active_object.location.z = 1.0
+```
+
 ### Operadores Modales
 
 Los operadores modales (`ACK.Register.Types.Ops.Modal`) son utilizados para operaciones interactivas que mantienen el estado y continúan ejecutándose hasta que se completan o cancelan.
@@ -142,7 +159,7 @@ class ModalDrawOperator(ACK.Register.Types.Ops.Modal):
             return OpsReturn.RUN
         return OpsReturn.PASS
 
-    # Método para dibujar en 2D en el viewport
+    # Método para dibujar en 2D en el viewport (cuando se usa el flag DRAW_POST_PIXEL)
     def draw_2d(self, context):
         blf.size(0, 12)
         blf.position(0, 100, 50, 0)
@@ -151,9 +168,9 @@ class ModalDrawOperator(ACK.Register.Types.Ops.Modal):
 ```
 
 Los operadores modales ofrecen una estructura clara con:
-- `modal_enter`: Inicialización
-- `modal_update`: Manejador de eventos principal
-- `modal_exit`: Limpieza al finalizar
+- `modal_enter`: Inicialización al entrar en modo modal
+- `modal_update`: Manejador de eventos principal (se llama continuamente)
+- `modal_exit`: Limpieza al finalizar el modo modal
 - `draw_2d`: Dibujo en pantalla (si se usa el flag `DRAW_POST_PIXEL`)
 
 ## Creación de Interfaces de Usuario
@@ -172,16 +189,20 @@ from ...ackit import ACK
 def my_panel(context, layout):
     layout.label(text="My Panel")
     layout.operator('render.render', text="Render")
-    
-    # Panel con cabecera oculta
-    @ACK.Register.FromFunction.PANEL.VIEW_3D(tab="My Tab", flags=(ACK.Flags.PANEL.HIDE_HEADER,), order=1)
-    def my_panel_no_header(context, layout):
-        layout.label(text="Panel sin cabecera")
-    
-    # Panel cerrado por defecto
-    @ACK.Register.FromFunction.PANEL.VIEW_3D(tab="My Tab", flags=(ACK.Flags.PANEL.DEFAULT_CLOSED,), order=2)
-    def my_panel_collapsed(context, layout):
-        layout.label(text="Panel inicialmente cerrado")
+```
+
+También puedes aplicar flags a los paneles para modificar su comportamiento:
+
+```python
+# Panel con cabecera oculta
+@ACK.Register.FromFunction.PANEL.VIEW_3D(tab="My Tab", flags=(ACK.Flags.PANEL.HIDE_HEADER,))
+def my_panel_no_header(context, layout):
+    layout.label(text="Panel sin cabecera")
+
+# Panel cerrado por defecto
+@ACK.Register.FromFunction.PANEL.VIEW_3D(tab="My Tab", flags=(ACK.Flags.PANEL.DEFAULT_CLOSED,))
+def my_panel_collapsed(context, layout):
+    layout.label(text="Panel inicialmente cerrado")
 ```
 
 ### Popovers
@@ -204,6 +225,27 @@ def my_panel(context, layout):
     my_popover.draw_in_layout(layout, text="Abrir Popover")
 ```
 
+### Menús
+
+Puedes crear menús mediante funciones decoradas:
+
+```python
+from ...ackit import ACK
+
+# Menú estándar
+@ACK.Register.FromFunction.MENU()
+def my_menu(context, layout):
+    layout.label(text="Mi Menú")
+    layout.operator('object.select_all')
+
+# Menú circular (pie menu)
+@ACK.Register.FromFunction.PIE_MENU()
+def my_pie_menu(context, layout):
+    pie = layout.menu_pie()
+    pie.operator('mesh.primitive_cube_add', text="Añadir Cubo")
+    pie.operator('mesh.primitive_uv_sphere_add', text="Añadir Esfera")
+```
+
 ## Sistema de Propiedades
 
 ACKit proporciona un sistema de propiedades con tipado fuerte, facilitando la definición de propiedades para operadores y grupos de propiedades.
@@ -224,6 +266,8 @@ my_bool = ACK.PropsWrapped.Bool("Mi Booleano").default(True)
 my_string = ACK.PropsWrapped.String("Mi Texto").default("Valor predeterminado")
 ```
 
+Las propiedades con tipado fuerte (`ACK.PropsWrapped`) proporcionan mejor soporte para autocompletado e información de tipo en IDEs.
+
 ### Propiedades Avanzadas
 
 ```python
@@ -241,6 +285,34 @@ my_vector = ACK.PropsWrapped.FloatVector("Mi Vector", size=3).default((0.0, 0.0,
 my_color = ACK.PropsWrapped.FloatColor("Mi Color").default((1.0, 1.0, 1.0, 1.0))
 ```
 
+### Registro de Propiedades
+
+Para registrar propiedades en tipos de Blender (como Scene, Object, etc.), puedes usar el sistema `ACK.Register.Property`:
+
+```python
+from ...ackit import ACK
+import bpy
+
+# En la función register() de un módulo
+def register():
+    # Registrar una propiedad en la clase Scene
+    ACK.Register.Property(
+        bpy.types.Scene, 
+        "mi_propiedad", 
+        ACK.PropsWrapped.Float("Mi Propiedad").default(0.0).min(0.0).max(1.0),
+        remove_on_unregister=True  # Eliminar la propiedad al desregistrar
+    )
+
+    # Registrar múltiples propiedades
+    ACK.Register.Properties(
+        bpy.types.Object,
+        {
+            "prop1": ACK.PropsWrapped.Bool("Propiedad 1"),
+            "prop2": ACK.PropsWrapped.Int("Propiedad 2").default(5)
+        }
+    )
+```
+
 ## Sistema de Polling
 
 ACKit proporciona decoradores para establecer condiciones de polling (disponibilidad) para operadores y paneles:
@@ -256,12 +328,164 @@ ACKit proporciona decoradores para establecer condiciones de polling (disponibil
 @ACK.Poll.MODE.EDIT              # Solo en modo edición
 @ACK.Poll.MODE.POSE              # Solo en modo pose
 
+# Verificación de pincel activo (para modos de pintura/escultura)
+@ACK.Poll.ACTIVE_BRUSH           # Solo cuando hay un pincel activo
+
 # Combinaciones
 @ACK.Poll.ACTIVE_OBJECT.MESH
 @ACK.Poll.MODE.EDIT              # Solo en modo edición con objetos mesh activos
 
 # Polling personalizado
 @ACK.Poll.custom(lambda cls, context: context.scene.render.engine == 'CYCLES')
+```
+
+El sistema de polling se implementa internamente como un conjunto de funciones que se verifican en el método `poll` de la clase. Todas las condiciones deben cumplirse para que el operador esté disponible.
+
+## Sistema de Registro
+
+El sistema de registro de ACKit gestiona automáticamente la inicialización, registro y desregistro de clases y módulos.
+
+### BTypes
+
+La clase `BTypes` es una enumeración que define todos los tipos de Blender que pueden ser registrados:
+
+```python
+# Ejemplo interno de BTypes (no es código que escribirías directamente)
+class BTypes(Enum):
+    Operator = auto()
+    Macro = auto()
+    UIList = auto()
+    Menu = auto()
+    Panel = auto()
+    PropertyGroup = auto()
+    AddonPreferences = auto()
+    NodeTree = auto()
+    NodeSocket = auto()
+    Node = auto()
+    Gizmo = auto()
+    GizmoGroup = auto()
+```
+
+Cada tipo en `BTypes` tiene métodos para:
+- Añadir clases (`add_class`)
+- Obtener clases (`get_classes`)
+- Ordenar clases (`sort_classes`)
+- Registrar y desregistrar clases (`register_classes`, `unregister_classes`)
+
+### AddonLoader
+
+El `AddonLoader` es la clase principal para gestionar el ciclo de vida del addon:
+
+```python
+# En __init__.py
+from .ackit import AddonLoader
+
+AddonLoader.init_modules()  # Inicializar módulos
+AddonLoader.register_modules()  # Registrar módulos
+AddonLoader.unregister_modules()  # Desregistrar módulos
+```
+
+Internamente, `AddonLoader` descubre todos los módulos de tu addon, recopila funciones de callback, y gestiona el registro y desregistro de clases a través del sistema `BTypes`.
+
+### Ciclo de Vida del Addon
+
+ACKit define un ciclo de vida claro para los addons con callbacks específicos:
+
+1. **Inicialización**:
+   - `init`: Se llama durante la fase de inicialización
+   - `late_init`: Se llama después de la inicialización principal
+
+2. **Registro**:
+   - `register`: Se llama durante la fase de registro
+   - `late_register`: Se llama después del registro principal
+
+3. **Desregistro**:
+   - `unregister`: Se llama durante la fase de desregistro
+   - `late_unregister`: Se llama después del desregistro principal
+
+Puedes definir estos callbacks en cualquier módulo de tu addon:
+
+```python
+# En cualquier módulo de tu addon
+def init():
+    print("Inicializando mi módulo")
+
+def register():
+    print("Registrando mi módulo")
+
+def late_register():
+    print("Registro tardío de mi módulo")
+
+def unregister():
+    print("Desregistrando mi módulo")
+```
+
+## Decoradores y Flags
+
+ACKit proporciona numerosos decoradores y flags para modificar el comportamiento de clases y funciones.
+
+### Decoradores de Operadores
+
+```python
+# Añadir a la historia de deshacer
+@ACK.Flags.OPERATOR.REGISTER_UNDO
+class MiOperador(ACK.Register.Types.Ops.Generic):
+    pass
+
+# Operador interno (no aparece en búsquedas)
+@ACK.Flags.OPERATOR.INTERNAL
+class MiOperadorInterno(ACK.Register.Types.Ops.Generic):
+    pass
+
+# Bloquear interfaz durante ejecución
+@ACK.Flags.OPERATOR.BLOCKING
+class MiOperadorBloqueo(ACK.Register.Types.Ops.Generic):
+    pass
+
+# Permitir presets
+@ACK.Flags.OPERATOR.PRESET
+class MiOperadorConPresets(ACK.Register.Types.Ops.Generic):
+    pass
+```
+
+### Decoradores de UI
+
+```python
+# Panel con cabecera oculta
+@ACK.Flags.PANEL.HIDE_HEADER
+class MiPanel(ACK.Register.Types.UI.Panel):
+    pass
+
+# Panel cerrado por defecto
+@ACK.Flags.PANEL.DEFAULT_CLOSED
+class MiPanelCerrado(ACK.Register.Types.UI.Panel):
+    pass
+
+# Panel con instancias (para uso con templates_list)
+@ACK.Flags.PANEL.INSTANCED
+class MiPanelInstanciado(ACK.Register.Types.UI.Panel):
+    pass
+```
+
+### Otros Decoradores
+
+```python
+# Categoría de nodo
+@ACK.Flags.NODE_CATEGORY("Mi Categoría")
+class MiNodo(ACK.Register.Types.Nodes.Node):
+    pass
+
+# Manejador de eventos (persistent significa que se mantiene al recargar un archivo)
+@ACK.RegisterHandler.LOAD_PRE(persistent=True)
+def on_file_load(context):
+    print("Archivo cargado")
+
+# Mapa de teclas
+@ACK.RegDeco.KEYMAP("3D View", "Object Mode")
+def register_keymap():
+    return [
+        ("object.select_all", {"type": 'A', "value": 'PRESS'}, {"action": 'TOGGLE'})
+    ]
 ```
 
 ## Integración con Extension Platform
@@ -320,13 +544,68 @@ AddonLoader.init_modules(
 )
 ```
 
-El código generado para operadores permite invocarlos de manera tipada:
+### Generación de Operadores (OPS)
+
+Para cada operador definido en tu addon, `AutoCode.OPS` genera una clase helper con métodos `run()` y `run_invoke()`:
 
 ```python
 # Código generado automáticamente
 from ops import MYADDON_OT_My_Operator
 MYADDON_OT_My_Operator.run(param1="valor", param2=42)
 MYADDON_OT_My_Operator.run_invoke(param1="valor")  # Modo INVOKE_DEFAULT
+```
+
+### Generación de Iconos (ICONS)
+
+Genera una clase `Icons` con constantes para todos los iconos en el directorio `lib/icons/`:
+
+```python
+from icons import Icons
+Icons.CATEGORY.ICON_NAME  # Acceso a un icono específico
+```
+
+### Generación de Tipos (TYPES)
+
+Genera una clase `Types` con tipos personalizados definidos en tu addon:
+
+```python
+from types import Types
+Types.MiGrupoDeProps  # Acceso a un tipo PropertyGroup definido en tu addon
+```
+
+## Sistema de Debugging
+
+ACKit incluye algunas herramientas de debugging que pueden ser útiles durante el desarrollo:
+
+```python
+from ...ackit.debug import print_debug
+from ...ackit.debug.logger import get_logger
+from ...ackit.debug.profiler import AddonProfiler
+
+# Impresión de debug (solo en modo desarrollo)
+print_debug("Mensaje de debug")
+
+# Uso del logger
+logger = get_logger()
+logger.info("Información")
+logger.warning("Advertencia")
+logger.error("Error")
+
+# Perfilado de código
+profiler = AddonProfiler()
+profiler.start_timer("mi_operacion")
+# ... código a medir ...
+elapsed = profiler.stop_timer("mi_operacion")
+```
+
+El modo de desarrollo se puede detectar usando:
+
+```python
+from ...ackit.globals import GLOBALS
+
+is_dev = GLOBALS.check_in_development()
+if is_dev:
+    print("Estamos en modo desarrollo")
 ```
 
 ## Prácticas Recomendadas
@@ -379,4 +658,10 @@ MYADDON_OT_My_Operator.run_invoke(param1="valor")  # Modo INVOKE_DEFAULT
 
 7. **Generación Automática**: Aprovecha el sistema de generación automática para operadores, iconos y tipos.
 
-8. **Compatibilidad con Blender 4.x**: Diseña tu addon pensando en compatibilidad con la Extension Platform de Blender 4.x. 
+8. **Compatibilidad con Blender 4.x**: Diseña tu addon pensando en compatibilidad con la Extension Platform de Blender 4.x.
+
+9. **Callbacks de Ciclo de Vida**: Utiliza los callbacks de ciclo de vida (`init`, `register`, `late_register`, etc.) para organizar la lógica de inicialización y limpieza.
+
+10. **Uso de Clases vs Funciones**: 
+    - Para operaciones complejas, utiliza clases derivadas de `ACK.Register.Types.Ops.*`
+    - Para UI simple o operaciones sencillas, utiliza los decoradores de función `ACK.Register.FromFunction.*` 

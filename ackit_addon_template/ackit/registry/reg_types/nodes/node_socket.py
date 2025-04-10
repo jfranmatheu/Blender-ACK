@@ -13,6 +13,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
     property_name: str = 'property'
+    use_custom_property: bool = False
     value: Any
 
     # Extended properties
@@ -36,6 +37,10 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
                 # TODO: support multi-input sockets.
                 from_socket: NodeSocket = self.links[0].from_socket
                 return from_socket.get_value()
+        if self.use_custom_property:
+            if self.property_name in self:
+                return self[self.property_name]
+            return None
         return getattr(self, self.property_name)
 
     def set_value(self, value):

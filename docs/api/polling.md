@@ -14,7 +14,8 @@ El sistema de polling de ACKit está organizado jerárquicamente bajo la clase `
 
 ```
 ACK.Poll
-├── custom                # Decorador para funciones de polling personalizadas
+├── custom               # Decorador para funciones de polling personalizadas
+├── make_poll_decorator  # Decorador para crear decoradores para polling personalizados
 ├── ACTIVE_OBJECT        # Verificaciones relacionadas con el objeto activo
 │   ├── ANY              # Requiere cualquier objeto activo
 │   ├── MESH             # Requiere objeto malla activo
@@ -255,25 +256,53 @@ class MessageOperator(ACK.Register.Types.Ops.Generic):
 
 ## Creación de Nuevos Decoradores de Polling
 
-Puedes extender el sistema de polling con tus propios decoradores:
+Puedes extender el sistema de polling con tus propios decoradores utilizando `Polling.make_poll_decorator`:
 
 ```python
-from ...ackit import ACK
-from ...ackit.registry.polling import make_decorator
+from ...ackit import ACK, Polling
 
 # Función básica de polling
-def poll_has_material(cls, context):
+def has_material(context):
+    """Verifica si el objeto activo tiene un material activo."""
     return (context.active_object and 
             context.active_object.active_material is not None)
 
 # Crear un decorador a partir de la función
-HAS_MATERIAL = make_decorator(poll_has_material)
+HAS_MATERIAL = Polling.make_poll_decorator(has_material)
 
 # Usar el decorador personalizado
 @HAS_MATERIAL
 class MaterialOperator(ACK.Register.Types.Ops.Generic):
-    # Implementación...
+    bl_idname = "object.material_operator"
+    bl_label = "Operador de Material"
+    
+    def execute(self, context):
+        # Implementación...
+        return {'FINISHED'}
 ```
+
+Este enfoque te permite crear decoradores reutilizables que puedes aplicar en múltiples clases y compartir entre diferentes módulos.
+
+## Polling Personalizado con el Decorador Custom
+
+Para casos de uso único donde no necesitas crear un decorador reutilizable, puedes usar el método `Polling.custom`:
+
+```python
+from ...ackit import ACK, Polling
+
+# Aplicar una función de polling personalizada directamente
+@Polling.custom(lambda context: context.active_object and len(context.active_object.material_slots) > 2)
+class MultiMaterialOperator(ACK.Register.Types.Ops.Generic):
+    bl_idname = "object.multi_material_operator"
+    bl_label = "Operador Multi-Material"
+    
+    def execute(self, context):
+        # Este operador solo está disponible cuando el objeto activo tiene más de 2 slots de material
+        self.report({'INFO'}, f"Procesando {len(context.active_object.material_slots)} materiales")
+        return {'FINISHED'}
+```
+
+Esta es una forma sencilla de aplicar condiciones de polling personalizadas sin tener que definir una función separada.
 
 ## Mejores Prácticas para Polling
 

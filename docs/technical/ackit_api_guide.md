@@ -4,32 +4,39 @@ Esta guía proporciona ejemplos prácticos y referencias para utilizar ACKit en 
 
 ## Tabla de Contenidos
 
-1. [Configuración Inicial del Addon](#configuración-inicial-del-addon)
-2. [Creación de Operadores](#creación-de-operadores)
-   - [Operadores Genéricos](#operadores-genéricos)
-   - [Operadores de Acción](#operadores-de-acción)
-   - [Operadores Modales](#operadores-modales)
-3. [Creación de Interfaces de Usuario](#creación-de-interfaces-de-usuario)
-   - [Paneles](#paneles)
-   - [Popovers](#popovers)
-   - [Menús](#menús)
-4. [Sistema de Propiedades](#sistema-de-propiedades)
-   - [Propiedades Básicas](#propiedades-básicas)
-   - [Propiedades Avanzadas](#propiedades-avanzadas)
-   - [Registro de Propiedades](#registro-de-propiedades)
-5. [Sistema de Polling](#sistema-de-polling)
-6. [Sistema de Registro](#sistema-de-registro)
-   - [BTypes](#btypes)
-   - [AddonLoader](#addonloader)
-   - [Ciclo de Vida del Addon](#ciclo-de-vida-del-addon)
-7. [Decoradores y Flags](#decoradores-y-flags)
-   - [Decoradores de Operadores](#decoradores-de-operadores)
-   - [Decoradores de UI](#decoradores-de-ui)
-   - [Otros Decoradores](#otros-decoradores)
-8. [Integración con Extension Platform](#integración-con-extension-platform)
-9. [Generación Automática de Código](#generación-automática-de-código)
-10. [Sistema de Debugging](#sistema-de-debugging)
-11. [Prácticas Recomendadas](#prácticas-recomendadas)
+- [Guía de Referencia de la API ACKit](#guía-de-referencia-de-la-api-ackit)
+  - [Tabla de Contenidos](#tabla-de-contenidos)
+  - [Configuración Inicial del Addon](#configuración-inicial-del-addon)
+  - [Creación de Operadores](#creación-de-operadores)
+    - [Operadores Genéricos](#operadores-genéricos)
+    - [Operadores de Acción](#operadores-de-acción)
+    - [Operadores Modales](#operadores-modales)
+  - [Creación de Interfaces de Usuario](#creación-de-interfaces-de-usuario)
+    - [Paneles](#paneles)
+    - [Popovers](#popovers)
+    - [Menús](#menús)
+  - [Sistema de Propiedades](#sistema-de-propiedades)
+    - [Propiedades Básicas](#propiedades-básicas)
+    - [Propiedades Avanzadas](#propiedades-avanzadas)
+    - [Registro de Propiedades](#registro-de-propiedades)
+  - [Sistema de Polling](#sistema-de-polling)
+    - [Creación de Decoradores de Polling Personalizados](#creación-de-decoradores-de-polling-personalizados)
+    - [Polling Personalizado para Casos Específicos](#polling-personalizado-para-casos-específicos)
+  - [Sistema de Registro](#sistema-de-registro)
+    - [BTypes](#btypes)
+    - [AddonLoader](#addonloader)
+    - [Ciclo de Vida del Addon](#ciclo-de-vida-del-addon)
+  - [Decoradores y Flags](#decoradores-y-flags)
+    - [Decoradores de Operadores](#decoradores-de-operadores)
+    - [Decoradores de UI](#decoradores-de-ui)
+    - [Otros Decoradores](#otros-decoradores)
+  - [Integración con Extension Platform](#integración-con-extension-platform)
+  - [Generación Automática de Código](#generación-automática-de-código)
+    - [Generación de Operadores (OPS)](#generación-de-operadores-ops)
+    - [Generación de Iconos (ICONS)](#generación-de-iconos-icons)
+    - [Generación de Tipos (TYPES)](#generación-de-tipos-types)
+  - [Sistema de Debugging](#sistema-de-debugging)
+  - [Prácticas Recomendadas](#prácticas-recomendadas)
 
 ## Configuración Inicial del Addon
 
@@ -335,11 +342,43 @@ ACKit proporciona decoradores para establecer condiciones de polling (disponibil
 @ACK.Poll.ACTIVE_OBJECT.MESH
 @ACK.Poll.MODE.EDIT              # Solo en modo edición con objetos mesh activos
 
-# Polling personalizado
-@ACK.Poll.custom(lambda cls, context: context.scene.render.engine == 'CYCLES')
+# Polling personalizado para casos de uso único
+@ACK.Poll.custom(lambda context: context.scene.render.engine == 'CYCLES')
 ```
 
 El sistema de polling se implementa internamente como un conjunto de funciones que se verifican en el método `poll` de la clase. Todas las condiciones deben cumplirse para que el operador esté disponible.
+
+### Creación de Decoradores de Polling Personalizados
+
+Para condiciones que necesitas reutilizar en varios operadores, puedes crear tus propios decoradores de polling:
+
+```python
+# Definir una función de polling
+def has_animation_data(context):
+    return (context.active_object is not None and 
+            context.active_object.animation_data is not None and 
+            context.active_object.animation_data.action is not None)
+
+# Crear un decorador a partir de la función
+HAS_ANIMATION = ACK.Poll.make_poll_decorator(has_animation_data)
+
+# Usar el decorador personalizado
+@HAS_ANIMATION
+class AnimationOperator(ACK.Register.Types.Ops.Generic):
+    # Implementación...
+```
+
+### Polling Personalizado para Casos Específicos
+
+Para casos de uso único, puedes utilizar el método `custom` directamente:
+
+```python
+# Aplicar una condición de polling única 
+@ACK.Poll.custom(lambda context: len(context.selected_objects) >= 3)
+class MultiObjectOperator(ACK.Register.Types.Ops.Generic):
+    # Solo disponible cuando hay al menos 3 objetos seleccionados
+    # Implementación...
+```
 
 ## Sistema de Registro
 
@@ -664,4 +703,4 @@ if is_dev:
 
 10. **Uso de Clases vs Funciones**: 
     - Para operaciones complejas, utiliza clases derivadas de `ACK.Register.Types.Ops.*`
-    - Para UI simple o operaciones sencillas, utiliza los decoradores de función `ACK.Register.FromFunction.*` 
+    - Para UI simple o operaciones sencillas, utiliza los decoradores de función `ACK.Register.FromFunction.*`

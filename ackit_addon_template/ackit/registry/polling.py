@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Callable, Any
 from enum import Enum, auto
 
 from bpy.types import Context
@@ -29,6 +29,57 @@ class Polling:
             return cls
 
         return wrapper
+    
+    @staticmethod
+    def make_poll_decorator(polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
+        """
+        Creates a decorator from a polling function.
+        
+        Args:
+            polling_function: A function that takes a context parameter
+                             and returns a boolean indicating whether the operator should be available.
+        
+        Returns:
+            A decorator function that can be applied to operator classes.
+        
+        Example:
+            ```python
+            # Define a polling function
+            def has_material(context):
+                return context.active_object and context.active_object.active_material is not None
+            
+            # Create a decorator
+            HAS_MATERIAL = Polling.make_poll_decorator(has_material)
+            
+            # Use the decorator
+            @HAS_MATERIAL
+            class MaterialOperator(ACK.Register.Types.Ops.Generic):
+                # Implementation...
+            ```
+        """
+        return Polling._decorator(polling_function)
+    
+    @staticmethod
+    def custom(polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
+        """
+        Decorator for applying a custom polling function to a class.
+        
+        Args:
+            polling_function: A function that takes a context parameter
+                             and returns a boolean indicating whether the operator should be available.
+        
+        Returns:
+            A decorator function that applies the polling function to the class.
+        
+        Example:
+            ```python
+            # Use a custom polling function
+            @Polling.custom(lambda context: context.active_object and len(context.active_object.material_slots) > 2)
+            class MultiMaterialOperator(ACK.Register.Types.Ops.Generic):
+                # Implementation...
+            ```
+        """
+        return Polling._decorator(polling_function)
 
     class ACTIVE_OBJECT(Enum):
         """ Executes only if the active object is valid. """

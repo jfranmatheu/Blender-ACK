@@ -29,9 +29,9 @@ class Polling:
             return cls
 
         return wrapper
-    
-    @staticmethod
-    def make_poll_decorator(polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
+
+    @classmethod
+    def make_poll_decorator(cls, polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
         """
         Creates a decorator from a polling function.
         
@@ -57,10 +57,10 @@ class Polling:
                 # Implementation...
             ```
         """
-        return Polling._decorator(polling_function)
-    
-    @staticmethod
-    def custom(polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
+        return cls._decorator(polling_function)
+
+    @classmethod
+    def custom(cls, polling_function: Callable[[Context], bool]) -> Callable[[Type[T]], Type[T]]:
         """
         Decorator for applying a custom polling function to a class.
         
@@ -79,7 +79,7 @@ class Polling:
                 # Implementation...
             ```
         """
-        return Polling._decorator(polling_function)
+        return cls._decorator(polling_function)
 
     class ACTIVE_OBJECT(Enum):
         """ Executes only if the active object is valid. """

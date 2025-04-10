@@ -1,7 +1,7 @@
 from typing import Any, Callable, Type, TypeVar, Union, Generic
 
 from bpy.props import *
-from mathutils import Color
+from mathutils import Color, Vector, Matrix
 
 from ...reg_types.nodes import Node, NodeSocket
 from ....utils.callback import CallbackList
@@ -139,6 +139,20 @@ class WrappedTypedPropertyTypes:
     @classmethod
     def Color(cls, name: str = '', use_alpha: bool = False, **kwargs) -> WrappedPropertyDescriptor[Color]:
         return WrappedPropertyDescriptor[Color](FloatVectorProperty, name=name, size=4 if use_alpha else 3, min=0.0, max=1.0, subtype='COLOR', **kwargs)
+
+    @classmethod
+    def Matrix3x3(cls, name: str = '', **kwargs) -> WrappedPropertyDescriptor[Matrix]:
+        """Create a 3x3 Matrix property."""
+        if 'default' not in kwargs:
+            kwargs['default'] = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        return WrappedPropertyDescriptor[Matrix](FloatVectorProperty, name=name, size=(3, 3), subtype='MATRIX', **kwargs)
+
+    @classmethod
+    def Matrix4x4(cls, name: str = '', **kwargs) -> WrappedPropertyDescriptor[Matrix]:
+        """Create a 4x4 Matrix property."""
+        if 'default' not in kwargs:
+            kwargs['default'] = ((1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0))
+        return WrappedPropertyDescriptor[Matrix](FloatVectorProperty, name=name, size=(4, 4), subtype='MATRIX', **kwargs)
 
     # Preset types
     @classmethod

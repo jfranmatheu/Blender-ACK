@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Callable, Type, Any, Literal, overload, Union, Annotated
+from typing import Callable, Type, Any, Literal, overload, Union, Annotated, TypeVar
 
 from .registry.reg_types import *
 from .registry.reg_deco import *
@@ -11,11 +11,16 @@ from .registry.polling import *
 from .registry.reg_types.nodes.sockets.annotation import NodeSocketWrapper, NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
 from .registry import reg_helpers
 from .registry import metadata
+from .types.nodes.node_socket import NodeSocket
 
 
 __all__ = [
     'ACK',
 ]
+
+# Definir TypeVar. Esto nos ayuda a tener tipado del tipo de NodeSocket suyacente,
+# el cual usamos para definir el tipo de socket para inputs y outputs.
+SocketT = TypeVar('SocketT', bound=NodeSocket)
 
 
 class ACK:
@@ -67,7 +72,7 @@ class ACK:
 
     # Explicitly annotate the NodeInput and NodeOutput with proper signatures
     @staticmethod
-    def NodeInput(socket_type: Type[NodeSocket], multi: bool = False) -> NodeSocket:
+    def NodeInput(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
         """
         Create an input socket annotation.
         
@@ -81,7 +86,7 @@ class ACK:
         return _NodeSocketInput(socket_type, multi) # type: ignore
 
     @staticmethod
-    def NodeOutput(socket_type: Type[NodeSocket]) -> NodeSocket:
+    def NodeOutput(socket_type: Type[SocketT]) -> SocketT:
         """
         Create an output socket annotation.
         

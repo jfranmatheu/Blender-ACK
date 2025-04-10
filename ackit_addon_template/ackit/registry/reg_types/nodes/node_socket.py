@@ -44,7 +44,10 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
         return getattr(self, self.property_name)
 
     def set_value(self, value):
-        setattr(self, self.property_name, value)
+        if self.use_custom_property:
+            self[self.property_name] = value
+        else:
+            setattr(self, self.property_name, value)
 
     def set_value_with_block_update(self, value):
         self.block_property_update = True

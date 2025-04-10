@@ -11,6 +11,7 @@ from .registry.polling import *
 from .registry.reg_types.nodes.sockets.annotation import NodeSocketWrapper, NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
 from .registry import reg_helpers
 from .registry import metadata
+from .registry import flags
 from .types.nodes.node_socket import NodeSocket
 
 
@@ -99,11 +100,7 @@ class ACK:
         return _NodeSocketOutput(socket_type) # type: ignore
 
 
-    class Flags:
-        OPERATOR = OperatorOptions
-        MODAL = ModalFlags
-        PANEL = PanelOptions
-        NODE_CATEGORY = node_category
+    Flags = flags
         
     Metadata = metadata
 

@@ -2,13 +2,25 @@
 Addon Creator Kit (ackit or ACKit) - A comprehensive toolkit for Blender addon development
 """
 
-from .registry import AutoLoad, AddonLoader
-from .globals import GLOBALS
-from .auto_code import AutoCode
-from .enums.operator import OpsReturn, SubmodalReturn
-from .utils.cursor import Cursor
-from .utils import math as mathutils
-from ._ack import *
+# Expose the main Facade class
+from ._ack import ACK
 
+# Expose top-level enums if desired
+from . import enums
 
+# Expose core loader for addon registration
+from .core.addon_loader import AddonLoader
+
+# Expose AutoCode if needed
+from .auto_code import AutoCode # Assuming auto_code.py is still top-level
+
+# Version (Consider moving this to a dedicated version file or metadata)
 __version__ = (0, 1, 0)
+
+__all__ = [
+    'ACK',
+    'enums',
+    'AddonLoader',
+    'AutoCode',
+    '__version__',
+]

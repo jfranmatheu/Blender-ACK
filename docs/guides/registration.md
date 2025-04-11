@@ -6,168 +6,153 @@ El sistema de registro es uno de los componentes centrales de ACKit. Este sistem
 
 ### AddonLoader
 
-`AddonLoader` es la clase principal que gestiona el ciclo de vida completo del addon:
+`AddonLoader` (accesible vía `from .ackit import AddonLoader`) es la clase principal que gestiona el ciclo de vida completo del addon:
 
 ```python
-from .ackit import AddonLoader
+# En el __init__.py principal de tu addon
+from .ackit import AddonLoader, AutoCode # AutoCode es opcional
 
-# Inicialización
-AddonLoader.init_modules()
+# Inicialización (descubre módulos y clases)
+AddonLoader.init_modules(
+    # Opciones como auto_code
+)
 
-# Registro
+# Registro (registra clases y llama callbacks 'register')
 def register():
     AddonLoader.register_modules()
 
-# Desregistro
+# Desregistro (desregistra clases y llama callbacks 'unregister')
 def unregister():
     AddonLoader.unregister_modules()
 ```
 
-### BTypes
+### Clases Base de ACKit (`ACK.*.Generic`, etc.)
 
-`BTypes` es una enumeración que define los tipos de clases de Blender que pueden ser registrados:
+En lugar de una enumeración `BTypes`, el registro se basa en heredar de las clases base proporcionadas por la fachada `ACK`, por ejemplo:
 
-- `Operator`: Operadores estándar
-- `Macro`: Operadores macro
-- `Panel`: Paneles de UI
-- `Menu`: Menús
-- `UIList`: Listas personalizadas
-- `PropertyGroup`: Grupos de propiedades
-- `AddonPreferences`: Preferencias del addon
-- `NodeTree`: Árboles de nodos
-- `NodeSocket`: Sockets de nodos
-- `Node`: Nodos
-- `Gizmo`: Gizmos
-- `GizmoGroup`: Grupos de gizmos
+-   `ACK.Ops.Generic`, `ACK.Ops.Action`, `ACK.Ops.Modal`
+-   `ACK.UI.Panel`, `ACK.UI.Menu`, `ACK.UI.PieMenu`, `ACK.UI.Popover`, `ACK.UI.UIList`
+-   `ACK.Data.PropertyGroup`, `ACK.Data.AddonPreferences`
+-   `ACK.NE.Node`, `ACK.NE.NodeTree`, `ACK.NE.Socket` (base para sockets específicos)
+
+Cuando `AddonLoader` descubre una clase que hereda de uno de estos tipos base (o tipos derivados), la gestiona automáticamente para el registro/desregistro.
 
 ## Ciclo de Vida de un Addon
 
-ACKit define un ciclo de vida claro para los addons con callbacks específicos:
+ACKit define un ciclo de vida claro para los addons con callbacks específicos que puedes definir en **cualquier módulo** dentro de tu directorio `src` (o donde sea que `AddonLoader` busque):
 
-1. **Inicialización**:
-   - `init`: Se llama durante la fase de inicialización
-   - `late_init`: Se llama después de la inicialización principal
+1.  **Inicialización** (llamado por `AddonLoader.init_modules`):
+    -   `init()`: Se llama durante la fase de inicialización.
+    -   `late_init()`: Se llama después de la inicialización principal.
 
-2. **Registro**:
-   - `register`: Se llama durante la fase de registro
-   - `late_register`: Se llama después del registro principal
+2.  **Registro** (llamado por `AddonLoader.register_modules`):
+    -   `register()`: Se llama durante la fase de registro (después de registrar clases automáticamente).
+    -   `late_register()`: Se llama después del registro principal.
 
-3. **Desregistro**:
-   - `unregister`: Se llama durante la fase de desregistro
-   - `late_unregister`: Se llama después del desregistro principal
-
-Puedes definir estos callbacks en cualquier módulo de tu addon:
+3.  **Desregistro** (llamado por `AddonLoader.unregister_modules`):
+    -   `unregister()`: Se llama durante la fase de desregistro (antes de desregistrar clases automáticamente).
+    -   `late_unregister()`: Se llama después del desregistro principal.
 
 ```python
-# En cualquier módulo de tu addon
+# En cualquier módulo de tu addon (e.g., src/mi_modulo.py)
 def init():
     print("Inicializando mi módulo")
 
 def register():
-    print("Registrando mi módulo")
+    print("Registrando mi módulo (después de las clases)")
 
 def late_register():
     print("Registro tardío de mi módulo")
 
 def unregister():
-    print("Desregistrando mi módulo")
+    print("Desregistrando mi módulo (antes de las clases)")
 ```
 
 ## Modos de Registro
 
-ACKit proporciona diferentes enfoques para registrar clases:
+ACKit proporciona diferentes enfoques para registrar componentes:
 
-### 1. Registro Automático
+### 1. Registro Automático por Herencia (Recomendado)
 
-El sistema detecta y registra automáticamente todas las clases que heredan de las clases base de ACKit:
+El sistema detecta y registra automáticamente todas las clases que heredan de las clases base de ACKit (`ACK.Ops.*`, `ACK.UI.*`, etc.).
 
 ```python
 from ...ackit import ACK
+from ...ackit.enums.operator import OpsReturn
 
 # Esta clase se registrará automáticamente
-class MyOperator(ACK.Register.Types.Ops.Generic):
+class MyOperator(ACK.Ops.Generic):
     bl_idname = "object.my_operator"
     bl_label = "Mi Operador"
     
     def execute(self, context):
-        return {'FINISHED'}
+        return OpsReturn.FINISH
 ```
 
-### 2. Registro a partir de Funciones
+### 2. Registro a partir de Funciones (`ACK.UI.create_*`)
 
-Para componentes simples como paneles o menús, puedes utilizar decoradores para crear clases a partir de funciones:
+Para componentes UI simples como paneles o menús, puedes utilizar decoradores para crear y registrar clases automáticamente a partir de funciones:
 
 ```python
 from ...ackit import ACK
 
-# Esto crea un panel registrado automáticamente
-@ACK.Register.FromFunction.PANEL.VIEW_3D(tab="Mi Tab")
+# Esto crea y registra un panel automáticamente
+@ACK.UI.create_panel_from_func.VIEW_3D(tab="Mi Tab")
 def my_panel(context, layout):
     layout.label(text="Mi Panel")
     layout.operator("object.my_operator")
 ```
 
-### 3. Registro Manual de Propiedades
+### 3. Registro Manual de Propiedades (`ACK.Data.register_property`)
 
-Para registrar propiedades en clases existentes (como Scene, Object, etc.), utiliza los métodos de registro de propiedades:
+Para registrar propiedades (definidas con `ACK.PropTyped` o `ACK.Prop`) en tipos de Blender existentes (`bpy.types.Scene`, `bpy.types.Object`, etc.), usa `ACK.Data.register_property` o `ACK.Data.batch_register_properties` desde una función `register()`.
 
 ```python
 from ...ackit import ACK
 import bpy
 
+# Definir propiedad con PropTyped (recomendado)
+my_scene_prop = ACK.PropTyped.Float("Mi Propiedad", default=0.5).min(0.0).max(1.0)
+
 def register():
     # Registrar una propiedad en la clase Scene
-    ACK.Register.Property(
-        bpy.types.Scene, 
-        "mi_propiedad", 
-        ACK.PropsWrapped.Float("Mi Propiedad").default(0.0).min(0.0).max(1.0)
+    ACK.Data.register_property(
+        bpy_type=bpy.types.Scene, 
+        property_idname="mi_propiedad_ack", # Nombre único para la propiedad
+        property=my_scene_prop, # Pasar el descriptor PropTyped
+        remove_on_unregister=True # Buena práctica
     )
+    
+    # Ejemplo con batch y Prop (menos común)
+    ACK.Data.batch_register_properties(
+        bpy.types.Object, 
+        remove_on_unregister=True,
+        mi_objeto_int=ACK.Prop.INT(name="Entero Objeto"),
+        mi_objeto_bool=ACK.Prop.BOOL(name="Booleano Objeto")
+    )
+
+def unregister():
+    # La desregistro es automático si remove_on_unregister=True
+    pass
 ```
 
 ## Orden de Registro
 
-ACKit ordena automáticamente las clases a registrar en función de sus dependencias. Esto significa que puedes definir clases en cualquier orden, y ACKit se asegurará de que:
-
-1. Los `PropertyGroup` se registren antes de las clases que los utilizan
-2. Las clases padre se registren antes que las clases hijas
-3. Las clases con dependencias indirectas se registren en el orden correcto
+ACKit ordena automáticamente las clases a registrar en función de sus dependencias (e.g., `PropertyGroup` antes que `PointerProperty` que lo usa). Sin embargo, el registro manual con `register_property` ocurre **después** del registro automático de clases, dentro de las funciones `register()` de tus módulos.
 
 ## Persistencia de Datos entre Sesiones
 
-Para que los datos persistan entre sesiones, debes:
+Para que los datos persistan entre sesiones, **debes** registrarlos en tipos de datos de Blender que se guarden en el archivo `.blend`, como `bpy.types.Scene`, `bpy.types.Object`, `bpy.types.Material`, etc., usando `ACK.Data.register_property` como se mostró anteriormente.
 
-1. Registrar propiedades en tipos de Blender como Scene, Object, Mesh, etc.
-2. Usar correctamente el sistema de preferencias de addons
-
-Ejemplo de registro de propiedades persistentes:
-
-```python
-from ...ackit import ACK
-import bpy
-
-def register():
-    # Registrar propiedades en la escena (persistentes con el archivo .blend)
-    ACK.Register.Properties(
-        bpy.types.Scene,
-        {
-            "mi_entero": ACK.PropsWrapped.Int("Mi Entero").default(5),
-            "mi_texto": ACK.PropsWrapped.String("Mi Texto").default("Valor predeterminado")
-        }
-    )
-```
+Las propiedades definidas en `AddonPreferences` persisten en la configuración de usuario de Blender, no en el archivo `.blend`.
 
 ## Ejemplo Completo de Registro
 
-Este es un ejemplo más completo que muestra las diferentes partes del sistema de registro:
-
 ```python
 # __init__.py principal
-from .ackit import AddonLoader, AutoCode
+from .ackit import AddonLoader
 
-# Inicializar ACKit
-AddonLoader.init_modules(
-    auto_code={AutoCode.OPS, AutoCode.ICONS, AutoCode.TYPES}
-)
+AddonLoader.init_modules()
 
 def register():
     AddonLoader.register_modules()
@@ -177,17 +162,18 @@ def unregister():
 ```
 
 ```python
-# src/props/preferences.py
+# src/props/prefs.py
 from ...ackit import ACK
 
-class AddonPreferences(ACK.Register.Types.Data.AddonPreferences):
-    """Preferencias del addon."""
+# Se registra automáticamente por herencia
+class MyAddonPreferences(ACK.Data.AddonPreferences):
+    bl_idname = __package__.split('.')[0] # Necesario para Prefs
     
-    debug_mode = ACK.PropsWrapped.Bool("Modo Debug").default(False)
-    theme = ACK.PropsWrapped.Enum("Tema").items(
+    debug_mode: ACK.PropTyped.Bool("Modo Debug", default=False)
+    theme: ACK.PropTyped.Enum("Tema", items=[
         ("LIGHT", "Claro", "Tema claro"),
         ("DARK", "Oscuro", "Tema oscuro")
-    ).default("LIGHT")
+    ]).default("LIGHT")
     
     def draw(self, context):
         layout = self.layout
@@ -200,27 +186,25 @@ class AddonPreferences(ACK.Register.Types.Data.AddonPreferences):
 from ...ackit import ACK
 import bpy
 
+# Definir el grupo de propiedades (se registra automáticamente)
+class MySceneSettings(ACK.Data.PropertyGroup):
+    mi_addon_enabled: ACK.PropTyped.Bool("Habilitado", default=True)
+    mi_addon_valor: ACK.PropTyped.Float("Valor", default=0.5)
+
+# Registrar una instancia de este grupo en la Escena
 def register():
-    # Registrar propiedades en la escena
-    ACK.Register.Properties(
-        bpy.types.Scene,
-        {
-            "mi_addon_enabled": ACK.PropsWrapped.Bool("Habilitado").default(True),
-            "mi_addon_valor": ACK.PropsWrapped.Float("Valor").default(0.5)
-        }
-    )
+    bpy.types.Scene.my_scene_settings = bpy.props.PointerProperty(type=MySceneSettings)
 
 def unregister():
-    # ACKit elimina automáticamente las propiedades registradas
-    pass
+    del bpy.types.Scene.my_scene_settings
 ```
 
 ## Consideraciones para Blender 4.0+
 
 Con la introducción de Extension Platform en Blender 4.0, es importante tener en cuenta:
 
-1. La organización del código para compatibilidad con el sistema de extensiones
-2. La definición de un archivo `blender_manifest.toml` apropiado
-3. La declaración de permisos requeridos por tu addon
+1.  La organización del código para compatibilidad con el sistema de extensiones.
+2.  La definición de un archivo `blender_manifest.toml` apropiado.
+3.  La declaración de permisos requeridos por tu addon.
 
 ACKit se adapta automáticamente a estos cambios, pero debes asegurarte de configurar correctamente el archivo de manifiesto. Consulta la [guía de Extension Platform](extension-platform.md) para más detalles. 

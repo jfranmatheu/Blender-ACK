@@ -6,131 +6,121 @@ El sistema de polling en ACKit proporciona una forma elegante y flexible de cont
 
 En Blender, el "polling" se refiere al mecanismo que determina si un elemento de la interfaz de usuario (como un operador o un panel) debe estar disponible o habilitado en un contexto específico. Por ejemplo, un operador que modifica vértices de una malla podría estar disponible solo cuando hay un objeto malla seleccionado y se está en modo edición.
 
-ACKit simplifica la implementación de estas verificaciones de disponibilidad mediante un sistema de decoradores predefinidos y personalizables.
+ACKit simplifica la implementación de estas verificaciones de disponibilidad mediante un sistema de decoradores predefinidos y personalizables accesibles principalmente a través de `ACK.Poll`.
 
 ## Estructura del Sistema de Polling
 
-El sistema de polling de ACKit está organizado jerárquicamente bajo la clase `ACK.Poll`:
+El sistema de polling de ACKit está organizado jerárquicamente bajo la clase `ACK.Poll` (un alias de `ackit.utils.polling.Polling`):
 
-```
+```python
+# Importar la fachada
+from .ackit import ACK
+
 ACK.Poll
 ├── custom               # Decorador para funciones de polling personalizadas
-├── make_poll_decorator  # Decorador para crear decoradores para polling personalizados
+├── make_poll_decorator  # Decorador para crear decoradores para polling personalizados (uso avanzado)
 ├── ACTIVE_OBJECT        # Verificaciones relacionadas con el objeto activo
 │   ├── ANY              # Requiere cualquier objeto activo
 │   ├── MESH             # Requiere objeto malla activo
 │   ├── CURVE            # Requiere objeto curva activo
 │   ├── ARMATURE         # Requiere objeto armature activo
-│   └── ...              # Otros tipos de objetos
+│   └── ...              # Otros tipos de objetos (ver autocompletado o código fuente)
 ├── MODE                 # Verificaciones relacionadas con el modo de edición
 │   ├── OBJECT           # Requiere modo objeto
-│   ├── EDIT             # Requiere modo edición (cualquier tipo)
 │   ├── EDIT_MESH        # Requiere modo edición de malla
+│   ├── POSE             # Requiere modo pose
 │   ├── WEIGHT_PAINT     # Requiere modo weight paint
-│   └── ...              # Otros modos
-├── SELECTION            # Verificaciones relacionadas con la selección
-│   ├── HAS_SELECTED     # Requiere al menos un objeto seleccionado
-│   └── MULTIPLE         # Requiere múltiples objetos seleccionados
-└── SPACE                # Verificaciones relacionadas con espacios específicos
-    ├── VIEW_3D          # Requiere estar en el espacio View3D
-    ├── PROPERTIES       # Requiere estar en el espacio Properties
-    ├── NODE_EDITOR      # Requiere estar en el espacio Node Editor
-    └── ...              # Otros espacios
+│   └── ...              # Otros modos (ver autocompletado o código fuente)
+├── ACTIVE_BRUSH         # Verifica si hay un pincel activo en el modo actual (si aplica)
+# ... Otros polling helpers pueden existir o añadirse en ackit.utils.polling ...
 ```
 
 ## Uso Básico de los Decoradores de Polling
 
-Los decoradores de polling se aplican a clases de operadores, paneles u otros elementos registrables:
+Los decoradores de polling se aplican directamente a las clases que heredan de los tipos base de `ackit` (como `ACK.Ops.Generic`, `ACK.UI.Panel`, etc.):
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
+from ..ackit.enums.operator import OpsReturn
 
 # Operador que requiere un objeto malla activo
 @ACK.Poll.ACTIVE_OBJECT.MESH
-class MeshOperator(ACK.Register.Types.Ops.Generic):
+class MeshOperator(ACK.Ops.Generic):
     bl_idname = "object.mesh_operator"
     bl_label = "Operador de Malla"
     
     def execute(self, context):
         # Implementación...
-        return ACK.Returns.Operator.FINISHED
+        return OpsReturn.FINISH
 ```
 
 ## Combinación de Decoradores
 
-Puedes aplicar múltiples decoradores para crear condiciones más específicas:
+Puedes aplicar múltiples decoradores para crear condiciones más específicas (se evalúan de abajo hacia arriba):
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
+from ..ackit.enums.operator import OpsReturn
 
-# Operador que requiere un objeto malla activo y modo edición
+# Operador que requiere un objeto malla activo y modo edición de malla
 @ACK.Poll.ACTIVE_OBJECT.MESH
-@ACK.Poll.MODE.EDIT
-class EditMeshOperator(ACK.Register.Types.Ops.Generic):
+@ACK.Poll.MODE.EDIT_MESH
+class EditMeshOperator(ACK.Ops.Generic):
     bl_idname = "object.edit_mesh_operator"
     bl_label = "Operador de Edición de Malla"
     
     def execute(self, context):
         # Implementación...
-        return ACK.Returns.Operator.FINISHED
+        return OpsReturn.FINISH
 ```
-
-Los decoradores se aplican en orden, de abajo hacia arriba. En el ejemplo anterior, primero se verifica si estamos en modo edición, y luego si el objeto activo es una malla.
 
 ## Decoradores de Polling Personalizados
 
 Puedes crear funciones de polling personalizadas utilizando el decorador `ACK.Poll.custom`:
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
+from ..ackit.enums.operator import OpsReturn
 
-# Función de polling personalizada
-def my_custom_poll(cls, context):
+# Función de polling personalizada (nota: recibe el contexto como argumento)
+def my_custom_poll(context):
     # Verificar si hay al menos un objeto con nombre que comienza con "Prefix_"
     return any(obj.name.startswith("Prefix_") for obj in context.scene.objects)
 
 # Aplicar la función personalizada como decorador
 @ACK.Poll.custom(my_custom_poll)
-class CustomPollOperator(ACK.Register.Types.Ops.Generic):
+class CustomPollOperator(ACK.Ops.Generic):
     bl_idname = "object.custom_poll_operator"
     bl_label = "Operador con Polling Personalizado"
     
     def execute(self, context):
         # Implementación...
-        return ACK.Returns.Operator.FINISHED
+        return OpsReturn.FINISH
 ```
 
 ## Polling en Paneles y Otros Elementos de UI
 
-Los decoradores de polling también funcionan con paneles y otros elementos de UI:
+Los decoradores de polling funcionan igual con paneles (tanto definidos como clases que heredan de `ACK.UI.Panel`, como los creados desde funciones con `ACK.UI.create_panel_from_func`):
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
 
-# Panel que se muestra solo cuando hay un objeto armature activo
+# Panel (clase) que se muestra solo cuando hay un objeto armature activo
 @ACK.Poll.ACTIVE_OBJECT.ARMATURE
-class ArmaturePanel(ACK.Register.Types.UI.Panel):
+class ArmaturePanel(ACK.UI.Panel):
     bl_idname = "VIEW3D_PT_armature_panel"
     bl_label = "Panel de Armature"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Mi Addon"
     
-    def draw(self, context):
-        layout = self.layout
+    def draw_ui(self, context, layout):
+        layout.label(text="Controles de Armature")
         # Implementación...
-```
 
-## Polling con Paneles a partir de Funciones
-
-También puedes aplicar condiciones de polling a los paneles creados a partir de funciones:
-
-```python
-from ...ackit import ACK
-
-# Panel que se muestra solo en modo edición
-@ACK.Poll.MODE.EDIT
-@ACK.Register.FromFunction.PANEL.VIEW_3D(tab="Mi Addon")
+# Panel (función) que se muestra solo en modo edición
+@ACK.Poll.MODE.EDIT_MESH # Ser específico con el modo si es necesario
+@ACK.UI.create_panel_from_func.VIEW_3D(tab="Mi Addon")
 def edit_mode_panel(context, layout):
     layout.label(text="Herramientas de Edición")
     # Implementación...
@@ -138,81 +128,70 @@ def edit_mode_panel(context, layout):
 
 ## Polling para Propiedades
 
-Puedes controlar la visibilidad y habilitación de propiedades basándote en estados:
+El control de visibilidad/habilitación de propiedades individuales **no** se gestiona directamente con `ACK.Poll`. Se debe implementar lógica en el método `draw` o `draw_ui` de la clase contenedora (Panel, Operator, PropertyGroup, etc.) para mostrar u ocultar propiedades condicionalmente usando `layout.prop` o `layout.active`:
 
 ```python
-from ...ackit import ACK, bpy
+from ..ackit import ACK
+import bpy
 
-class MyPropertyGroup(ACK.Register.Types.Data.PropertyGroup):
-    enable_feature = ACK.PropsWrapped.Bool("Habilitar Característica").default(False)
+class MySettings(ACK.Data.PropertyGroup):
+    enable_advanced: ACK.PropTyped.Bool("Opciones Avanzadas", default=False)
+    strength: ACK.PropTyped.Float("Intensidad", default=0.5)
+    detail: ACK.PropTyped.Int("Detalle", default=2)
+
+@ACK.UI.create_panel_from_func.PROPERTIES(context='scene', tab="Mi Addon")
+def settings_panel(context, layout):
+    settings = context.scene.my_addon_settings # Asumiendo que registras MySettings en la escena
     
-    # Esta propiedad solo está visible si enable_feature es True
-    feature_strength = ACK.PropsWrapped.Float("Intensidad").default(0.5).min(0).max(1)
+    layout.prop(settings, "enable_advanced")
     
-    # Función para determinar si feature_strength debe estar visible
-    @classmethod
-    def poll_feature_strength(cls, context):
-        return context.scene.my_props.enable_feature
-    
-    # Registrar el grupo de propiedades
-    @classmethod
-    def register(cls):
-        bpy.types.Scene.my_props = ACK.Register.Property(bpy.props.PointerProperty(type=cls))
-        
-        # Registrar la función de polling para la propiedad
-        ACK.Register.PropertyPolling(cls, "feature_strength", cls.poll_feature_strength)
-    
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Scene.my_props
+    # Mostrar propiedades avanzadas solo si enable_advanced es True
+    if settings.enable_advanced:
+        box = layout.box()
+        box.label(text="Avanzado:")
+        box.prop(settings, "strength")
+        box.prop(settings, "detail")
+    # También puedes deshabilitar una propiedad:
+    row = layout.row()
+    row.active = settings.enable_advanced # Habilitar/deshabilitar fila basado en el bool
+    row.prop(settings, "strength", text="Intensidad (si habilitado)")
 ```
-
-## Métodos Auxiliares para Polling
-
-ACKit proporciona varios métodos auxiliares para crear condiciones de polling complejas:
-
-```python
-from ...ackit import ACK
-from ...ackit.registry.polling import combine_polls, invert_poll
-
-# Combinar múltiples condiciones (AND lógico)
-combined_poll = combine_polls(
-    ACK.Poll.ACTIVE_OBJECT.MESH.poll_function,
-    ACK.Poll.MODE.EDIT.poll_function
-)
-
-# Invertir una condición (NOT lógico)
-not_in_edit_mode = invert_poll(ACK.Poll.MODE.EDIT.poll_function)
-
-# Aplicar la condición combinada
-@ACK.Poll.custom(combined_poll)
-class ComplexPollOperator(ACK.Register.Types.Ops.Generic):
-    # Implementación...
-```
+*(Nota: El ejemplo anterior de `PropertyPolling` en la v1 ya no es aplicable en la estructura refactorizada.)*
 
 ## Operadores con Disponibilidad Dinámica
 
-Para casos más complejos, puedes sobreescribir el método `poll` directamente:
+Para lógica de polling muy compleja que no se cubre con los decoradores, puedes sobreescribir el método de clase `poll` directamente en tu operador o panel:
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
+from ..ackit.enums.operator import OpsReturn
+import bpy
 
-class DynamicOperator(ACK.Register.Types.Ops.Generic):
+class DynamicOperator(ACK.Ops.Generic):
     bl_idname = "object.dynamic_operator"
     bl_label = "Operador Dinámico"
     
     @classmethod
     def poll(cls, context):
-        # Verificar si el objeto activo tiene al menos una UV Map
-        if context.active_object and context.active_object.type == 'MESH':
-            mesh = context.active_object.data
-            return len(mesh.uv_layers) > 0
-        return False
+        # Lógica de polling personalizada más compleja
+        if not context.active_object:
+            cls.poll_message_set("Se requiere un objeto activo.")
+            return False
+        if context.active_object.type != 'MESH':
+             cls.poll_message_set("El objeto activo debe ser una Malla.")
+             return False
+        if len(context.active_object.data.uv_layers) == 0:
+             cls.poll_message_set("La malla activa no tiene UV Maps.")
+             return False
+        return True
     
     def execute(self, context):
         # Implementación...
-        return ACK.Returns.Operator.FINISHED
+        self.report({'INFO'}, "Operador dinámico ejecutado!")
+        return OpsReturn.FINISH
 ```
+
+Recuerda usar `cls.poll_message_set("Mensaje")` dentro del método `poll` para proporcionar feedback al usuario sobre por qué un operador no está disponible.
 
 ## Decoradores de Polling Específicos para Áreas
 

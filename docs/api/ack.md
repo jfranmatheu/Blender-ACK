@@ -1,226 +1,218 @@
-# Clase ACK
+# Clase ACK (API v2)
 
-La clase `ACK` es el punto de entrada principal para todas las funcionalidades de ACKit. Está diseñada siguiendo el patrón de diseño Facade, proporcionando una API unificada, jerárquica y bien organizada para acceder a todas las capacidades del framework.
+La clase `ACK` es el punto de entrada principal y unificado para la mayoría de las funcionalidades de `ackit`. Está diseñada siguiendo el patrón de diseño Facade, proporcionando una API jerárquica y organizada para acceder a las capacidades del framework agrupadas por dominio.
 
 ## Estructura
 
-La clase `ACK` contiene varias clases y métodos anidados organizados jerárquicamente:
+La clase `ACK` contiene clases anidadas que representan diferentes dominios de funcionalidad en Blender:
 
 ```python
+# Importar la fachada
+from .ackit import ACK
+
 class ACK:
-    class Register:
-        # Métodos y clases de registro
-        
-    class Types:
-        # Tipos personalizados
-        
-    class Returns:
-        # Valores de retorno para operadores
-        
-    class Props:
-        # Propiedades sin tipado fuerte
-        
-    class PropsWrapped:
-        # Propiedades con tipado fuerte
-        
-    class Flags:
-        # Flags y opciones para clases
-        
-    # Otras propiedades y métodos
-```
-
-## Métodos Principales
-
-### ACK.Register
-
-La clase `ACK.Register` contiene métodos y subclases para registrar componentes:
-
-```python
-# Registro directo de propiedades
-ACK.Register.Property(cls, name, property_definition)
-ACK.Register.Properties(cls, properties_dict)
-
-# Tipos disponibles para heredar
-class ACK.Register.Types.Ops.Generic    # Operador genérico
-class ACK.Register.Types.Ops.Action     # Operador de acción
-class ACK.Register.Types.Ops.Modal      # Operador modal
-class ACK.Register.Types.UI.Panel       # Panel
-class ACK.Register.Types.UI.Menu        # Menú
-class ACK.Register.Types.UI.PieMenu     # Menú circular
-class ACK.Register.Types.UI.Popover     # Popover
-class ACK.Register.Types.UI.UIList      # Lista personalizada
-class ACK.Register.Types.Data.PropertyGroup  # Grupo de propiedades
-class ACK.Register.Types.Data.AddonPreferences  # Preferencias de addon
-class ACK.Register.Types.Nodes.Node     # Nodo
-class ACK.Register.Types.Nodes.Tree     # Árbol de nodos
-class ACK.Register.Types.Nodes.Socket   # Socket de nodo
-
-# Decoradores para crear clases a partir de funciones
-ACK.Register.FromFunction.ACTION        # Crear operador de acción
-ACK.Register.FromFunction.PANEL         # Crear panel
-ACK.Register.FromFunction.MENU          # Crear menú
-ACK.Register.FromFunction.PIE_MENU      # Crear menú circular
-ACK.Register.FromFunction.POPOVER       # Crear popover
-```
-
-### ACK.Props y ACK.PropsWrapped
-
-Estas clases contienen definiciones para propiedades de Blender:
-
-```python
-# Propiedades básicas (sin tipado fuerte)
-my_bool = ACK.Props.Bool("Mi Booleano")
-my_int = ACK.Props.Int("Mi Entero")
-my_float = ACK.Props.Float("Mi Flotante")
-my_string = ACK.Props.String("Mi Texto")
-my_enum = ACK.Props.Enum("Mi Enum", items=[("A", "A", ""), ("B", "B", "")])
-my_collection = ACK.Props.Collection("Mi Colección")
-my_pointer = ACK.Props.Pointer("Mi Puntero", type=SomePropertyGroup)
-
-# Propiedades con tipado fuerte (recomendadas)
-my_bool = ACK.PropsWrapped.Bool("Mi Booleano").default(True)
-my_int = ACK.PropsWrapped.Int("Mi Entero").default(5).min(0).max(10)
-my_float = ACK.PropsWrapped.Float("Mi Flotante").default(1.5).min(0.0).max(10.0)
-my_string = ACK.PropsWrapped.String("Mi Texto").default("Valor predeterminado")
-my_enum = ACK.PropsWrapped.Enum("Mi Enum").items(
-    ("A", "Opción A", "Descripción A"),
-    ("B", "Opción B", "Descripción B")
-).default("A")
-```
-
-### ACK.Flags
-
-La clase `ACK.Flags` contiene decoradores para modificar el comportamiento de clases:
-
-```python
-# Flags para operadores
-@ACK.Flags.OPERATOR.REGISTER_UNDO      # Añadir a historia de deshacer
-@ACK.Flags.OPERATOR.INTERNAL           # Operador interno
-@ACK.Flags.OPERATOR.BLOCKING           # Bloquear interfaz durante ejecución
-@ACK.Flags.OPERATOR.PRESET             # Permitir presets
-
-# Flags para operadores modales
-@ACK.Flags.MODAL.DRAW_POST_PIXEL.VIEW_3D  # Dibujar en viewport 3D
-@ACK.Flags.MODAL.USE_MOUSE               # Usar eventos de ratón
-
-# Flags para paneles
-@ACK.Flags.PANEL.HIDE_HEADER            # Panel con cabecera oculta
-@ACK.Flags.PANEL.DEFAULT_CLOSED         # Panel cerrado por defecto
-@ACK.Flags.PANEL.INSTANCED              # Panel con instancias
-
-# Flags para nodos
-@ACK.Flags.NODE_CATEGORY("Mi Categoría")  # Asignar categoría a un nodo
-```
-
-### ACK.Poll
-
-La clase `ACK.Poll` contiene decoradores para definir condiciones de disponibilidad:
-
-```python
-# Verificación de objeto activo
-@ACK.Poll.ACTIVE_OBJECT.ANY       # Cualquier objeto activo
-@ACK.Poll.ACTIVE_OBJECT.MESH      # Solo objetos mesh activos
-@ACK.Poll.ACTIVE_OBJECT.ARMATURE  # Solo armaduras activas
-
-# Verificación de modo
-@ACK.Poll.MODE.OBJECT             # Solo en modo objeto
-@ACK.Poll.MODE.EDIT               # Solo en modo edición
-@ACK.Poll.MODE.POSE               # Solo en modo pose
-
-# Polling personalizado
-@ACK.Poll.custom(lambda cls, context: context.scene.render.engine == 'CYCLES')
-```
-
-### ACK.Returns
-
-La clase `ACK.Returns` contiene constantes para valores de retorno:
-
-```python
-# Valores de retorno para operadores
-ACK.Returns.Operator.FINISH       # {'FINISHED'}
-ACK.Returns.Operator.CANCEL       # {'CANCELLED'}
-ACK.Returns.Operator.PASS         # {'PASS_THROUGH'}
-ACK.Returns.Operator.RUNNING      # {'RUNNING_MODAL'}
-
-# Valores de retorno para submodos
-ACK.Returns.Submodal.FINISH       # Finalizar submodo
-ACK.Returns.Submodal.CANCEL       # Cancelar submodo
-ACK.Returns.Submodal.RUNNING      # Continuar submodo
-```
-
-### Métodos para Sistema de Nodos
-
-La clase `ACK` también proporciona métodos para trabajar con nodos:
-
-```python
-# Definición de sockets de nodo
-input_socket = ACK.NodeInput(ACK.Types.NodeSocketFloat)  # Socket de entrada
-output_socket = ACK.NodeOutput(ACK.Types.NodeSocketFloat)  # Socket de salida
-```
-
-## Ejemplos de Uso
-
-### Creación de un Operador de Acción
-
-```python
-from ...ackit import ACK
-
-@ACK.Flags.OPERATOR.REGISTER_UNDO
-@ACK.Poll.ACTIVE_OBJECT.MESH
-class MyActionOperator(ACK.Register.Types.Ops.Action):
-    label = "Mi Operador"
-    tooltip = "Hace algo interesante"
+    # Acceso rápido a propiedades (alias de ACK.Data.Prop y ACK.Data.PropTyped)
+    Prop = ...
+    PropTyped = ...
     
-    # Propiedades
-    value = ACK.PropsWrapped.Float("Valor").default(0.5).min(0.0).max(1.0)
+    # Decoradores/Utilidades de Polling (alias de ackit.utils.polling.Polling)
+    Poll = ... 
+
+    class Ops:
+        # Tipos base, creadores y configuración para Operadores
+        Generic = ...       # ackit.ops.btypes.generic.Generic
+        Action = ...        # ackit.ops.btypes.action.Action
+        Modal = ...         # ackit.ops.btypes.modal.Modal
+        
+        create_action_from_func = ... # Action.from_function
+        
+        add_metadata = ...  # ackit.metadata.Operator
+        add_flag = ...      # ackit.flags.OPERATOR
+        add_modal_flag = ...# ackit.flags.MODAL
+        add_run_condition = ... # Alias de ACK.Poll
+        
+    class UI:
+        # Tipos base, creadores y configuración para Elementos UI
+        Panel = ...         # ackit.ui.btypes.panel.Panel
+        Menu = ...          # ackit.ui.btypes.menu.Menu
+        PieMenu = ...       # ackit.ui.btypes.pie_menu.PieMenu
+        Popover = ...       # ackit.ui.btypes.popover.Popover
+        UIList = ...        # ackit.ui.btypes.ui_list.UIList
+        
+        create_panel_from_func = ... # ackit.ui.btypes.panel.PanelFromFunction o Panel.from_function
+        create_menu_from_func = ...  # Menu.from_function
+        # ... otros creadores ...
+        
+        add_panel_flag = ... # ackit.flags.PANEL
+        add_display_condition = ... # Alias de ACK.Poll
+
+    class NE: # Node Editor
+        # Tipos base, creadores y configuración para el Editor de Nodos
+        Node = ...          # ackit.ne.btypes.node.Node
+        Tree = ...          # ackit.ne.btypes.node_tree.NodeTree
+        Socket = ...        # ackit.ne.btypes.node_socket.NodeSocket (base)
+        
+        add_node_metadata = ...     # ackit.metadata.Node
+        add_socket_metadata = ...   # ackit.metadata.NodeSocket
+        add_node_to_category = ...  # ackit.flags.NODE_CATEGORY
+        
+        # Funciones para definir sockets en clases Node
+        new_input = ...     # ackit.ne.annotations.NodeInput
+        new_output = ...    # ackit.ne.annotations.NodeOutput
+        
+        # Módulo con tipos de socket específicos (NodeSocketFloat, etc.)
+        socket_types = ...  # ackit.ne.socket_types
+
+    class Data:
+        # Tipos base, definiciones de propiedades y registro relacionado con datos
+        AddonPreferences = ... # ackit.data.btypes.addon_preferences.AddonPreferences
+        PropertyGroup = ...    # ackit.data.btypes.property_group.PropertyGroup
+        
+        # Clases para definir propiedades (con y sin tipo fuerte)
+        Prop = ...          # ackit.data.props.PropertyTypes
+        PropTyped = ...     # ackit.data.props.WrappedTypedPropertyTypes
+        
+        # Funciones helper para registro de propiedades
+        register_property = ... # ackit.data.helpers.register_property
+        batch_register_properties = ... # ackit.data.helpers.batch_register_properties
+
+        # Decoradores para suscripción a cambios RNA (MsgBus)
+        subscribe_to_rna = ... # ackit.data.subscriptions.subscribe_to_rna_change
+        subscribe_to_rna_context = ... # ackit.data.subscriptions.subscribe_to_rna_change_based_on_context
+
+    class App: 
+        # Handlers a nivel de aplicación, Timers, etc.
+        Handler = ...       # ackit.app.handlers.Handlers (Enum)
+        Timer = ...         # ackit.app.timers.new_timer_as_decorator
+        # Keymap = ...      # ackit.app.keymaps.RegisterKeymap (si se necesita acceso directo)
+```
+
+## Uso Principal
+
+En lugar de importar desde subdirectorios profundos de `ackit`, la mayoría de las interacciones se realizan a través de la fachada `ACK`.
+
+### Definición de un Operador
+
+```python
+from ..ackit import ACK
+# Opcional: importar Enums directamente si se usan mucho
+from ..ackit.enums.operator import OpsReturn 
+
+@ACK.Ops.add_flag.REGISTER_UNDO
+@ACK.Poll.ACTIVE_OBJECT.MESH 
+class MyOperator(ACK.Ops.Action):
+    bl_label = "Mi Operador de Acción"
     
-    # UI del operador
+    # Definir propiedades usando ACK.PropTyped
+    my_value: ACK.PropTyped.Float("Valor", default=0.5).min(0.0).max(1.0)
+    
+    # Opcional: definir UI si es necesario
     def draw_ui(self, context, layout):
-        layout.prop(self, "value", text="Intensidad")
-    
-    # Lógica del operador
+        layout.prop(self, "my_value")
+
+    # Lógica principal
     def action(self, context):
+        print("Ejecutando Mi Operador con valor:", self.my_value)
         obj = context.active_object
-        # Hacer algo con obj y self.value
-        self.report_info(f"Operación realizada con valor {self.value}")
+        if obj:
+            obj.location.z += self.my_value
+        # Usar OpsReturn directamente del enum importado
+        return OpsReturn.FINISH 
 ```
 
-### Creación de un Panel
+### Definición de un Panel
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
 
-@ACK.Register.FromFunction.PANEL.VIEW_3D(tab="Mi Addon")
-def my_panel(context, layout):
-    layout.label(text="Panel de Mi Addon")
-    
-    # Añadir botones
-    row = layout.row()
-    row.operator("object.my_action_operator")
-    row.operator("object.another_operator")
-    
-    # Añadir propiedades
-    layout.prop(context.scene, "mi_addon_valor")
+# Usar decoradores de ACK.UI para crear paneles desde funciones
+@ACK.UI.create_panel_from_func.VIEW_3D(tab="Mi Pestaña")
+# Opcional: añadir flags del panel
+@ACK.UI.add_panel_flag.DEFAULT_CLOSED 
+def my_ui_panel(context, layout):
+    layout.label(text="Contenido de mi panel")
+    # Añadir un operador usando su bl_idname
+    layout.operator("mi_addon.mi_operador_de_accion") 
 ```
 
-### Trabajando con Nodos
+### Definición de un Nodo
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
 
-@ACK.Flags.NODE_CATEGORY("Math")
-class AddNode(ACK.Register.Types.Nodes.Node):
-    bl_label = "Add"
+# Decoradores para metadatos y categoría
+@ACK.NE.add_node_to_category("MiGrupo/SubGrupo")
+@ACK.NE.add_node_metadata(label="Mi Nodo Sumador", icon='ADD')
+class MyAddNode(ACK.NE.Node):
     
-    # Definir sockets
-    input_a = ACK.NodeInput(ACK.Types.NodeSocketFloat)
-    input_b = ACK.NodeInput(ACK.Types.NodeSocketFloat)
-    result = ACK.NodeOutput(ACK.Types.NodeSocketFloat)
+    # Definir sockets usando ACK.NE.new_input/new_output
+    # y tipos de socket desde ACK.NE.socket_types
+    input_a = ACK.NE.new_input(ACK.NE.socket_types.NodeSocketFloat)
+    input_b = ACK.NE.new_input(ACK.NE.socket_types.NodeSocketFloat)
+    result = ACK.NE.new_output(ACK.NE.socket_types.NodeSocketFloat)
     
     # Lógica de evaluación
     def evaluate(self):
-        self.result.value = self.input_a.value + self.input_b.value
+        # Acceder a valores de sockets directamente por su nombre de atributo
+        sum_value = self.input_a.value + self.input_b.value 
+        # Asignar valor al socket de salida
+        self.result.value = sum_value 
 ```
+
+### Definición de un PropertyGroup
+
+```python
+from ..ackit import ACK
+
+class MyPropertyGroup(ACK.Data.PropertyGroup):
+    # Usar ACK.PropTyped para propiedades con tipo fuerte
+    my_int_prop: ACK.PropTyped.Int("Mi Entero", default=5).min(0).max(10)
+    my_bool_prop: ACK.PropTyped.Bool("Mi Booleano", default=True)
+    
+    # Usar ACK.Prop para propiedades básicas (menos común)
+    my_string_prop: ACK.Prop.STRING(name="Mi String Básico") 
+```
+
+### Suscripción a Cambios RNA
+
+```python
+from ..ackit import ACK
+import bpy
+
+# Suscribirse a cambios en una propiedad de la escena
+@ACK.Data.subscribe_to_rna(bpy.types.Scene, "frame_current")
+def on_frame_change(context, scene_data, frame_value):
+    print(f"Frame cambiado a: {frame_value}")
+
+# Suscribirse a cambios basados en un data_path del contexto
+@ACK.Data.subscribe_to_rna_context("active_object.location", "x")
+def on_active_object_location_x_change(context, object_data, location_x_value):
+    if object_data:
+        print(f"Posición X del objeto activo cambiada a: {location_x_value}")
+```
+
+### Uso de Handlers de Aplicación
+
+```python
+from ..ackit import ACK
+
+# Registrar una función para que se ejecute después de cargar un archivo .blend
+@ACK.App.Handler.LOAD_POST()
+def my_load_post_handler(context):
+    print("Archivo .blend cargado!")
+
+# Registrar una función como temporizador que se ejecuta una vez después de 0.5 segundos
+@ACK.App.Timer(first_interval=0.5, one_time_only=True)
+def my_timer_callback():
+    print("Temporizador ejecutado!")
+```
+
+## Consideraciones
+
+*   La fachada `ACK` simplifica los imports y proporciona una estructura lógica.
+*   Los módulos internos (`ackit/ops`, `ackit/ui`, etc.) contienen la implementación detallada.
+*   La documentación específica de cada clase base (Operator, Panel, Node, etc.) y helper se encuentra en sus respectivos módulos o en secciones dedicadas de la API.
+*   Los valores de retorno de operadores (`{'FINISHED'}`, etc.) ahora se deben usar directamente o importar desde `ackit.enums.operator.OpsReturn`.
 
 ## Patrones de Diseño Implementados
 

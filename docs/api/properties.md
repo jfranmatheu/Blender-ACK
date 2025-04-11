@@ -1,245 +1,179 @@
 # Sistema de Propiedades en ACKit
 
-ACKit ofrece un sistema de propiedades mejorado sobre la API estándar de Blender, proporcionando una sintaxis más limpia y tipado fuerte.
+ACKit ofrece un sistema de propiedades mejorado sobre la API estándar de Blender, proporcionando una sintaxis más limpia, tipado fuerte y funcionalidad de descriptor.
 
 ## Introducción
 
-Las propiedades en Blender se utilizan para definir datos configurables para operadores, paneles y objetos. ACKit proporciona dos sistemas de propiedades:
+Las propiedades en Blender se utilizan para definir datos configurables para operadores, paneles, grupos de propiedades, nodos, etc. ACKit proporciona dos formas principales de definir propiedades a través de la fachada `ACK`:
 
-1. **Propiedades Básicas** (`ACK.Props`): Compatibles con la API estándar de Blender
-2. **Propiedades Tipadas** (`ACK.PropsWrapped`): Con tipado fuerte y sintaxis fluida
+1.  **`ACK.Prop`**: (Referencia a `ackit.data.props.PropertyTypes`) Proporciona acceso rápido a las funciones de propiedades de Blender (`bpy.props.*Property`) y algunas factorías convenientes (e.g., `ANGLE_DEGREE`, `FACTOR`, `COLOR_RGB`). Se usa principalmente para registrar propiedades manualmente o en contextos donde no se necesita la funcionalidad de descriptor/tipado fuerte.
+2.  **`ACK.PropTyped`**: (Referencia a `ackit.data.props.WrappedTypedPropertyTypes`) Proporciona un sistema basado en descriptores con **tipado fuerte**, sintaxis fluida (encadenamiento de métodos) y gestión automática de callbacks `update`. **Este es el método recomendado** para definir propiedades en clases como `ACK.Ops.Generic`, `ACK.Data.PropertyGroup`, `ACK.NE.Node`, etc.
 
-## Propiedades Básicas (ACK.Props)
+## Propiedades Tipadas (`ACK.PropTyped`) - Recomendado
 
-El sistema de propiedades básicas proporciona una interfaz consistente con la API estándar de Blender:
+Este sistema es el preferido por sus ventajas:
+
+1.  **Tipado Fuerte**: Mejor experiencia en IDEs (autocompletado, comprobaciones de tipo).
+2.  **Sintaxis Fluida**: Permite encadenar métodos (`.default()`, `.min()`, `.max()`, `.description()`, `.update()`) para configurar la propiedad.
+3.  **Funcionalidad de Descriptor**: Permite definir propiedades directamente como atributos de clase con tipo anotado.
+4.  **Gestión de `update`**: Simplifica el uso de callbacks `update`.
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
 
-# Definición de propiedades básicas
-my_int = ACK.Props.Int(name="Mi Entero", default=5, min=0, max=10)
-my_float = ACK.Props.Float(name="Mi Float", default=0.5, min=0.0, max=1.0)
-my_bool = ACK.Props.Bool(name="Mi Bool", default=True)
-my_string = ACK.Props.String(name="Mi String", default="Hola")
-my_enum = ACK.Props.Enum(name="Mi Enum", 
-                         items=[
-                             ('OPT1', "Opción 1", "Descripción de opción 1"),
-                             ('OPT2', "Opción 2", "Descripción de opción 2")
-                         ],
-                         default='OPT1')
+# Ejemplo de definición en un PropertyGroup
+class MySettings(ACK.Data.PropertyGroup):
+    # Se define como un atributo de clase
+    my_int: ACK.PropTyped.Int("Mi Entero", default=5).min(0).max(10)
+    my_float: ACK.PropTyped.Float("Mi Float", default=0.5).min(0.0).max(1.0)
+    my_bool: ACK.PropTyped.Bool("Mi Bool", default=True)
+    my_string: ACK.PropTyped.String("Mi String", default="Hola")
+    my_enum: ACK.PropTyped.Enum("Mi Enum", items=[
+                      ('OPT1', "Opción 1", "Descripción 1"),
+                      ('OPT2', "Opción 2", "Descripción 2")
+                  ]).default('OPT1')
+    my_object: ACK.PropTyped.Data.Object("Mi Objeto") # Propiedad Puntero
 ```
 
-## Propiedades Tipadas (ACK.PropsWrapped)
+### Tipos Comunes con `ACK.PropTyped`
 
-El sistema de propiedades tipadas proporciona varias ventajas sobre el sistema básico:
+| Método              | Tipo Retornado (Hint) | `bpy.props` Equivalente | Notas                                            |
+| :------------------ | :-------------------- | :---------------------- | :----------------------------------------------- |
+| `Int()`             | `int`                 | `IntProperty`           | Entero.                                          |
+| `Float()`           | `float`               | `FloatProperty`         | Punto flotante.                                  |
+| `Bool()`            | `bool`                | `BoolProperty`          | Booleano.                                        |
+| `String()`          | `str`                 | `StringProperty`        | Cadena de texto.                                 |
+| `DirPath()`         | `str`                 | `StringProperty`        | Subtipo `DIR_PATH`.                              |
+| `FilePath()`        | `str`                 | `StringProperty`        | Subtipo `FILE_PATH`.                             |
+| `FileName()`        | `str`                 | `StringProperty`        | Subtipo `FILE_NAME`.                             |
+| `Enum()`            | `str` / `set[str]`    | `EnumProperty`          | `multiple_selection=True` devuelve `set[str]`. |
+| `Vector()`          | `Vector`              | `*VectorProperty`       | Vector matemático (`mathutils.Vector`).        |
+| `Color()`           | `Color`               | `FloatVectorProperty`   | Color (`mathutils.Color`), subtipo `COLOR`.      |
+| `Matrix3x3()`       | `Matrix`              | `FloatVectorProperty`   | Matriz 3x3 (`mathutils.Matrix`).               |
+| `Matrix4x4()`       | `Matrix`              | `FloatVectorProperty`   | Matriz 4x4 (`mathutils.Matrix`).               |
+| `Angle()`           | `float`               | `FloatProperty`         | Subtipo `ANGLE`, unidad `ROTATION`.              |
+| `Factor()`          | `float`               | `FloatProperty`         | Valor entre 0.0 y 1.0.                           |
+| `Data.Pointer()`    | `bpy.types.ID`        | `PointerProperty`       | Puntero genérico (especificar `type`).         |
+| `Data.Object()`     | `bpy.types.Object`    | `PointerProperty`       | Puntero a `bpy.types.Object`.                  |
+| `Data.Material()`   | `bpy.types.Material`  | `PointerProperty`       | Puntero a `bpy.types.Material`.                |
+| `Data.Collection()` | `bpy.types.Collection` | `CollectionProperty`    | Colección (requiere `type=MyPropertyGroup`).   |
+| *(Otros punteros)*  | *(Varios)*            | `PointerProperty`       | `Mesh`, `Texture`, `Scene`, `Image`, etc.        |
 
-1. **Tipado Fuerte**: Mejor experiencia en IDEs con autocompletado y comprobaciones de tipo
-2. **Sintaxis Fluida**: Permite encadenar métodos para configurar propiedades
-3. **Validación en Tiempo de Desarrollo**: Detecta errores de configuración antes de la ejecución
+### Métodos de Configuración (Encadenables)
 
-```python
-from ...ackit import ACK
+- `.default(value)`: Establece el valor predeterminado.
+- `.min(value)`: Valor mínimo (numérico).
+- `.max(value)`: Valor máximo (numérico).
+- `.description(text)`: Texto para el tooltip.
+- `.update(callback_func)`: Añade una función callback que se ejecuta al cambiar el valor. La función recibe `(self, context)`.
+- `.items(list_of_tuples)`: Para `Enum`, define los ítems. Formato: `[(id, name, desc, icon, number), ...]`.
+- `.size(int_or_tuple)`: Para `Vector` y `Matrix`, define las dimensiones.
+- `type(bpy_type)`: Para `Pointer` y `Collection`, especifica el tipo de Blender referenciado.
 
-# Definición de propiedades tipadas
-my_int = ACK.PropsWrapped.Int("Mi Entero").default(5).min(0).max(10)
-my_float = ACK.PropsWrapped.Float("Mi Float").default(0.5).min(0.0).max(1.0)
-my_bool = ACK.PropsWrapped.Bool("Mi Bool").default(True)
-my_string = ACK.PropsWrapped.String("Mi String").default("Hola")
-my_enum = ACK.PropsWrapped.Enum("Mi Enum").items([
-              ('OPT1', "Opción 1", "Descripción de opción 1"),
-              ('OPT2', "Opción 2", "Descripción de opción 2")
-          ]).default('OPT1')
-```
+### Uso en Clases
 
-## Tipos de Propiedades Disponibles
-
-ACKit proporciona los siguientes tipos de propiedades, tanto en `ACK.Props` como en `ACK.PropsWrapped`:
-
-| Tipo | Descripción | Ejemplo |
-|------|-------------|---------|
-| `Int` | Números enteros | `ACK.PropsWrapped.Int("Cantidad").default(1).min(0)` |
-| `Float` | Números de punto flotante | `ACK.PropsWrapped.Float("Escala").default(1.0)` |
-| `Bool` | Valores booleanos | `ACK.PropsWrapped.Bool("Activado").default(True)` |
-| `String` | Cadenas de texto | `ACK.PropsWrapped.String("Nombre").default("")` |
-| `Enum` | Enumeraciones | `ACK.PropsWrapped.Enum("Tipo").items(items_list)` |
-| `Collection` | Colecciones de elementos | `ACK.PropsWrapped.Collection("Items")` |
-| `FloatVector` | Vectores de punto flotante | `ACK.PropsWrapped.FloatVector("Color").size(4)` |
-| `IntVector` | Vectores de enteros | `ACK.PropsWrapped.IntVector("Resolución").size(2)` |
-| `PointerProperty` | Referencias a otros objetos | `ACK.PropsWrapped.Pointer("Objeto").type(MyClass)` |
-
-## Configuración de Propiedades
-
-Cada tipo de propiedad tiene diferentes opciones de configuración. Algunos ejemplos comunes:
-
-### Propiedad Float
+Se definen como atributos de clase con anotación de tipo:
 
 ```python
-my_float = ACK.PropsWrapped.Float("Mi Float")
-    .default(0.5)      # Valor predeterminado
-    .min(0.0)          # Valor mínimo
-    .max(1.0)          # Valor máximo
-    .precision(3)      # Precisión decimal
-    .subtype('FACTOR') # Subtipo de la propiedad
-    .unit('LENGTH')    # Unidad de medida
-    .description("Descripción detallada") # Descripción para tooltips
-```
+from ..ackit import ACK
 
-### Propiedad Enum
-
-```python
-my_enum = ACK.PropsWrapped.Enum("Mi Enum")
-    .items([
-        ('OPT1', "Opción 1", "Descripción de opción 1", 'WORLD', 0),
-        ('OPT2', "Opción 2", "Descripción de opción 2", 'OBJECT', 1)
-    ])
-    .default('OPT1')           # Valor predeterminado
-    .update(my_update_func)    # Función de actualización
-```
-
-### Propiedad Collection
-
-```python
-my_collection = ACK.PropsWrapped.Collection("Mi Colección")
-    .type(MyPropertyClass)     # Tipo de elementos en la colección
-```
-
-## Uso en Clases
-
-Las propiedades se utilizan comúnmente en clases de Blender como operadores, paneles, y grupos de propiedades:
-
-### En Operadores
-
-```python
-from ...ackit import ACK
-
-class MyOperator(ACK.Register.Types.Ops.Generic):
+class MyOperator(ACK.Ops.Action):
     bl_idname = "object.my_operator"
     bl_label = "Mi Operador"
     
     # Propiedades del operador
-    scale = ACK.PropsWrapped.Float("Escala").default(1.0).min(0.1).max(10.0)
-    name = ACK.PropsWrapped.String("Nombre").default("Objeto")
+    scale: ACK.PropTyped.Float("Escala").default(1.0).min(0.1).max(10.0)
+    name: ACK.PropTyped.String("Nombre").default("Objeto")
     
-    def execute(self, context):
-        # Acceso a propiedades
-        scale_value = self.scale
-        name_value = self.name
-        return ACK.Returns.Operator.FINISHED
+    def action(self, context):
+        # Acceso directo a través de self
+        print(f"Escala: {self.scale}, Nombre: {self.name}")
+        # ... lógica del operador ...
+        return {'FINISHED'}
 ```
 
-### En Grupos de Propiedades
+## Propiedades Básicas (`ACK.Prop`)
+
+Este sistema es una capa fina sobre `bpy.props`. Es útil para registro manual o cuando no se necesita/desea la funcionalidad de descriptor.
 
 ```python
-from ...ackit import ACK
-
-class MySettings(ACK.Register.Types.Data.PropertyGroup):
-    enabled = ACK.PropsWrapped.Bool("Habilitado").default(True)
-    value = ACK.PropsWrapped.Float("Valor").default(0.5)
-    
-    # Registro en la escena
-    @classmethod
-    def register(cls):
-        import bpy
-        bpy.types.Scene.my_settings = ACK.Register.Property(
-            bpy.props.PointerProperty(type=cls)
-        )
-    
-    @classmethod
-    def unregister(cls):
-        import bpy
-        del bpy.types.Scene.my_settings
-```
-
-## Acceso a Propiedades
-
-Una vez registradas, las propiedades se pueden acceder de diferentes maneras:
-
-### En Operadores (durante la ejecución)
-
-```python
-def execute(self, context):
-    # Acceso directo
-    value = self.my_property
-    
-    # Modificación
-    self.my_property = new_value
-    
-    return ACK.Returns.Operator.FINISHED
-```
-
-### En Grupos de Propiedades (registradas en objetos de Blender)
-
-```python
-# Acceso a propiedades registradas en la escena
-value = context.scene.my_settings.value
-
-# Modificación
-context.scene.my_settings.value = 0.7
-```
-
-## Registro Manual de Propiedades
-
-Además de definir propiedades en clases, puedes registrar propiedades manualmente en tipos de Blender:
-
-```python
-from ...ackit import ACK
+from ..ackit import ACK
 import bpy
 
-# Registrar una propiedad en la escena
-ACK.Register.Property(
-    bpy.props.FloatProperty(name="Mi Propiedad Global"),
-    bpy.types.Scene,
-    "mi_propiedad_global"
-)
+# Definición de propiedades básicas (equivalente a bpy.props.*)
+my_int_prop_func = ACK.Prop.INT # Equivale a bpy.props.IntProperty
+my_float_prop_func = ACK.Prop.Float # Equivale a bpy.props.FloatProperty
 
-# Registrar múltiples propiedades
-ACK.Register.Properties({
-    "mi_int": bpy.props.IntProperty(name="Mi Int"),
-    "mi_float": bpy.props.FloatProperty(name="Mi Float")
-}, bpy.types.Object)
+# Ejemplo de registro manual en un tipo de Blender
+def register():
+    bpy.types.Scene.my_basic_int = my_int_prop_func(name="Entero Básico", default=10)
+    bpy.types.Scene.my_basic_float = ACK.Prop.FACTOR(name="Factor Básico") # Usa factoría
+
+def unregister():
+    del bpy.types.Scene.my_basic_int
+    del bpy.types.Scene.my_basic_float
 ```
 
-## Funciones de Actualización
+### Tipos y Factorías Comunes con `ACK.Prop`
 
-Las propiedades pueden tener funciones de actualización que se ejecutan cuando el valor cambia:
+- `FLOAT`, `INT`, `BOOL`, `STRING`, `ENUM`, `FLOAT_VECTOR`, `INT_VECTOR`, `BOOL_VECTOR`, `POINTER_CUSTOM`, `COLLECTION`: Equivalentes directos a `bpy.props.*`.
+- `ANGLE_DEGREE`, `FACTOR`: Factorías para Floats con subtipos/rangos comunes.
+- `IVECTOR_2/3/XY/XYZ/N`, `VECTOR_2/3/XY/XYZ/AXISANGLE/N`: Factorías para Vectores.
+- `COLOR_RGB/RGBA`: Factorías para Colores.
+- `MATRIX_2/3/4/N`: Factorías para Matrices.
+- `DIRPATH`, `FILEPATH`: Factorías para Strings con subtipo path.
+- `POINTER.OBJECT/MESH/etc`: Factorías para Pointers a tipos comunes.
+- `POINTER.CUSTOM(name, type, **kwargs)`: Para Pointers a tipos personalizados.
+
+## Funciones de Actualización (`update`)
+
+Con `ACK.PropTyped`, se añade fácilmente una función `update`:
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
 
-def update_value(self, context):
-    print(f"Valor actualizado a: {self.value}")
+def my_update_callback(self, context):
+    print(f"Propiedad '{self.name}' actualizada a: {self.value}")
 
-class MySettings(ACK.Register.Types.Data.PropertyGroup):
-    value = ACK.PropsWrapped.Float("Valor").default(0.5).update(update_value)
+class MySettings(ACK.Data.PropertyGroup):
+    value: ACK.PropTyped.Float("Valor").default(0.5).update(my_update_callback)
 ```
 
-## Propiedades Anidadas y Funciones de Get/Set
+**Importante:** La función `update` recibe `(self, context)`, donde `self` es la instancia de la clase contenedora (e.g., la instancia de `MySettings`).
 
-Para casos más complejos, puedes usar funciones personalizadas para obtener y establecer valores:
+## Registro Manual de Propiedades (`ACK.Data.register_property`)
+
+Aunque `ACK.PropTyped` maneja el registro automáticamente cuando se usa como atributo de clase en tipos registrados por `ackit` (como `PropertyGroup`), a veces necesitas registrar una propiedad `ACK.PropTyped` en un tipo de Blender existente (`bpy.types.Scene`, `bpy.types.Object`, etc.). Para esto se usa `ACK.Data.register_property` o `ACK.Data.batch_register_properties` desde la función `register()` de tu addon.
 
 ```python
-from ...ackit import ACK
+from ..ackit import ACK
+import bpy
 
-def get_custom_value(self):
-    # Lógica compleja para obtener el valor
-    return self.get("_custom_value", 0.0)
+# Definir la propiedad como descriptor (pero no como atributo de clase)
+my_global_prop = ACK.PropTyped.String("Propiedad Global", default="Test")
 
-def set_custom_value(self, value):
-    # Lógica compleja para establecer el valor
-    self["_custom_value"] = value * 2
+def register():
+    # Registrarla manualmente en bpy.types.Scene
+    ACK.Data.register_property(
+        bpy_type=bpy.types.Scene, 
+        property_idname="my_global_ack_prop", 
+        property=my_global_prop, # Pasar el descriptor
+        remove_on_unregister=True # Opcional: eliminarla al desregistrar
+    )
 
-class ComplexSettings(ACK.Register.Types.Data.PropertyGroup):
-    # Propiedad con funciones get/set personalizadas
-    custom_value = ACK.PropsWrapped.Float("Valor Personalizado").default(0.0).get(get_custom_value).set(set_custom_value)
+def unregister():
+    # La eliminación es automática si remove_on_unregister=True
+    pass
 ```
 
 ## Buenas Prácticas
 
-1. **Usa `ACK.PropsWrapped` para Nuevos Desarrollos**: Proporciona mejor tipado y validación
-2. **Mantén la Consistencia**: Usa el mismo sistema de propiedades en todo tu addon
-3. **Documenta tus Propiedades**: Usa el campo `description` para proporcionar información
-4. **Valida Rangos**: Define siempre `min` y `max` para propiedades numéricas cuando sea posible
-5. **Usa Subtipos Apropiados**: Facilita la edición con subtipos como 'COLOR', 'ANGLE', etc.
+1.  **Prefiere `ACK.PropTyped`**: Para propiedades en tus clases (`PropertyGroup`, `Operator`, `Node`, `Panel`, etc.) por su tipado y sintaxis.
+2.  **Usa `ACK.Prop` o `bpy.props`**: Para registro manual directo en `bpy.types` si no necesitas las características de `PropTyped`.
+3.  **Consistencia**: Elige un estilo y mantenlo.
+4.  **Documenta**: Usa `.description()` con `PropTyped` o el argumento `description=` con `Prop`.
+5.  **Valida Rangos**: Usa `.min()` y `.max()`.
+6.  **Subtipos**: Usa subtipos (`subtype='COLOR'`, etc.) para mejorar la UI.
 
 ## Referencia Completa
 

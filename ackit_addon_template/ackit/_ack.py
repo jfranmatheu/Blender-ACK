@@ -54,10 +54,14 @@ def NodeOutput(socket_type: Type[SocketT]) -> SocketT:
 
 
 class ACK:
-    # Core utility - Keep top-level? OK for now.
+    # Core utility polling functions/decorators.
     Poll = Polling
 
-    class OPS:
+    # Fast-access to Props. (they should not be here for consistency but they are heavily used and need a more direct access)
+    Prop = PropertyTypes  # Alias for DATA.Prop.
+    PropTyped = WrappedTypedPropertyTypes  # Alias for DATA.PropTyped.
+
+    class Ops:
         """Base types, creators, and config for Operators."""
         Generic = Operator
         Action = Action
@@ -68,9 +72,9 @@ class ACK:
         add_metadata = metadata.Operator
         add_flag = flags.OPERATOR
         add_modal_flag = flags.MODAL
-        add_condition = Polling # Standardized alias
-        # Registration/Other
-        register_shortcut = object() # TODO
+        add_run_condition = Polling # alias of ACK.Poll
+        # Other (Example)
+        # register_shortcut = ... # TODO
 
     class UI:
         """Base types, creators, and config for UI elements."""
@@ -85,8 +89,8 @@ class ACK:
         create_piemenu_from_func = PieMenu.from_function # Standardized name
         create_popover_from_func = Popover.from_function # Standardized name
         # Configuration
-        add_flag = flags.PANEL # Keep specific name? add_panel_flag maybe better
-        add_condition = Polling # Standardized alias
+        add_panel_flag = flags.PANEL
+        add_display_condition = Polling # alias of ACK.Poll
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""
@@ -102,25 +106,24 @@ class ACK:
         new_output = NodeOutput
         socket_types = socket_types
 
-    class DATA:
-        """Base types and property definitions for Data."""
+    class Data:
+        """Base types, property definitions, and data-related registration."""
+        # Base Types
         AddonPreferences = AddonPreferences
         PropertyGroup = PropertyGroup
-        # Property Definition Types (Moved from top-level)
+        # Property Definition Types
         Prop = PropertyTypes
         PropTyped = WrappedTypedPropertyTypes
+        # Property Registration Helpers
+        register_property = reg_helpers.register_property
+        batch_register_properties = reg_helpers.batch_register_properties
+        # PropertyGroup Registration (Conceptual)
+        PropertyGroupRole = object() # Replace with actual PG registration class/object
+                      # e.g., ACK.DATA.PG.CHILD(...) or ACK.DATA.PG.ROOT(...)
+        # RNA Subscription (MsgBus)
+        subscribe_to_rna = object()
 
-    class Register:
-        """Centralized registration functions/decorators."""
-        # Property registration (Moved from DATA aliases)
-        property = reg_helpers.register_property
-        properties_batch = reg_helpers.batch_register_properties
-        # TODO: Add others (PG, Handler, Timer, Msgbus...)
-        # PropertyGroup = _register_pg_deco
-        # AppHandler = _register_handler_deco
-        # AppTimer = _register_timer_deco
-        # MsgbusListener = _register_msgbus_deco
-        # ... etc
-
-
-# __all__ = ['ACK'] # Ensure __all__ is updated if needed
+    class App: # Or Application?
+        """Application-level handlers, timers, etc."""
+        Handler = object()
+        Timer = object()

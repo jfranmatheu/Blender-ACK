@@ -8,8 +8,12 @@ from ._ack import ACK
 # Expose top-level enums if desired
 from . import enums
 
+# Expose globals utility facade class.
+from .globals import GLOBALS
+
 # Expose core loader for addon registration
 from .core.addon_loader import AddonLoader
+from .core.auto_load import AutoLoad
 
 # Expose AutoCode if needed
 from .auto_code import AutoCode # Assuming auto_code.py is still top-level

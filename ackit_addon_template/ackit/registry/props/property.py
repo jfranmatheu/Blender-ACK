@@ -13,6 +13,9 @@ IdentityMatrix_4 = Matrix.Identity(4)
 
 
 class PropertyTypes:
+    ''' Utility to fast create different property types, some based on presets.
+        Use it for PropertyGroup properties or to register properties in bpy.types. '''
+
     FLOAT = FloatProperty
     INT = IntProperty
     BOOL = BoolProperty

@@ -96,8 +96,9 @@ class WrappedPropertyDescriptor(Generic[T]):
         layout.prop(prop_owner, self._prop_name)
 
 class WrappedTypedPropertyTypes:
-    """Factory for creating wrapped properties with proper typing"""
-    
+    """Factory for creating wrapped properties with proper typing.
+        Use them in Operators and Nodes. """
+
     @classmethod
     def Float(cls, name: str = '', **kwargs) -> WrappedPropertyDescriptor[float]:
         return WrappedPropertyDescriptor[float](FloatProperty, name=name, **kwargs)

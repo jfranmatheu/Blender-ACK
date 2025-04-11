@@ -19,9 +19,7 @@ class Polling:
         """ Add polling function to the decorated class. """
 
         def wrapper(cls: Type[T]) -> Type[T]:
-            if not hasattr(cls, 'poll'):
-                # Does not apply to the current class.
-                return cls
+            assert hasattr(cls, 'poll'), f"Polling decorator does not apply to class {cls.__name__}, {cls.__module__}"
             # NOTE: Operator.poll() should handle the execution of the '_polling_functions'.
             if not hasattr(cls, '_polling_functions') or cls._polling_functions is None:
                 cls._polling_functions = set()
@@ -53,7 +51,7 @@ class Polling:
             
             # Use the decorator
             @HAS_MATERIAL
-            class MaterialOperator(ACK.Register.Types.Ops.Generic):
+            class MaterialOperator(ACK.RegType.Ops.Generic):
                 # Implementation...
             ```
         """
@@ -75,7 +73,7 @@ class Polling:
             ```python
             # Use a custom polling function
             @Polling.custom(lambda context: context.active_object and len(context.active_object.material_slots) > 2)
-            class MultiMaterialOperator(ACK.Register.Types.Ops.Generic):
+            class MultiMaterialOperator(ACK.RegType.Ops.Generic):
                 # Implementation...
             ```
         """

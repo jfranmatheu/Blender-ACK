@@ -32,8 +32,8 @@ def register_property(bpy_type, property_idname: str, property: WrappedPropertyD
         to_unregister_properties.append((bpy_type, property_idname))
 
 
-def batch_register_properties(bpy_type: Type, *properties: Tuple[str, WrappedPropertyDescriptor], remove_on_unregister: bool = False):
-    for property_idname, property_wrapper in properties:
+def batch_register_properties(bpy_type: Type, remove_on_unregister: bool = False, **properties: WrappedPropertyDescriptor):
+    for property_idname, property_wrapper in properties.items():
         register_property(bpy_type, property_idname, property_wrapper, remove_on_unregister=remove_on_unregister)
 
 

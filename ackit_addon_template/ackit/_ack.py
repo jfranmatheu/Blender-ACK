@@ -54,195 +54,73 @@ def NodeOutput(socket_type: Type[SocketT]) -> SocketT:
 
 
 class ACK:
-    # Polling functions/decorators.
+    # Core utility - Keep top-level? OK for now.
     Poll = Polling
 
-    # Property Accessors (Defining property types)
-    Prop = PropertyTypes
-    PropTyped = WrappedTypedPropertyTypes
-
     class OPS:
-        """Base types and helpers for Blender Operators."""
+        """Base types, creators, and config for Operators."""
         Generic = Operator
         Action = Action
         Modal = Modal
-
-        # Create types from functions with these decorators.
+        # Creators
         create_action_from_func = Action.from_function
-
-        # Decorators for OPS BTypes classes.
+        # Configuration
         add_metadata = metadata.Operator
         add_flag = flags.OPERATOR
         add_modal_flag = flags.MODAL
-        add_run_condition = Polling  # Alias.
-
-        register_shortcut = object()  # TODO
+        add_condition = Polling # Standardized alias
+        # Registration/Other
+        register_shortcut = object() # TODO
 
     class UI:
-        """Base types and helpers for Blender UI elements."""
+        """Base types, creators, and config for UI elements."""
         Panel = Panel
         Menu = Menu
         PieMenu = PieMenu
         Popover = Popover
         UIList = UIList
-        
-        # Create types from functions with these decorators.
-        create_panel_from_function      = PanelFromFunction
-        create_menu_from_function       = Menu.from_function
-        create_piemenu_from_function    = PieMenu.from_function
-        create_popover_from_function    = Popover.from_function
-
-        # Decorators for UI BTypes classes.
-        add_panel_flag = flags.PANEL
-        add_display_condition = Polling  # Alias.
+        # Creators
+        create_panel_from_func = PanelFromFunction # Standardized name
+        create_menu_from_func = Menu.from_function # Standardized name
+        create_piemenu_from_func = PieMenu.from_function # Standardized name
+        create_popover_from_func = Popover.from_function # Standardized name
+        # Configuration
+        add_flag = flags.PANEL # Keep specific name? add_panel_flag maybe better
+        add_condition = Polling # Standardized alias
 
     class NE: # Node Editor
-        """Base types and helpers for Blender Node Editor elements."""
+        """Base types, creators, and config for Node Editor."""
         Node = Node
         Tree = NodeTree
         Socket = NodeSocket
-
-        # Decorators for NodeEditor BTypes classes.
-        add_node_metadata = metadata.Node
-        add_socket_metadata = metadata.NodeSocket
-        add_node_to_category = flags.NODE_CATEGORY
-
-        # Used to define inputs and outputs in the custom Nodes.
+        # Configuration
+        add_node_metadata = metadata.Node # Keep specific name
+        add_socket_metadata = metadata.NodeSocket # Keep specific name
+        add_node_to_category = flags.NODE_CATEGORY # Keep specific name
+        # Socket Definition
         new_input = NodeInput
         new_output = NodeOutput
         socket_types = socket_types
 
     class DATA:
-        """Base types and helpers for Blender Data storage."""
+        """Base types and property definitions for Data."""
         AddonPreferences = AddonPreferences
         PropertyGroup = PropertyGroup
-
-        # Helpers to register properties in bpy.types.
-        register_property = reg_helpers.register_property  # Alias.
-        batch_register_properties = reg_helpers.batch_register_properties  # Alias.
-
-    class Register:
-        """Register properties, property groups, app handlers, shortcuts etc."""
-        property = reg_helpers.register_property
-        properties_batch = reg_helpers.batch_register_properties
-        # TODO: PG.CHILD AND PG.ROOT, Handler, Timer, RNA_SUB...
-        '''PropertyGroup = _register_pg_deco
-        AppHandler = _register_handler_deco
-        AppTimer = _register_timer_deco
-        MsgbusListener = _register_msgbus_deco'''
-
-    Reg = Register  # Alias
-
-
-
-'''
-# Combined Approach: V4 Verb-Based + BType Accessor
-class ACK_verb:
-    """
-    ACK Facade: Combines Verb-Based actions (Define, Register, Create, Configure)
-    with a direct BType accessor grouped by Blender element type.
-    """
-    # ==================================================
-    # Verb-Based Structure (Approach V4 - Primary)
-    # ==================================================
-
-    # === Define (Base types & Accessors for structure definition) ===
-    class Define:
-        """Access base types for inheritance and utilities for defining structure."""
-        # --- BTypes for Inheritance (Canonical definitions) ---
-        class Ops:
-            Generic = Operator
-            Action = Action # Often Operator + Flags
-            Modal = Modal
-        
-        class UI:
-            Panel = Panel
-            Menu = Menu
-            PieMenu = PieMenu
-            Popover = Popover
-            UIList = UIList
-
-        class Data:
-            AddonPreferences = AddonPreferences
-            PropertyGroup = PropertyGroup
-
-        class NE:
-            # Node Editor (NE)
-            Node = Node
-            NodeTree = NodeTree
-            NodeSocket = NodeSocket
-        # --- End BTypes ---
-
-        class FromFunction:
-            """Create BTypes directly from functions using decorators."""
-            ACTION = Action.from_function
-            PANEL = PanelFromFunction
-            MENU = Menu.from_function
-            PIE_MENU = PieMenu.from_function
-            POPOVER = Popover.from_function
-
-        # Property Accessors (Defining property types)
+        # Property Definition Types (Moved from top-level)
         Prop = PropertyTypes
         PropTyped = WrappedTypedPropertyTypes
 
-        # Node Utilities (Defining sockets)
-        NodeInput = NodeInput
-        NodeOutput = NodeOutput
-        NodeSocketTypes = socket_types
-
-    Def = Define  # Alias.
-
-    # === Register (Direct calls & registering decorators) ===
     class Register:
-        """Register properties, property groups, app handlers, shortcuts etc."""
-        Property = reg_helpers.register_property
-        PropertiesBatch = reg_helpers.batch_register_properties
+        """Centralized registration functions/decorators."""
+        # Property registration (Moved from DATA aliases)
+        property = reg_helpers.register_property
+        properties_batch = reg_helpers.batch_register_properties
+        # TODO: Add others (PG, Handler, Timer, Msgbus...)
         # PropertyGroup = _register_pg_deco
         # AppHandler = _register_handler_deco
         # AppTimer = _register_timer_deco
         # MsgbusListener = _register_msgbus_deco
-        # OperatorShortcut = _register_shortcut_deco
+        # ... etc
 
-    Reg = Register  # Alias.
 
-    # === Configure (Decorators adding metadata/flags/poll to existing BTypes) ===
-    class Configure:
-        """Configure existing BType classes using decorators (Metadata, Flags, Polling)."""
-        Metadata = metadata
-        Flags = flags
-        Polling = Polling
-
-    Conf = Configure  # Alias.
-    
-    
-    # ==================================================
-    # BType Grouped Accessor (Alternative)
-    # ==================================================
-    class BTypes:
-        """Alternative accessor for base BTypes, grouped by element type."""
-
-        class Ops:
-            """Base types for Blender Operators."""
-            Generic = Operator        # Alias to canonical definition
-            Action = Action   # Alias
-            Modal = Modal     # Alias
-
-        class UI:
-            """Base types for Blender UI elements."""
-            Panel = Panel             # Alias
-            Menu = Menu               # Alias
-            PieMenu = PieMenu         # Alias
-            Popover = Popover         # Alias
-            UIList = UIList           # Alias
-
-        class NE: # Node Editor
-            """Base types for Blender Node Editor elements."""
-            Node = Node               # Alias
-            Tree = NodeTree           # Alias
-            Socket = NodeSocket       # Alias
-
-        class Data:
-            """Base types for Blender Data storage."""
-            AddonPreferences = AddonPreferences # Alias
-            PropertyGroup = PropertyGroup       # Alias
-'''
+# __all__ = ['ACK'] # Ensure __all__ is updated if needed

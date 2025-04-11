@@ -112,18 +112,18 @@ class ACK:
         AddonPreferences = AddonPreferences
         PropertyGroup = PropertyGroup
         # Property Definition Types
-        Prop = PropertyTypes
-        PropTyped = WrappedTypedPropertyTypes
+        Prop = PropertyTypes  # annotation
+        PropTyped = WrappedTypedPropertyTypes  # descriptor
         # Property Registration Helpers
         register_property = reg_helpers.register_property
         batch_register_properties = reg_helpers.batch_register_properties
         # PropertyGroup Registration (Conceptual)
-        PropertyGroupRole = object() # Replace with actual PG registration class/object
-                      # e.g., ACK.DATA.PG.CHILD(...) or ACK.DATA.PG.ROOT(...)
+        PropertyGroupRole = object()  # use as decorator
         # RNA Subscription (MsgBus)
-        subscribe_to_rna = object()
+        subscribe_to_rna = SubscribeToRNAChange  # use as decorator
+        subscribe_to_rna_context = SubscribeToRNAContextChange  # use as decorator
 
     class App: # Or Application?
         """Application-level handlers, timers, etc."""
-        Handler = object()
-        Timer = object()
+        Handler = RegisterHandler  # use as decorator
+        Timer = RegisterTimer  # use as decorator

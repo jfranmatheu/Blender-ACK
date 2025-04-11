@@ -1,15 +1,15 @@
 from ...ackit import ACK
 
 
-@ACK.Flags.OPERATOR.REGISTER_UNDO
+@ACK.Ops.add_flag.REGISTER_UNDO
 @ACK.Poll.ACTIVE_OBJECT.MESH
 @ACK.Poll.MODE.OBJECT
-class ActionOperator(ACK.Register.Types.Ops.Action):
+class ActionOperator(ACK.Ops.Action):
     label = "Test Action"
     tooltip = "Transforms active mesh object location in Z axis"
 
-    enable = ACK.PropsWrapped.Bool("Enable")
-    z_location = ACK.PropsWrapped.Float("Z")
+    enable = ACK.PropTyped.Bool("Enable")
+    z_location = ACK.PropTyped.Float("Z")
 
     def draw_ui(self, context, layout):
         # print(self.props.__dict__)  # This will show you all properties in the DescriptorPropertyCollection

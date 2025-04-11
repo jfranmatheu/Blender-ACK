@@ -1,7 +1,7 @@
 from ...ackit import ACK
 
 
-class NodeTree(ACK.Register.Types.Nodes.Tree):
+class NodeTree(ACK.NE.Tree):
     bl_label = "ACK Example Node Tree"
     
     def get_input_nodes(self):

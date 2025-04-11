@@ -8,7 +8,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from ..debug.output import print_debug
-from .utils import get_ordered_pg_classes_to_register
+from .reg_utils import get_ordered_pg_classes_to_register
 
 __all__ = [
     'BTypes',

@@ -79,3 +79,5 @@ def unregister():
         km_items: KeyMapItems = km.keymap_items
         if kmi := km_items.get(shortcut.operator.bl_idname):
             km_items.remove(kmi)
+            
+    operator_shortcuts.clear()

@@ -122,13 +122,13 @@ class BaseType(object):
         cls.registered = True
 
         # Handle wrapped properties (Descriptors).
-        for name, value in cls.__dict__.items():
+        for name, value in list(cls.__dict__.items()):
             # WrappedPropertyDescriptor.
             if hasattr(value, 'create_property'):
                 value.create_property(name, cls)
 
         if isinstance(cls, bpy.types.Node):
-            for name, value in cls.__dict__.items():
+            for name, value in list(cls.__dict__.items()):
                 # NodeSocketWrapper.
                 if hasattr(value, '_ensure_socket_exists'):
                     if value.is_input:

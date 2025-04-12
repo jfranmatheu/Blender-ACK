@@ -121,7 +121,7 @@ def generate_types_py(filename: str, filter_module: str | None = None, types_ali
     if parent_classes != set():
         pg_classes.extend(list(parent_classes))
 
-    from ..registry.utils import get_ordered_pg_classes_to_register
+    from ..core.reg_utils import get_ordered_pg_classes_to_register
     pg_sorted_classes: list[PropertyGroup] = get_ordered_pg_classes_to_register(pg_classes)
 
     pg_classes: set[PropertyGroup] = set(pg_classes)
@@ -167,7 +167,7 @@ def generate_types_py(filename: str, filter_module: str | None = None, types_ali
             f.write("import bl_ext\n")
 
         if filter_module is None:
-            from ..registry.reg_helpers.props import to_register_properties
+            from ..data.helpers import to_register_properties
             import_bpy_types = {'Context'}
             for bpy_type, props_wrappers in to_register_properties.items():
                 import_bpy_types.add(bpy_type.__name__)

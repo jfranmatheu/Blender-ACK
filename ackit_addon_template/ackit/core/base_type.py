@@ -3,10 +3,10 @@ from typing import Type, List
 
 import bpy
 
-from ...globals import GLOBALS
-from ...debug.output import print_debug
-from ..utils import get_subclasses_recursive
-from ..btypes import BTypes
+from ..globals import GLOBALS
+from ..debug.output import print_debug
+from .reg_utils import get_subclasses_recursive
+from .btypes import BTypes
 
 
 __all__ = [
@@ -149,8 +149,8 @@ class BaseType(object):
 
 def init():
     for subcls in BaseType.__subclasses_recursive__():
-        if 'reg_types' in subcls.__module__:
-           # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'reg_types'.
+        if 'btypes' in subcls.__module__:
+           # SKIP: IF THE SUBCLASS IS INSIDE THE some of the ackit module 'btypes' submodules where base types are at.
            print(f"INFO! SKIP: {subcls.__name__} - {subcls.__module__}")
            continue
         # print(f"INFO! tag register: {subcls.__name__} - {subcls.__module__}")

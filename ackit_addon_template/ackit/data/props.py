@@ -6,10 +6,6 @@ from bpy.props import *
 from bpy import types as btypes
 from mathutils import Color, Vector, Matrix
 
-# Updated relative imports - adjust paths as necessary
-from ..ne.btypes import Node, NodeSocket # From ne/btypes/node.py and ne/btypes/node_socket.py
-from ..utils.callback import CallbackList # Check if utils/callback.py exists
-
 
 __all__ = [
     'PropertyTypes',

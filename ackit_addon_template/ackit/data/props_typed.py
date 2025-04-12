@@ -6,8 +6,6 @@ from bpy.props import *
 from bpy import types as btypes
 from mathutils import Color, Vector, Matrix
 
-# Updated relative imports - adjust paths as necessary
-from ..ne.btypes import Node, NodeSocket # From ne/btypes/node.py and ne/btypes/node_socket.py
 from ..utils.callback import CallbackList # Check if utils/callback.py exists
 
 
@@ -246,10 +244,10 @@ class WrappedTypedPropertyTypes:
             return WrappedPropertyDescriptor[btypes.Texture](PointerProperty, name=name, type=btypes.Texture, **kwargs)
 
         @staticmethod
-        def Collection(name: str = '', type: Type[btypes.PropertyGroup] = None, **kwargs) -> WrappedPropertyDescriptor[btypes.bpy_prop_collection]:
+        def Collection(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Collection]:
             if type is None:
                 raise ValueError("CollectionProperty requires a 'type' argument (a PropertyGroup subclass).")
-            return WrappedPropertyDescriptor[btypes.bpy_prop_collection](CollectionProperty, name=name, type=type, **kwargs)
+            return WrappedPropertyDescriptor[btypes.Collection](PointerProperty, name=name, type=btypes.Collection, **kwargs)
 
         @staticmethod
         def Scene(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Scene]:

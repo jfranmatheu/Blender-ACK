@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Dict
 
 from ..globals import GLOBALS
-from ..registry.btypes import BTypes
-from ..registry.props.typed.wrapped import WrappedPropertyDescriptor
+from ..core.btypes import BTypes
+from ..data.props_typed import WrappedPropertyDescriptor
 
 def _get_property_type_hint(prop: 'WrappedPropertyDescriptor') -> str:
     """Get the appropriate type hint for a property descriptor"""

@@ -96,10 +96,11 @@ def prop_type_to_py_type(prop) -> str:
 def generate_types_py(filename: str, filter_module: str | None = None, types_alias: str = GLOBALS.ADDON_MODULE_SHORT) -> None:
     """Generates the Typing for PropertyGroup types."""
     # Get PropertyGroup classes in the proper order.
-    from ..registry.btypes import BTypes
+    from ..core.btypes import BTypes
     pg_classes = BTypes.PropertyGroup.get_classes()
-    prefs_cls = BTypes.AddonPreferences.get_classes()[0]
-    pg_classes.append(prefs_cls)
+    prefs_classes = BTypes.AddonPreferences.get_classes()
+    if prefs_classes != []:
+        pg_classes.append(prefs_classes[0])
 
     if pg_classes == []:
         # SAD. No PropertyGroup classes to process... :-(

@@ -55,6 +55,9 @@ class AddonLoader:
 
         cls.modules = get_all_submodules(GLOBALS.ADDON_SOURCE_PATH)
         cls.fetch_module_callbacks()
+        
+        print(cls.modules)
+        
         if cls.use_autoload:
             cls.ordered_classes = get_ordered_classes_to_register(cls.modules)
 

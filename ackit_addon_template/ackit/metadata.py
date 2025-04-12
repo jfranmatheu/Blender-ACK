@@ -4,7 +4,7 @@ from typing import Callable, Type, Any
 # Assuming base classes are imported into the __init__.py of their respective btypes folders
 from .ne.btypes import Node
 from .ne.btypes import NodeSocket
-from .ops.btypes import Operator # Assuming Operator base class is in ops.btypes
+from .ops.btypes import Generic # Assuming Operator base class is in ops.btypes
 
 
 # Type hints updated to use Any for now, or specific types if available
@@ -26,8 +26,8 @@ def NodeSocket(label: str | None = None, tooltip: str = "", subtype_label: str =
         return cls
     return wrapper
 
-def Operator(label: str | None = None, tooltip: str = "") -> Callable[[Type[Operator]], Type[Operator]]:
-    def wrapper(cls: Type[Operator]):
+def Operator(label: str | None = None, tooltip: str = "") -> Callable[[Type[Generic]], Type[Generic]]:
+    def wrapper(cls: Type[Generic]):
         cls.bl_label = label or cls.__name__
         cls.bl_description = tooltip
         return cls

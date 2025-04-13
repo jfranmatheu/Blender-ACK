@@ -1,212 +1,227 @@
-import bpy # Add bpy import
+import bpy
 from collections import defaultdict
+import re # For parsing menu ID back to path
 
-import nodeitems_utils
-from nodeitems_utils import NodeCategory, NodeItem, _node_categories # Add _node_categories import
+from ..core.btypes import BTypes
+from ..globals import GLOBALS
 
-# Updated relative imports
-from ..core.btypes import BTypes # Assuming BTypes comes from core/btypes.py
-from ..globals import GLOBALS # Check globals path
+# --- Global storage ---
+# Stores the generated hierarchy, e.g., {'Inputs': {'Data': {'__nodes__': [NodeA]}, '__nodes__': [NodeB]}, ...}
+_category_hierarchy = {} 
+# Stores dynamically created menu classes, mapping bl_idname to the class
+_registered_menu_classes = {} 
 
+# Special key for storing direct node classes within a category level
+_NODE_LIST_KEY = '__nodes__'
 
-# Store the dynamically created category class
-node_category_class = None
-# Store registered node categories for unregistration
-node_categories_list = []
+# --- Hierarchy Building ---
 
+def add_to_hierarchy(hierarchy, path_parts, node_class):
+    """Recursively adds a node class to the nested dictionary hierarchy."""
+    if not path_parts:
+        return # Should not happen
 
-# Function to create the base NodeCategory class dynamically
-def get_node_category_class():
-    global node_category_class
-    if node_category_class is None:
-        # Use getattr for safer access to GLOBALS attributes
-        tree_type_name = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
+    current_part = path_parts[0]
+    remaining_parts = path_parts[1:]
+
+    if current_part not in hierarchy:
+        hierarchy[current_part] = {} 
+
+    if not remaining_parts:
+        # Leaf level: Add node class to the list under the special key
+        if _NODE_LIST_KEY not in hierarchy[current_part]:
+            hierarchy[current_part][_NODE_LIST_KEY] = []
+        hierarchy[current_part][_NODE_LIST_KEY].append(node_class)
+    else:
+        # Go deeper
+        add_to_hierarchy(hierarchy[current_part], remaining_parts, node_class)
+
+def build_hierarchy():
+    """Builds the nested category hierarchy from registered node classes."""
+    global _category_hierarchy
+    _category_hierarchy.clear()
+    node_classes = BTypes.Node.get_classes()
+
+    for node_class in node_classes:
+        category_path = getattr(node_class, '_node_category', None)
+        if category_path:
+            path_parts = [p.strip() for p in category_path.strip('/').split('/') if p.strip()]
+            if path_parts:
+                add_to_hierarchy(_category_hierarchy, path_parts, node_class)
+            else:
+                print(f"Warning: Node class {node_class.__name__} has invalid category path: '{category_path}'")
+        else:
+            # Optionally add nodes without a category to a default one, e.g., 'Uncategorized'
+            # add_to_hierarchy(_category_hierarchy, ['Uncategorized'], node_class)
+            pass 
+
+# --- Dynamic Menu Drawing ---
+
+def draw_submenu(self, context):
+    """Generic draw function for all dynamically created submenus."""
+    layout = self.layout
+    
+    # Determine the path this menu represents from its bl_idname
+    # Example: ACKIT_MT_category_INPUTS_DATA -> ['Inputs', 'Data']
+    prefix = "ACKIT_MT_category_"
+    if not self.bl_idname.startswith(prefix):
+        return # Should not happen
         
-        # Define the poll method using the addon's tree type
-        def poll(cls, context):
-            return context.space_data.tree_type == tree_type_name
-        
-        # Create the dynamic class
-        node_category_class = type(
-            f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_NodeCategory",
-            (NodeCategory,),
-            {
-                'poll': classmethod(poll)
-            }
-        )
-    return node_category_class
+    path_str = self.bl_idname[len(prefix):]
+    path_parts = [p.replace('_', ' ').title() for p in path_str.split('_') if p] # Reconstruct path parts
 
-
-# Copied and adapted function to register multi-level categories
-def register_node_categories_multi(identifier, cat_list, subcat_list):
-    if identifier in _node_categories:
-        print(f"Warning: Node categories list '{identifier}' already registered. Skipping.")
-        # raise KeyError("Node categories list '%s' already registered" % identifier)
+    # Find the corresponding level in the hierarchy
+    current_level = _category_hierarchy
+    try:
+        for part in path_parts:
+            current_level = current_level[part]
+    except KeyError:
+        print(f"Error: Could not find hierarchy path for menu {self.bl_idname}")
         return
 
-    # works as draw function for menus
-    def draw_node_item(self, context):
-        layout = self.layout
-        col = layout.column(align=True)
-        for item in self.category.items(context):
-            # Check if item is a subcategory (has identifier) or a node item
-            if hasattr(item, 'identifier') and isinstance(item, NodeCategory):
-                layout.menu(f"NODE_MT_category_{item.identifier}")
-            elif isinstance(item, NodeItem):
-                # Use node_item.draw method if available, otherwise default draw
-                draw_func = getattr(item, "draw", None)
-                if draw_func:
-                    draw_func(item, col, context)
-                else:
-                    col.operator("node.add_node", text=item.label).type = item.nodetype
-            else:
-                # Handle potential separators or other custom items if needed
-                pass
+    # Get sorted subcategories and nodes at this level
+    # Filter out the special node list key when getting subcategory keys
+    subcat_keys = sorted([k for k, v in current_level.items() if k != _NODE_LIST_KEY and isinstance(v, dict)])
+    # Get direct nodes using the special key
+    direct_nodes = sorted(current_level.get(_NODE_LIST_KEY, []), key=lambda nc: nc.bl_label)
+
+    # 1. Draw Submenus
+    for subcat_key in subcat_keys:
+        sub_path_parts = path_parts + [subcat_key]
+        # Construct the bl_idname for the submenu
+        sub_menu_idname = prefix + "_".join(p.upper().replace(' ', '_') for p in sub_path_parts)
+        if sub_menu_idname in _registered_menu_classes:
+            layout.menu(sub_menu_idname)
+        else:
+             print(f"Warning: Submenu class {sub_menu_idname} not found during drawing.")
+
+    # Add separator if there are both submenus and direct items
+    if subcat_keys and direct_nodes:
+        layout.separator()
+
+    # 2. Draw Node Operators
+    for node_class in direct_nodes:
+        op = layout.operator("node.add_node", text=node_class.bl_label)
+        op.type = node_class.get_idname()
+        # Optionally set use_transform for placement: op.use_transform = True
 
 
-    menu_types = []
-    all_cats = subcat_list + cat_list
-    for cat in all_cats:
-        # Only register menus for categories that actually have items or subcategories
-        if cat.items(None): # Pass None context as items should be static list
-            menu_type = type(f"NODE_MT_category_{cat.identifier}", (bpy.types.Menu,), {
-                "bl_space_type": 'NODE_EDITOR',
-                "bl_label": cat.name,
-                "category": cat,
-                "poll": cat.poll,
-                "draw": draw_node_item,
-            })
+# --- Dynamic Menu Creation ---
 
-            menu_types.append(menu_type)
-            bpy.utils.register_class(menu_type)
+def create_menus_recursive(hierarchy_dict, identifier_prefix="ACKIT_MT_category", parent_parts=[]):
+    """Recursively creates bpy.types.Menu classes for the hierarchy."""
+    global _registered_menu_classes
+    
+    # Iterate over actual category keys, excluding the special node list key
+    sorted_keys = sorted([k for k in hierarchy_dict.keys() if k != _NODE_LIST_KEY])
 
-    def draw_add_menu(self, context):
-        layout = self.layout
-        for cat in cat_list: # Only draw top-level categories in the main add menu
-            if cat.poll(context):
-                layout.menu(f"NODE_MT_category_{cat.identifier}")
+    for key in sorted_keys:
+        current_parts = parent_parts + [key]
+        menu_idname = identifier_prefix + "_" + "_".join(p.upper().replace(' ', '_') for p in current_parts)
+        menu_label = key.replace('_', ' ').title()
 
-    # stores: (categories list, menu draw function, submenu types)
-    _node_categories[identifier] = (all_cats, draw_add_menu, menu_types)
-    # Store the identifier and menu types for unregistration
-    # Ensure NODE_EDITOR_MENUS exists on GLOBALS
-    if not hasattr(GLOBALS, 'NODE_EDITOR_MENUS'):
-        GLOBALS.NODE_EDITOR_MENUS = {}
-    GLOBALS.NODE_EDITOR_MENUS[identifier] = menu_types
+        if menu_idname not in _registered_menu_classes:
+            # Create the menu class dynamically
+            menu_cls = type(
+                menu_idname, 
+                (bpy.types.Menu,), 
+                {
+                    "bl_idname": menu_idname, 
+                    "bl_label": menu_label, 
+                    "draw": draw_submenu # Use the generic draw function
+                }
+            )
+            _registered_menu_classes[menu_idname] = menu_cls
+            
+            # Recurse for subcategories within this key
+            if isinstance(hierarchy_dict[key], dict):
+                create_menus_recursive(hierarchy_dict[key], identifier_prefix, current_parts)
 
+
+# --- Main Add Menu Integration ---
+
+def draw_ackit_add_menu(self, context):
+    """Draw function appended to NODE_MT_add."""
+    # Check context: We need the node editor space and the correct tree type
+    if not (context.space_data and hasattr(context.space_data, 'tree_type')):
+        return
+    
+    module_short = getattr(GLOBALS, 'ADDON_MODULE_SHORT', 'ACKIT') 
+    expected_tree_type = f"{module_short.upper()}_TREETYPE"
+    if context.space_data.tree_type != expected_tree_type:
+        return
+
+    layout = self.layout
+    
+    # Draw top-level menus from the hierarchy
+    # Filter out the special node list key
+    sorted_top_keys = sorted([k for k in _category_hierarchy.keys() if k != _NODE_LIST_KEY])
+
+    for key in sorted_top_keys:
+        menu_idname = f"ACKIT_MT_category_{key.upper().replace(' ', '_')}"
+        if menu_idname in _registered_menu_classes:
+             layout.menu(menu_idname)
+        else:
+            print(f"Warning: Top-level menu class {menu_idname} not found.")
+            # Optionally draw a label as fallback
+            # layout.label(text=key.title()) 
+
+    # Optionally draw nodes without a category directly here (if they were stored under _NODE_LIST_KEY at the root)
+    # root_nodes = sorted(_category_hierarchy.get(_NODE_LIST_KEY, []), key=lambda nc: nc.bl_label)
+    # if root_nodes:
+    #     layout.separator()
+    #     for node_class in root_nodes:
+    #         op = layout.operator("node.add_node", text=node_class.bl_label)
+    #         op.type = node_class.get_idname()
+
+
+# --- Registration ---
 
 def register():
-    global node_categories_list
-    node_categories_list.clear() # Clear previous list if re-registering
-
-    # Initialize the global dictionary for menus if it doesn't exist
-    if not hasattr(GLOBALS, 'NODE_EDITOR_MENUS'):
-        GLOBALS.NODE_EDITOR_MENUS = {}
-
-    node_cat_class = get_node_category_class()
-    if not node_cat_class:
-        print("Error: Could not create node category class.")
-        return
-        
-    cat_node_relationship: dict[str, list] = defaultdict(list)
-    subcat_node_relationship: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
-    node_classes = BTypes.Node.get_classes()
+    global _registered_menu_classes
     
-    # Organize nodes based on their category path
-    for node in node_classes:
-        category_path = getattr(node, '_node_category', None)
-        if category_path:
-            parts = category_path.strip('/').split('/')
-            cat_name = parts[0].strip()
-            
-            if len(parts) > 1:
-                subcat_name = parts[1].strip()
-                subcat_node_relationship[cat_name][subcat_name].append(node)
-            else:
-                cat_node_relationship[cat_name].append(node)
-
-    # Build NodeCategory objects
-    all_subcategories = []
-    top_level_categories = []
-
-    # Process categories that might have subcategories
-    processed_cats = set()
-    for cat_name, subcats in subcat_node_relationship.items():
-        processed_cats.add(cat_name)
-        category_items = []
-        subcat_objects = []
-
-        # Create subcategory objects
-        for subcat_name, nodes_in_subcat in subcats.items():
-            subcat_id = f"{cat_name.upper()}_{subcat_name.upper()}".replace(' ', '_')
-            subcat_label = subcat_name.title()
-            subcat_node_items = [NodeItem(n.get_idname(), label=n.bl_label) for n in nodes_in_subcat]
-            
-            new_subcat = node_cat_class(subcat_id, subcat_label, items=subcat_node_items)
-            all_subcategories.append(new_subcat)
-            subcat_objects.append(new_subcat) # Add to parent category's items
-
-        # Add direct nodes for this category (if any)
-        direct_nodes = cat_node_relationship.get(cat_name, [])
-        category_items.extend([NodeItem(n.get_idname(), label=n.bl_label) for n in direct_nodes])
-        
-        # Add subcategory objects to the items list
-        category_items.extend(subcat_objects)
-
-        # Create the top-level category object
-        cat_id = cat_name.upper().replace(' ', '_')
-        cat_label = cat_name.title()
-        top_level_categories.append(node_cat_class(cat_id, cat_label, items=category_items))
-
-    # Process remaining categories (those without subcategories)
-    for cat_name, nodes in cat_node_relationship.items():
-        if cat_name not in processed_cats:
-            cat_id = cat_name.upper().replace(' ', '_')
-            cat_label = cat_name.title()
-            node_items = [NodeItem(n.get_idname(), label=n.bl_label) for n in nodes]
-            top_level_categories.append(node_cat_class(cat_id, cat_label, items=node_items))
-
-    # Register using the multi-level function
-    module_short = getattr(GLOBALS, 'ADDON_MODULE_SHORT', 'ACKIT') # Default if missing
-    identifier = f'{module_short.upper()}_NODES'
+    # 1. Build the hierarchy dictionary
+    build_hierarchy()
     
-    if top_level_categories or all_subcategories:
-        register_node_categories_multi(identifier, top_level_categories, all_subcategories)
-        node_categories_list = top_level_categories + all_subcategories # Store for unregister
+    # 2. Create dynamic menu classes
+    _registered_menu_classes.clear()
+    create_menus_recursive(_category_hierarchy)
+    
+    # 3. Register menu classes
+    for menu_cls in _registered_menu_classes.values():
+        try:
+            bpy.utils.register_class(menu_cls)
+        except ValueError: # Might already be registered if code reloads
+            print(f"Info: Menu class {menu_cls.bl_idname} might already be registered.")
+        except Exception as e:
+            print(f"Error registering menu class {menu_cls.bl_idname}: {e}")
 
-    # Initialize the global dictionary for menus if it doesn't exist
-    # if not hasattr(GLOBALS, 'NODE_EDITOR_MENUS'):
-    #     GLOBALS.NODE_EDITOR_MENUS = {}
-
+    # 4. Append main draw function to the add menu
+    try:
+        bpy.types.NODE_MT_add.append(draw_ackit_add_menu)
+    except Exception as e:
+         print(f"Error appending draw function to NODE_MT_add: {e}")
 
 def unregister():
-    module_short = getattr(GLOBALS, 'ADDON_MODULE_SHORT', 'ACKIT') # Default if missing
-    identifier = f'{module_short.upper()}_NODES'
-    
-    # Unregister menus first
-    # Use getattr for safer access
-    node_editor_menus = getattr(GLOBALS, 'NODE_EDITOR_MENUS', {})
-    if identifier in node_editor_menus:
-        menu_types = node_editor_menus.pop(identifier, [])
-        for menu_type in reversed(menu_types): # Unregister in reverse order
-            try:
-                bpy.utils.unregister_class(menu_type)
-            except RuntimeError as e:
-                 print(f"Error unregistering menu {menu_type.__name__}: {e}")
+    global _registered_menu_classes, _category_hierarchy
 
-
-    # Unregister node categories using the identifier
+    # 1. Remove main draw function
     try:
-        # Check if the identifier exists before trying to unregister
-        if identifier in _node_categories:
-             nodeitems_utils.unregister_node_categories(identifier)
-        else:
-            print(f"Node categories list '{identifier}' not found for unregistration.")
-    except KeyError:
-         print(f"Error: Node categories list '{identifier}' was not found during unregistration.")
+        bpy.types.NODE_MT_add.remove(draw_ackit_add_menu)
+    except ValueError: # Not found, maybe already removed or failed to append
+        pass 
     except Exception as e:
-         print(f"An unexpected error occurred during node category unregistration: {e}")
+         print(f"Error removing draw function from NODE_MT_add: {e}")
 
-    global node_categories_list
-    node_categories_list.clear()
-    # We don't unregister node_category_class itself, as it's just a type definition
+    # 2. Unregister dynamic menu classes (in reverse order of registration)
+    for menu_cls in reversed(list(_registered_menu_classes.values())):
+        try:
+            bpy.utils.unregister_class(menu_cls)
+        except RuntimeError: # Already unregistered
+             pass
+        except Exception as e:
+            print(f"Error unregistering menu class {menu_cls.bl_idname}: {e}")
+
+    # 3. Clear global storage
+    _registered_menu_classes.clear()
+    _category_hierarchy.clear()

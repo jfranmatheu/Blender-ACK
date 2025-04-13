@@ -95,8 +95,6 @@ class ACK:
         Generic = _GenericOperator
         Action = Action
         Modal = Modal
-        # Creators
-        create_action_from_func = Action.from_function
         # Configuration
         @staticmethod
         def add_metadata(label: str | None = None, tooltip: str = "") -> Callable[[Type[_MetadataOperatorTypeVar]], Type[_MetadataOperatorTypeVar]]:
@@ -117,11 +115,6 @@ class ACK:
         PieMenu = PieMenu
         Popover = Popover
         UIList = UIList
-        # Creators
-        create_panel_from_func = PanelFromFunction # Standardized name
-        create_menu_from_func = Menu.from_function # Standardized name
-        create_piemenu_from_func = PieMenu.from_function # Standardized name
-        create_popover_from_func = Popover.from_function # Standardized name
         # Configuration
         # --- Renamed Aliases for Flags/Polling --- 
         PanelFlags: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum

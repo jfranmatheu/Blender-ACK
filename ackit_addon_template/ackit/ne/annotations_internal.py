@@ -103,6 +103,7 @@ class NodeSocketWrapper(Generic[SocketT]): # Make wrapper generic over SocketT
             # Use the bl_idname obtained earlier
             socket_idname = self.bl_idname
             socket = target_collection.new(socket_idname, self.label or self.name, identifier=self.socket_name)
+            socket.init(node)
             if self.is_multi_input:
                 # Assuming bpy has `use_multi_input` attribute on socket creation or afterwards
                 # This might need adjustment based on Blender API version

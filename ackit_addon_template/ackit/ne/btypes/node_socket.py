@@ -126,6 +126,20 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         self.node.process()
         self.block_property_update = False
 
+    def init(self, node: bpy_types.Node):
+        """ Called when the socket is created for the first time. """
+        if self.use_custom_property:
+            try:
+                typ = _get_generic_type(self)
+                if typ is None:
+                    raise ValueError(f"No generic type found for socket {self.name}")
+                default_value = _get_default_value(typ)
+                if default_value is None:
+                    raise ValueError(f"No default value found for socket {self.name}")
+                self.set_value(default_value)
+            except Exception as e:
+                print(f"Error setting default value for custom property {self.property_name}: {e}")
+
     def get_links(self):
         return self.links  # if self.is_linked else []
         # return (*self.links, *self.portal_links) if self.use_portal_links and self.is_linked else self.links if not self.use_portal_links and self.is_linked else self.portal_links if self.use_portal_links else []

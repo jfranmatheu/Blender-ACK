@@ -150,6 +150,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
 
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
         if not self.use_custom_property and ((self.is_input and not self.is_linked) or (self.is_output and len(self.node.inputs) == 0)):
-            layout.prop(self, self.property_name, text=self.name)
+            show_label = not (self.is_output and len(self.node.outputs) == 1 and len(self.node.inputs) == 0)
+            layout.prop(self, self.property_name, text=self.name if show_label else '')
         else:
             layout.label(text=self.name)

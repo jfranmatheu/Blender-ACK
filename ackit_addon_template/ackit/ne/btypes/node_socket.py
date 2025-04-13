@@ -195,7 +195,9 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         return self.color
     
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
-        if self.use_custom_property or (self.is_output and self.is_linked):
+        if self.use_custom_property: # or len(self.node.inputs) == 0 or self.is_output or self.is_linked:
             layout.label(text=self.name)
-        else:
+        elif self.is_input and not self.is_linked:
             layout.prop(self, self.property_name, text=self.name)
+        else:
+            layout.label(text=self.name)

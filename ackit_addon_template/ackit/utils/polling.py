@@ -1,4 +1,4 @@
-from typing import Type, Callable, Any
+from typing import Type, Callable, Any, Protocol, Set, Dict
 from enum import Enum, auto
 
 from bpy.types import Context
@@ -17,6 +17,20 @@ class Polling:
     """
     Decorators for adding polling functions to operators.
     """
+    # Define the modes dict at the Polling class level
+    _active_brush_supported_modes: Dict[str, str] = {
+        'SCULPT': 'sculpt',
+        'PAINT_GPENCIL': 'gpencil_paint',
+        'PAINT_TEXTURE': 'image_paint',
+        'PAINT_VERTEX': 'vertex_paint',
+        'PAINT_WEIGHT': 'weight_paint',
+        'SCULPT_GPENCIL': 'gpencil_sculpt_paint',
+        'WEIGHT_GPENCIL': 'gpencil_weight',
+        'VERTEX_GPENCIL': 'gpencil_vertex',
+        'PAINT_GREASE_PENCIL': 'gpencil_paint',
+        'WEIGHT_GREASE_PENCIL': 'gpencil_weight',
+        'VERTEX_GREASE_PENCIL': 'gpencil_vertex'
+    }
 
     @staticmethod
     def _decorator(polling_function: callable):
@@ -157,22 +171,10 @@ class Polling:
 
 
     class ACTIVE_BRUSH(Enum):
-        _supported_modes = {
-            'SCULPT': 'sculpt',
-            'PAINT_GPENCIL': 'gpencil_paint',
-            'PAINT_TEXTURE': 'image_paint',
-            'PAINT_VERTEX': 'vertex_paint',
-            'PAINT_WEIGHT': 'weight_paint',
-            'SCULPT_GPENCIL': 'gpencil_sculpt_paint',
-            'WEIGHT_GPENCIL': 'gpencil_weight',
-            'VERTEX_GPENCIL': 'gpencil_vertex',
-            'PAINT_GREASE_PENCIL': 'gpencil_paint',
-            'WEIGHT_GREASE_PENCIL': 'gpencil_weight',
-            'VERTEX_GREASE_PENCIL': 'gpencil_vertex'
-        }
 
         def poll(self, context: Context) -> bool:
-            if ts_attr := Polling.ACTIVE_BRUSH._supported_modes.get(context.mode, None):
+            # Access the dictionary defined in the outer Polling class
+            if ts_attr := Polling._active_brush_supported_modes.get(context.mode, None):
                 return getattr(context.tool_settings, ts_attr).brush is not None
             return False
 

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, TypeVar, Generic
 
 from bpy import types as bpy_types
 
@@ -9,12 +9,13 @@ from ...data.props import PropertyTypes as Prop
 __all__ = ['NodeSocket']
 
 
-class NodeSocket(BaseType, bpy_types.NodeSocket):
+T = TypeVar('T')
+
+class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
     property_name: str = 'property'
     use_custom_property: bool = False
-    value: Any
 
     # Extended properties
     block_property_update: Prop.BOOL(default=False)
@@ -24,14 +25,14 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
         return not self.is_output
 
     @property
-    def value(self):
+    def value(self) -> T:
         return self.get_value()
 
     @value.setter
-    def value(self, value):
+    def value(self, value: T):
         self.set_value(value)
 
-    def get_value(self):
+    def get_value(self) -> T:
         if self.is_input:
             if self.is_linked:
                 # TODO: support multi-input sockets.
@@ -43,7 +44,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket):
             return None
         return getattr(self, self.property_name)
 
-    def set_value(self, value):
+    def set_value(self, value: T):
         if self.use_custom_property:
             self[self.property_name] = value
         else:

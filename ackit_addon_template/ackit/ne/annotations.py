@@ -1,7 +1,7 @@
 from typing import Type, TypeVar
 
 # Assuming these are the internal implementation classes
-from .annotations_internal import _NodeSocketInput, _NodeSocketOutput
+from .annotations_internal import NodeSocketInput as _NodeSocketInput, NodeSocketOutput as _NodeSocketOutput
 # Import the base NodeSocket type if needed for type hinting
 from .btypes.node_socket import NodeSocket
 # Import specific socket types if needed, though the TypeVar approach might suffice
@@ -23,9 +23,10 @@ def NodeInput(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
         multi: Whether this is a multi-input socket
         
     Returns:
-        A NodeSocketWrapper descriptor for the input socket
+        The actual socket instance (typed as SocketT) when accessed on a node instance.
     """
-    # The type ignore might still be needed depending on how _NodeSocketInput is defined
+    # Call the correctly typed internal function
+    # The type ignore might still be needed if the IDE struggles with the descriptor protocol
     return _NodeSocketInput(socket_type, multi) # type: ignore
 
 def NodeOutput(socket_type: Type[SocketT]) -> SocketT:
@@ -36,7 +37,8 @@ def NodeOutput(socket_type: Type[SocketT]) -> SocketT:
         socket_type: The type of node socket (e.g., socket_types.NodeSocketFloat)
         
     Returns:
-        A NodeSocketWrapper descriptor for the output socket
+        The actual socket instance (typed as SocketT) when accessed on a node instance.
     """
+    # Call the correctly typed internal function
     # The type ignore might still be needed
     return _NodeSocketOutput(socket_type) # type: ignore 

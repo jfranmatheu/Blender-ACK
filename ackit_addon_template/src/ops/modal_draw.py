@@ -12,7 +12,7 @@ class ModalDrawOperator(ACK.Ops.Modal):
     def modal_enter(self, context, event):
         self.text = "Hello, world!"
 
-    def modal_update(self, context, event) -> OpsReturn:
+    def modal_update(self, context, event) -> set[str]:
         if event.type == 'ESC':
             return OpsReturn.FINISH
         if event.unicode:

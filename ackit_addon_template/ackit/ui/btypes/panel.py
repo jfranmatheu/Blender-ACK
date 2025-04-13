@@ -1,9 +1,9 @@
-from typing import Callable, Type
+from typing import Callable, Type, Set, ClassVar, List, Optional
 from enum import Enum, auto
 
 from .base import BaseUI, DrawExtension, UILayout, Context
 from ...globals import GLOBALS
-from ...flags import PANEL as PanelOptions
+# from ...flags import PANEL as PanelOptions  # circular import!
 
 from bpy.types import Panel as BlPanel
 
@@ -37,7 +37,7 @@ class PanelFromFunction(Enum):
     OUTLINER = auto()
     FILE_BROWSER = auto()
 
-    def __call__(self, tab: str = None, flags: PanelOptions = None, order: int = 0) -> Callable[[Type], Type]:
+    def __call__(self, tab: Optional[str] = None, flags: Optional[Set[str | Enum]] = None, order: int = 0) -> Callable[[Callable], Type['Panel']]:
         """Returns decorator that sets space type and optional tab"""
         return Panel.from_function(self.name, 'UI', tab=tab, flags=flags, order=order)
 
@@ -56,7 +56,7 @@ class PanelFromFunction(Enum):
         SCENE = auto()
         WORLD = auto()
 
-        def __call__(self, tab: str = None, flags: PanelOptions = None, order: int = 0) -> Callable[[Type], Type]:
+        def __call__(self, tab: Optional[str] = None, flags: Optional[Set[str | Enum]] = None, order: int = 0) -> Callable[[Callable], Type['Panel']]:
             """Returns decorator that sets properties context and optional tab"""
             return Panel.from_function('PROPERTIES', 'WINDOW', tab=tab, context=self.name.lower(), flags=flags, order=order)
 
@@ -68,28 +68,42 @@ class Panel(BaseUI, DrawExtension, BlPanel):
     bl_region_type: str = 'UI'
     bl_options: set[str]
 
+    _polling_functions: ClassVar[Set[Callable[[Context], bool]]] = set()
+
+    @classmethod
+    def poll(cls, context: Context) -> bool:
+        """Default poll method. Iterates through registered polling functions."""
+        if cls._polling_functions:
+            for func in cls._polling_functions:
+                if not func(context):
+                    return False
+        return True
+
     @classmethod
     def from_function(cls,
                       space_type: str = 'TOPBAR',
                       region_type: str = 'HEADER',
-                      tab: str | None = GLOBALS.ADDON_MODULE_UPPER,
+                      tab: Optional[str] = None,
                       context: str = '',
-                      flags: PanelOptions = None,
-                      order: int = 0) -> 'Panel':
+                      flags: Optional[Set[str | Enum]] = None,
+                      order: int = 0) -> Callable[[Callable], Type['Panel']]:
         """ Decorator to create a panel from a function. """
-        def decorator(func: Callable) -> Panel:
-            panel_flags = {flag.name for flag in flags} if flags else set()
+        def decorator(func: Callable) -> Type['Panel']:
+            panel_flags = {flag if isinstance(flag, str) else flag.name for flag in flags} if flags is not None else set()
+            panel_category = tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER
+            
             new_cls = type(
                 func.__name__,
                 (Panel, ),
                 {
                     'bl_space_type': space_type,
                     'bl_region_type': region_type,
-                    'bl_category': tab if tab is not None else GLOBALS.ADDON_MODULE_UPPER,
+                    'bl_category': panel_category,
                     'bl_context': context,
                     'bl_options': panel_flags,
                     'bl_order': order,
                     'draw_ui': lambda self, ctx, layout: func(ctx, layout),
+                    '_polling_functions': set(),
                 }
             )
             new_cls.__module__ = func.__module__

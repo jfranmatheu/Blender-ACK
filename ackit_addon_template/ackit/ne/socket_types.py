@@ -51,172 +51,144 @@ class SocketColor(Enum):
     MATRIX = (0.35, 0.35, 1.0, 1.0) # Blue (same as Vector)
 
 
-class NodeSocketFloat(NodeSocket):
+class NodeSocketFloat(NodeSocket[float]):
     label = 'Value'
     property = Prop.Float(name="Value", default=0.0)
-    value: float
     color = SocketColor.VALUE.value
 
-class NodeSocketFloatVector3(NodeSocket):
+class NodeSocketFloatVector3(NodeSocket[Tuple[float, float, float]]):
     label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=float)
-    value: Tuple[float, float, float]
     color = SocketColor.VECTOR.value
 
-class NodeSocketFloatVector2(NodeSocket):
+class NodeSocketFloatVector2(NodeSocket[Tuple[float, float]]):
     label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=float)
-    value: Tuple[float, float]
     color = SocketColor.VECTOR.value
 
-class NodeSocketInt(NodeSocket):
+class NodeSocketInt(NodeSocket[int]):
     label = 'Value'
     property = Prop.Int(name="Value", default=0)
-    value: int
     color = SocketColor.INTEGER.value
 
-class NodeSocketIntVector3(NodeSocket):
+class NodeSocketIntVector3(NodeSocket[Tuple[int, int, int]]):
     label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=int)
-    value: Tuple[int, int, int]
     color = SocketColor.VECTOR.value
 
-class NodeSocketIntVector2(NodeSocket):
+class NodeSocketIntVector2(NodeSocket[Tuple[int, int]]):
     label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=int)
-    value: Tuple[int, int]
     color = SocketColor.VECTOR.value
     
-class NodeSocketBool(NodeSocket):
+class NodeSocketBool(NodeSocket[bool]):
     label = 'State'
     property = Prop.Bool(name="State", default=False)
-    value: bool
     color = SocketColor.BOOLEAN.value
 
-class NodeSocketString(NodeSocket):
+class NodeSocketString(NodeSocket[str]):
     label = 'Text'
     property = Prop.String(name="Text", default="")
-    value: str
     color = SocketColor.STRING.value
 
-class NodeSocketDirPath(NodeSocket):
+class NodeSocketDirPath(NodeSocket[str]):
     label = 'Directory Path'
     property = Prop.DirPath(name="Directory Path")
-    value: str
     color = SocketColor.STRING.value
 
-class NodeSocketFilePath(NodeSocket):
+class NodeSocketFilePath(NodeSocket[str]):
     label = 'File Path'
     property = Prop.FilePath(name="File Path")
-    value: str
     color = SocketColor.STRING.value
 
-class NodeSocketFileName(NodeSocket):
+class NodeSocketFileName(NodeSocket[str]):
     label = 'File Name'
     property = Prop.FileName(name="File Name")
-    value: str
     color = SocketColor.STRING.value
 
 
-class NodeSocketRGB(NodeSocket):
+class NodeSocketRGB(NodeSocket[Tuple[float, float, float]]):
     label = 'RGB'
     property = Prop.Color(name="RGB", use_alpha=False)
-    value: Tuple[float, float, float]
     color = SocketColor.COLOR.value
 
-class NodeSocketRGBA(NodeSocket):
+class NodeSocketRGBA(NodeSocket[Tuple[float, float, float, float]]):
     label = 'RGBA'
     property = Prop.Color(name="RGBA", use_alpha=True)
-    value: Tuple[float, float, float, float]
     color = SocketColor.COLOR.value
 
-class NodeSocketAngle(NodeSocket):
+class NodeSocketAngle(NodeSocket[float]):
     label = 'Angle'
     property = Prop.Angle(name="Angle", default=0.0)
-    value: float
     color = SocketColor.VALUE.value
 
-class NodeSocketFactor(NodeSocket):
+class NodeSocketFactor(NodeSocket[float]):
     label = 'Factor'
     property = Prop.Factor(name="Factor", default=0.5)
-    value: float
     color = SocketColor.VALUE.value
 
-class NodeSocketMatrix3x3(NodeSocket):
+class NodeSocketMatrix3x3(NodeSocket[Matrix]):
     label = 'Matrix 3x3'
     property = Prop.Matrix3x3(name="Matrix 3x3")
-    value: Matrix
     color = SocketColor.MATRIX.value
 
-class NodeSocketMatrix4x4(NodeSocket):
+class NodeSocketMatrix4x4(NodeSocket[Matrix]):
     label = 'Matrix 4x4'
     property = Prop.Matrix4x4(name="Matrix 4x4")
-    value: Matrix
     color = SocketColor.MATRIX.value
 
 # Data Sockets
-class NodeSocketObject(NodeSocket):
+class NodeSocketObject(NodeSocket[Object]):
     label = 'Object'
     property = Prop.Data.Object(name="Object")
-    value: Object
     color = SocketColor.DATA.value
 
-class NodeSocketMaterial(NodeSocket):
+class NodeSocketMaterial(NodeSocket[Material]):
     label = 'Material'
     property = Prop.Data.Material(name="Material")
-    value: Material
     color = SocketColor.DATA.value
 
-class NodeSocketMesh(NodeSocket):
+class NodeSocketMesh(NodeSocket[Mesh]):
     label = 'Mesh'
     property = Prop.Data.Mesh(name="Mesh")
-    value: Mesh
     color = SocketColor.DATA.value
 
-class NodeSocketTexture(NodeSocket):
+class NodeSocketTexture(NodeSocket[Texture]):
     label = 'Texture'
     property = Prop.Data.Texture(name="Texture")
-    value: Texture
     color = SocketColor.DATA.value
 
-class NodeSocketCollection(NodeSocket):
+class NodeSocketCollection(NodeSocket[Collection]):
     label = 'Collection'
     property = Prop.Data.Collection(name="Collection")
-    value: Collection
     color = SocketColor.DATA.value
 
-class NodeSocketScene(NodeSocket):
+class NodeSocketScene(NodeSocket[Scene]):
     label = 'Scene'
     property = Prop.Data.Scene(name="Scene")
-    value: Scene
     color = SocketColor.DATA.value
 
-class NodeSocketWorld(NodeSocket):
+class NodeSocketWorld(NodeSocket[World]):
     label = 'World'
     property = Prop.Data.World(name="World")
-    value: World
     color = SocketColor.DATA.value
 
-class NodeSocketImage(NodeSocket):
+class NodeSocketImage(NodeSocket[Image]):
     label = 'Image'
     property = Prop.Data.Image(name="Image")
-    value: Image
     color = SocketColor.DATA.value
 
-class NodeSocketArmature(NodeSocket):
+class NodeSocketArmature(NodeSocket[Armature]):
     label = 'Armature'
     property = Prop.Data.Armature(name="Armature")
-    value: Armature
     color = SocketColor.DATA.value
 
-class NodeSocketAction(NodeSocket):
+class NodeSocketAction(NodeSocket[Action]):
     label = 'Action'
     property = Prop.Data.Action(name="Action")
-    value: Action
     color = SocketColor.DATA.value
 
-class NodeSocketText(NodeSocket):
+class NodeSocketText(NodeSocket[Text]):
     label = 'Text'
     property = Prop.Data.Text(name="Text")
-    value: Text
     color = SocketColor.DATA.value

@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Callable, ClassVar
 
 from bpy.types import Context, Event, UILayout, Operator, OperatorProperties
 
@@ -15,8 +15,9 @@ class Generic(BaseType, Operator):
     bl_options: Set[str]
     bl_cursor_pending: str  # when using 'DEPENDS_ON_CURSOR' in bl_options.
 
-    # Polling functions added via Polling decorators utility.
-    _polling_functions: Set[callable] | None = None
+    # Explicitly declare _polling_functions as required by the Pollable protocol
+    # Use ClassVar because it's initialized at the class level
+    _polling_functions: ClassVar[Set[Callable[[Context], bool]]] = set()
 
     @classmethod
     def run(cls, **operator_properties: dict) -> None:
@@ -30,18 +31,22 @@ class Generic(BaseType, Operator):
     def draw_in_layout(
         cls,
         layout: UILayout,
-        text: str = None,
-        icon: str | int = None,
+        text: str | None = None,
+        icon: str | int | None = None,
         depress: bool = False,
         emboss: bool = False,
         op_props: dict | None = None,
         **draw_kwargs: dict,
     ) -> OperatorProperties:
+        op_text = text if text is not None else cls.bl_label
+        op_icon_str = icon if isinstance(icon, str) else "NONE"
+        op_icon_val = icon if isinstance(icon, int) else 0
+
         op = layout.operator(
             cls.bl_idname,
-            text=text if text is not None else cls.label,
-            icon=icon if isinstance(icon, str) else "NONE",
-            icon_value=icon if isinstance(icon, int) else 0,
+            text=op_text,
+            icon=op_icon_str,
+            icon_value=op_icon_val,
             depress=depress,
             emboss=emboss,
             **draw_kwargs
@@ -79,14 +84,14 @@ class Generic(BaseType, Operator):
     def report_warning(self, message: str) -> None:
         self.report({"WARNING"}, message)
 
-    def report_error(self, message: str) -> None:
+    def report_error(self, message: str) -> Set[str]:
         self.report({"ERROR"}, message)
         return OpsReturn.CANCEL
 
-    def report_error_invalid_context(self, message: str = "Invalid Context") -> None:
+    def report_error_invalid_context(self, message: str = "Invalid Context") -> Set[str]:
         self.report({"ERROR_INVALID_CONTEXT"}, message)
         return OpsReturn.CANCEL
 
-    def report_error_invalid_input(self, message: str = "Invalid Input") -> None:
+    def report_error_invalid_input(self, message: str = "Invalid Input") -> Set[str]:
         self.report({"ERROR_INVALID_INPUT"}, message)
         return OpsReturn.CANCEL

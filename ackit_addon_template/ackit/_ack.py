@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Callable, Type, Any, Literal, overload, Union, Annotated, TypeVar
+from typing import Callable, Type, Any, Literal, overload, Union, Annotated, TypeVar, ClassVar
 
 # --- Core Imports ---
 from . import core # For potential access if needed
@@ -13,8 +13,15 @@ from . import app
 
 # --- Utility Imports ---
 from . import enums # Keep top-level enums
-from . import flags # Top-level flags module
-from . import metadata # Top-level metadata module
+from . import flags
+from . import metadata
+from .metadata import Node as _MetadataNodeFunc, NodeSocket as _MetadataSocketFunc # Import the specific functions
+from .metadata import Operator as _MetadataOperatorFunc
+from .metadata import OperatorTypeVar as _MetadataOperatorTypeVar
+from .flags import NODE_CATEGORY as _NodeCategoryFunc # Import the specific function
+from .metadata import NodeTypeVar as _MetadataNodeTypeVar # Import TypeVar from metadata
+from .flags import NodeT as _FlagsNodeT # Import TypeVar from flags
+from .metadata import NodeSocketTypeVar as _MetadataNodeSocketTypeVar
 from . import utils # Top-level utils module (contains Polling)
 
 # --- Specific Imports for Facade Aliases ---
@@ -33,11 +40,11 @@ from .ui import Popover
 from .ui import UIList
 
 # NE
-from .ne import Node
+from .ne import Node as _Node
 from .ne import NodeTree
 from .ne import NodeSocket
-from .ne import NodeInput # From ne.annotations
-from .ne import NodeOutput # From ne.annotations
+from .ne.annotations_internal import NodeSocketInput as _NodeSocketInput # Alias internal
+from .ne.annotations_internal import NodeSocketOutput as _NodeSocketOutput # Alias internal
 from .ne import socket_types # The module itself
 
 # Data
@@ -58,6 +65,11 @@ from .app import RegisterKeymap # From app.keymaps
 # Utils
 from .utils import Polling # From utils.polling
 
+# Import flag classes/enums
+from .flags import OPERATOR as _FlagsOperatorClass
+from .flags import MODAL as _FlagsModalClass
+from .flags import PANEL as _FlagsPanelEnum
+
 
 __all__ = [
     'ACK',
@@ -66,34 +78,8 @@ __all__ = [
 
 # Definir TypeVar. Esto nos ayuda a tener tipado del tipo de NodeSocket suyacente,
 # el cual usamos para definir el tipo de socket para inputs y outputs.
-# SocketT = TypeVar('SocketT', bound=NodeSocket) # REMOVED
+SocketT = TypeVar('SocketT', bound=NodeSocket)
 
-
-# Explicitly annotate the NodeInput and NodeOutput with proper signatures
-# def NodeInput(socket_type: Type[SocketT], multi: bool = False) -> SocketT: # REMOVED
-#     """
-#     Create an input socket annotation.
-#     
-#     Args:
-#         socket_type: The type of node socket (e.g., NodeSocketFloat)
-#         multi: Whether this is a multi-input socket
-#         
-#     Returns:
-#         A NodeSocketWrapper descriptor for the input socket
-#     """
-#     return _NodeSocketInput(socket_type, multi) # type: ignore
-
-# def NodeOutput(socket_type: Type[SocketT]) -> SocketT: # REMOVED
-#     """
-#     Create an output socket annotation.
-#     
-#     Args:
-#         socket_type: The type of node socket (e.g., NodeSocketFloat)
-#         
-#     Returns:
-#         A NodeSocketWrapper descriptor for the output socket
-#     """
-#     return _NodeSocketOutput(socket_type) # type: ignore
 
 
 class ACK:
@@ -112,9 +98,15 @@ class ACK:
         # Creators
         create_action_from_func = Action.from_function
         # Configuration
-        add_metadata = metadata.Operator
-        add_flag = flags.OPERATOR
-        add_modal_flag = flags.MODAL
+        @staticmethod
+        def add_metadata(label: str | None = None, tooltip: str = "") -> Callable[[Type[_MetadataOperatorTypeVar]], Type[_MetadataOperatorTypeVar]]:
+            """Adds metadata to an Operator class. Alias for metadata.Operator."""
+            return _MetadataOperatorFunc(label=label, tooltip=tooltip)
+
+        # Assign flag classes/enums directly using ClassVar
+        add_flag: ClassVar[Type[_FlagsOperatorClass]] = _FlagsOperatorClass
+        add_modal_flag: ClassVar[Type[_FlagsModalClass]] = _FlagsModalClass
+        
         add_run_condition = Polling # alias of ACK.Poll
         # Other (Example)
         # register_shortcut = ... # TODO
@@ -132,22 +124,67 @@ class ACK:
         create_piemenu_from_func = PieMenu.from_function # Standardized name
         create_popover_from_func = Popover.from_function # Standardized name
         # Configuration
-        add_panel_flag = flags.PANEL
+        # Assign flag enum directly using ClassVar
+        add_panel_flag: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum
         add_display_condition = Polling # alias of ACK.Poll
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""
-        Node = Node
+        # Define base types as direct aliases
+        Node = _Node
         Tree = NodeTree
         Socket = NodeSocket
-        # Configuration
-        add_node_metadata = metadata.Node # Keep specific name
-        add_socket_metadata = metadata.NodeSocket # Keep specific name
-        add_node_to_category = flags.NODE_CATEGORY # Keep specific name
+        # Configuration - Wrap original functions in staticmethods with precise signatures
+        
+        @staticmethod
+        def add_node_metadata(label: str | None = None, tooltip: str = "", icon: str = 'NONE') -> Callable[[Type[_MetadataNodeTypeVar]], Type[_MetadataNodeTypeVar]]:
+            """Adds metadata to a Node class. Alias for metadata.Node."""
+            return _MetadataNodeFunc(label=label, tooltip=tooltip, icon=icon)
+
+        @staticmethod
+        def add_socket_metadata(label: str | None = None, tooltip: str = "", subtype_label: str = '') -> Callable[[Type[_MetadataNodeSocketTypeVar]], Type[_MetadataNodeSocketTypeVar]]:
+            """Adds metadata to a NodeSocket class. Alias for metadata.NodeSocket."""
+            return _MetadataSocketFunc(label=label, tooltip=tooltip, subtype_label=subtype_label)
+
+        @staticmethod
+        def add_node_to_category(category: str) -> Callable[[Type[_FlagsNodeT]], Type[_FlagsNodeT]]:
+            """Adds a category to a Node class. Alias for flags.NODE_CATEGORY."""
+            return _NodeCategoryFunc(category=category)
+        
         # Socket Definition
-        new_input = NodeInput
-        new_output = NodeOutput
         socket_types = socket_types
+
+        # Explicitly annotate the NodeInput and NodeOutput with proper signatures
+        @staticmethod
+        def InputSocket(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
+            """
+            Create an input socket annotation.
+            
+            Args:
+                socket_type: The type of node socket (e.g., socket_types.NodeSocketFloat)
+                multi: Whether this is a multi-input socket
+                
+            Returns:
+                The actual socket instance (typed as SocketT) when accessed on a node instance.
+            """
+            # Call the correctly typed internal function
+            # The type ignore might still be needed if the IDE struggles with the descriptor protocol
+            return _NodeSocketInput(socket_type, multi) # type: ignore
+
+        @staticmethod
+        def OutputSocket(socket_type: Type[SocketT]) -> SocketT:
+            """
+            Create an output socket annotation.
+            
+            Args:
+                socket_type: The type of node socket (e.g., socket_types.NodeSocketFloat)
+                
+            Returns:
+                The actual socket instance (typed as SocketT) when accessed on a node instance.
+            """
+            # Call the correctly typed internal function
+            # The type ignore might still be needed
+            return _NodeSocketOutput(socket_type) # type: ignore
 
     class Data:
         """Base types, property definitions, and data-related registration."""

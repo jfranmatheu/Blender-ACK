@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Type, Callable
+from typing import Type, Callable, TypeVar
 
 import bpy
 
@@ -11,6 +11,9 @@ from typing import Any
 # from .ops.btypes.modal import ModalOperator # If Modal base class exists
 # from .ne.btypes.node import Node
 # from .ui.btypes.panel import Panel
+# Import base types for TypeVar bounds
+from .ne.btypes import Node as _NodeType # Use alias to avoid name clash if needed
+from .ui.btypes import Panel as _PanelType # Use alias
 
 __all__ = [
     'OPERATOR',
@@ -212,13 +215,15 @@ class MODAL:
 
 # --- Panel Flags ---
 
+PanelT = TypeVar('PanelT', bound=_PanelType) # Bound to Panel base type
+
 class PANEL(Enum):
     """ Decorator flags for Panels. Use as @flags.PANEL.HIDE_HEADER etc. """
     HIDE_HEADER = auto()
     DEFAULT_CLOSED = auto()
     INSTANCED = auto()
 
-    def __call__(self, panel_cls: Type[Any]) -> Type[Any]: # Assuming applied to Panel subclasses
+    def __call__(self, panel_cls: Type[PanelT]) -> Type[PanelT]:
         if not hasattr(panel_cls, 'bl_options') or panel_cls.bl_options is None:
             panel_cls.bl_options = set()
         panel_cls.bl_options.add(self.name)
@@ -227,7 +232,9 @@ class PANEL(Enum):
 
 # --- Node Category Flag ---
 
-def NODE_CATEGORY(category: str) -> Callable[[Type[Any]], Type[Any]]:
+NodeT = TypeVar('NodeT', bound=_NodeType) # Bound to Node base type
+
+def NODE_CATEGORY(category: str) -> Callable[[Type[NodeT]], Type[NodeT]]:
     """
     Decorator to add a node category to a node class.
 
@@ -237,7 +244,8 @@ def NODE_CATEGORY(category: str) -> Callable[[Type[Any]], Type[Any]]:
     Returns:
         Callable: Decorator function.
     """
-    def wrapper(cls: Type[Any]) -> Type[Any]: # Assuming applied to Node subclasses
+    def wrapper(cls: Type[NodeT]) -> Type[NodeT]:
+        # Now Pylance knows cls is a subclass of Node and has _node_category
         cls._node_category = category
         return cls
     return wrapper 

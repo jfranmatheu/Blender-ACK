@@ -99,11 +99,16 @@ class BaseType(object):
             
             # Set bl_label if not already set
             if not hasattr(cls, 'bl_label') or not cls.bl_label:
-                setattr(cls, 'bl_label', cls.label if hasattr(cls, 'label') else ' '.join(keywords))
+                # Use getattr for safety
+                label_attr = getattr(cls, 'label', None)
+                setattr(cls, 'bl_label', label_attr if label_attr is not None else ' '.join(keywords))
             
             # Set bl_description if not already set
             if not hasattr(cls, 'bl_description') or not cls.bl_description:
-                description = cls.tooltip if hasattr(cls, 'tooltip') else cls.description if hasattr(cls, 'description') else ''
+                # Use getattr for safety
+                tooltip_attr = getattr(cls, 'tooltip', None)
+                description_attr = getattr(cls, 'description', None)
+                description = tooltip_attr if tooltip_attr is not None else description_attr if description_attr is not None else ''
                 setattr(cls, 'bl_description', description)
 
             # Construct class name with addon prefix and type key
@@ -121,20 +126,15 @@ class BaseType(object):
         # Mark as registered
         cls.registered = True
 
-        # Handle wrapped properties (Descriptors).
+        if isinstance(cls, bpy.types.Node):
+            cls._input_descriptors = {}
+            cls._output_descriptors = {}
+
+        # Handle wrapped properties (Descriptors) - Generic part
         for name, value in list(cls.__dict__.items()):
             # WrappedPropertyDescriptor.
             if hasattr(value, 'create_property'):
                 value.create_property(name, cls)
-
-        if isinstance(cls, bpy.types.Node):
-            for name, value in list(cls.__dict__.items()):
-                # NodeSocketWrapper.
-                if hasattr(value, '_ensure_socket_exists'):
-                    if value.is_input:
-                        cls._input_descriptors[name] = value
-                    else:
-                        cls._output_descriptors[name] = value
 
         print_debug(f"--> Tag-Register class '{original_name}' (renamed to '{cls.__name__}') of type '{bpy_type.__name__}' --> Package: {cls.__module__}'")
 

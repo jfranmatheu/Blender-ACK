@@ -1,5 +1,5 @@
 import typing
-from typing import Any, TypeVar, Generic, Optional, cast
+from typing import Any, TypeVar, Generic, Optional, cast, Union
 
 from bpy import types as bpy_types
 
@@ -85,14 +85,14 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         return not self.is_output
 
     @property
-    def value(self) -> T:
+    def value(self) -> Union[T, None]:
         return self.get_value()
 
     @value.setter
     def value(self, value: T):
         self.set_value(value)
 
-    def get_value(self) -> T:
+    def get_value(self) -> Union[T, None]:
         if self.is_input:
             if self.is_linked:
                 # TODO: support multi-input sockets.
@@ -102,7 +102,8 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
             if self.property_name in self:
                 return self[self.property_name]
             return None
-        return getattr(self, self.property_name)
+        val = getattr(self, self.property_name)
+        return val
 
     def set_value(self, value: T):
         if self.use_custom_property:

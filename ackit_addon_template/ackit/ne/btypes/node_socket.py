@@ -132,9 +132,9 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     def draw_color(self, context: bpy_types.Context, node: bpy_types.Node) -> tuple[float, float, float, float]:
         # print(node, self, self.name, self.property_name, self.property, node.tree_prop_idname)
         return self.color
-    
+
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
-        if not self.use_custom_property and (self.is_input and not self.is_linked):
+        if not self.use_custom_property and ((self.is_input and not self.is_linked) or (self.is_output and len(self.node.inputs) == 0)):
             layout.prop(self, self.property_name, text=self.name)
         else:
             layout.label(text=self.name)

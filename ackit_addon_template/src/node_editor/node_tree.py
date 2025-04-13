@@ -24,6 +24,9 @@ class NodeTree(ACK.NE.Tree):
             
         # Only evaluate from input nodes
         for input_node in self.get_input_nodes():
+            if not hasattr(input_node, "process"):
+                print(f"WARN! Node {input_node.name} has no process method!")
+                continue
             input_node.process()
 
     def evaluate(self) -> None:

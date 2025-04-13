@@ -36,9 +36,12 @@ __all__ = [
     'NodeSocketImage',
     'NodeSocketArmature',
     'NodeSocketAction',
-    'NodeSocketText'
+    'NodeSocketText',
+    'SocketTypes',
 ]
 
+
+# --- Socket Colors by value/property type ---
 
 class SocketColor(Enum):
     VALUE = (0.5, 0.5, 0.5, 1.0)  # Grey (Float)
@@ -50,6 +53,8 @@ class SocketColor(Enum):
     DATA = (0.8, 0.5, 0.2, 1.0)   # Orange (Object, Material, etc.)
     MATRIX = (0.35, 0.35, 1.0, 1.0) # Blue (same as Vector)
 
+
+# --- Socket definitions ---
 
 class NodeSocketFloat(NodeSocket[float]):
     label = 'Value'
@@ -192,3 +197,52 @@ class NodeSocketText(NodeSocket[Text]):
     label = 'Text'
     property = Prop.Data.Text(name="Text")
     color = SocketColor.DATA.value
+
+
+# --- Socket Types Facade helper ---
+
+class SocketTypes:
+    # Basic types
+    FLOAT = NodeSocketFloat
+    INT = NodeSocketInt
+    BOOL = NodeSocketBool
+    STRING = NodeSocketString
+
+    # Vector types
+    FLOAT_VECTOR3 = NodeSocketFloatVector3
+    FLOAT_VECTOR2 = NodeSocketFloatVector2
+    INT_VECTOR3 = NodeSocketIntVector3
+    INT_VECTOR2 = NodeSocketIntVector2
+
+    # Path types
+    DIR_PATH = NodeSocketDirPath
+    FILE_PATH = NodeSocketFilePath
+    FILE_NAME = NodeSocketFileName
+
+    # Color types
+    RGB = NodeSocketRGB
+    RGBA = NodeSocketRGBA
+    
+    # Angle types
+    ANGLE = NodeSocketAngle
+
+    # Matrix types
+    MATRIX3X3 = NodeSocketMatrix3x3
+    MATRIX4X4 = NodeSocketMatrix4x4
+
+    # Other types
+    FACTOR = NodeSocketFactor
+
+    # Data types
+    class DATA:
+        OBJECT = NodeSocketObject
+        MATERIAL = NodeSocketMaterial
+        MESH = NodeSocketMesh
+        TEXTURE = NodeSocketTexture
+        COLLECTION = NodeSocketCollection
+        SCENE = NodeSocketScene
+        WORLD = NodeSocketWorld
+        IMAGE = NodeSocketImage
+        ARMATURE = NodeSocketArmature
+        ACTION = NodeSocketAction
+        TEXT = NodeSocketText

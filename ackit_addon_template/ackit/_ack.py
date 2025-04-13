@@ -143,8 +143,7 @@ class ACK:
             return _NodeCategoryFunc(category=category)
 
         # Socket Definition
-        socket_types = _socket_types_module
-        Types = _socket_types_module       # Nuevo alias más corto
+        SocketTypes = _socket_types_module.SocketTypes
 
         # Explicitly annotate the NodeInput and NodeOutput with proper signatures
         @staticmethod

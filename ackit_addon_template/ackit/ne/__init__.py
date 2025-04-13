@@ -12,8 +12,9 @@ __all__ = [
     'NodeOutput',
     'register_node_categories', # Function to register categories
     'unregister_node_categories', # Function to unregister categories
+    'SocketTypes',
 ]
 
 # Add all socket types from socket_types.py to __all__
-_socket_type_names = [name for name in globals() if name.startswith('NodeSocket') and name != 'NodeSocket']
-__all__.extend(_socket_type_names) 
+# _socket_type_names = [name for name in globals() if name.startswith('NodeSocket') and name != 'NodeSocket']
+# __all__.extend(_socket_type_names)

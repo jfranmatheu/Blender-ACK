@@ -112,14 +112,13 @@ class NodeSocketFileName(NodeSocket[str]):
     property = Prop.FileName(name="File Name")
     color = SocketColor.STRING.value
 
-
 class NodeSocketRGB(NodeSocket[Tuple[float, float, float]]):
-    label = 'RGB'
+    label = 'Color (RGB)'
     property = Prop.Color(name="RGB", use_alpha=False)
     color = SocketColor.COLOR.value
 
 class NodeSocketRGBA(NodeSocket[Tuple[float, float, float, float]]):
-    label = 'RGBA'
+    label = 'Color (RGBA)'
     property = Prop.Color(name="RGBA", use_alpha=True)
     color = SocketColor.COLOR.value
 

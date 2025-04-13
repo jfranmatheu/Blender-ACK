@@ -45,7 +45,7 @@ from .ne import NodeTree
 from .ne import NodeSocket
 from .ne.annotations_internal import NodeSocketInput as _NodeSocketInput # Alias internal
 from .ne.annotations_internal import NodeSocketOutput as _NodeSocketOutput # Alias internal
-from .ne import socket_types # The module itself
+from .ne import socket_types as _socket_types_module # The module itself
 
 # Data
 from .data import AddonPreferences
@@ -150,9 +150,10 @@ class ACK:
         def add_node_to_category(category: str) -> Callable[[Type[_FlagsNodeT]], Type[_FlagsNodeT]]:
             """Adds a category to a Node class. Alias for flags.NODE_CATEGORY."""
             return _NodeCategoryFunc(category=category)
-        
+
         # Socket Definition
-        socket_types = socket_types
+        socket_types = _socket_types_module
+        Types = _socket_types_module       # Nuevo alias más corto
 
         # Explicitly annotate the NodeInput and NodeOutput with proper signatures
         @staticmethod

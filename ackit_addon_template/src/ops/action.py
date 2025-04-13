@@ -1,7 +1,7 @@
 from ...ackit import ACK
 
 
-@ACK.Ops.add_flag.REGISTER_UNDO
+@ACK.Ops.Flags.REGISTER_UNDO
 @ACK.Poll.ACTIVE_OBJECT.MESH
 @ACK.Poll.MODE.OBJECT
 class ActionOperator(ACK.Ops.Action):

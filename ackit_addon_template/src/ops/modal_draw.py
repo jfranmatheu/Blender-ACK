@@ -6,7 +6,7 @@ import blf
 
 
 # @ModalFlags.USE_MOUSE
-@ACK.Ops.add_modal_flag.DRAW_POST_PIXEL.VIEW_3D
+@ACK.Ops.ModalFlags.DRAW_POST_PIXEL.VIEW_3D
 @ACK.Poll.ACTIVE_OBJECT.ANY
 class ModalDrawOperator(ACK.Ops.Modal):
     def modal_enter(self, context, event):

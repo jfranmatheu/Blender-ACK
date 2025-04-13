@@ -161,9 +161,6 @@ class Panel(BaseUI, DrawExtension, BlPanel):
                 '_polling_functions': set()
             }
 
-            if cls_dict['poll'] is None:
-                del cls_dict['poll']
-
             new_cls = type(
                 func.__name__,
                 (Panel, ),

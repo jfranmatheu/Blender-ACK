@@ -52,6 +52,7 @@ class SocketColor(Enum):
     COLOR = (0.78, 0.78, 0.16, 1.0) # Yellow
     DATA = (0.8, 0.5, 0.2, 1.0)   # Orange (Object, Material, etc.)
     MATRIX = (0.35, 0.35, 1.0, 1.0) # Blue (same as Vector)
+    PY_DATA = (0.8, 0.2, 0.8, 1.0) # Violet-red
 
 
 # --- Socket definitions ---
@@ -199,6 +200,19 @@ class NodeSocketText(NodeSocket[Text]):
     color = SocketColor.DATA.value
 
 
+# --- Custom-Property based Sockets ---
+
+class NodeSocketPyDict(NodeSocket[dict]):
+    label = 'PyDict'
+    use_custom_property = True
+    color = SocketColor.PY_DATA.value
+
+class NodeSocketPyList(NodeSocket[list]):
+    label = 'PyList'
+    use_custom_property = True
+    color = SocketColor.PY_DATA.value
+
+
 # --- Socket Types Facade helper ---
 
 class SocketTypes:
@@ -234,7 +248,7 @@ class SocketTypes:
     FACTOR = NodeSocketFactor
 
     # Data types
-    class DATA:
+    class Data:
         OBJECT = NodeSocketObject
         MATERIAL = NodeSocketMaterial
         MESH = NodeSocketMesh
@@ -246,3 +260,8 @@ class SocketTypes:
         ARMATURE = NodeSocketArmature
         ACTION = NodeSocketAction
         TEXT = NodeSocketText
+
+    # Custom-Property based types
+    class PyData:
+        DICT = NodeSocketPyDict
+        LIST = NodeSocketPyList

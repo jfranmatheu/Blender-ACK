@@ -19,14 +19,16 @@ node_categories_list = []
 def get_node_category_class():
     global node_category_class
     if node_category_class is None:
+        # Use getattr for safer access to GLOBALS attributes
         tree_type_name = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
+        
         # Define the poll method using the addon's tree type
         def poll(cls, context):
             return context.space_data.tree_type == tree_type_name
         
         # Create the dynamic class
         node_category_class = type(
-            f"{GLOBALS.ADDON_MODULE_SHORT.upper()}NodeCategory",
+            f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_NodeCategory",
             (NodeCategory,),
             {
                 'poll': classmethod(poll)
@@ -87,6 +89,9 @@ def register_node_categories_multi(identifier, cat_list, subcat_list):
     # stores: (categories list, menu draw function, submenu types)
     _node_categories[identifier] = (all_cats, draw_add_menu, menu_types)
     # Store the identifier and menu types for unregistration
+    # Ensure NODE_EDITOR_MENUS exists on GLOBALS
+    if not hasattr(GLOBALS, 'NODE_EDITOR_MENUS'):
+        GLOBALS.NODE_EDITOR_MENUS = {}
     GLOBALS.NODE_EDITOR_MENUS[identifier] = menu_types
 
 
@@ -162,7 +167,8 @@ def register():
             top_level_categories.append(node_cat_class(cat_id, cat_label, items=node_items))
 
     # Register using the multi-level function
-    identifier = f'{GLOBALS.ADDON_MODULE_SHORT.upper()}_NODES'
+    module_short = getattr(GLOBALS, 'ADDON_MODULE_SHORT', 'ACKIT') # Default if missing
+    identifier = f'{module_short.upper()}_NODES'
     
     if top_level_categories or all_subcategories:
         register_node_categories_multi(identifier, top_level_categories, all_subcategories)
@@ -174,11 +180,14 @@ def register():
 
 
 def unregister():
-    identifier = f'{GLOBALS.ADDON_MODULE_SHORT.upper()}_NODES'
+    module_short = getattr(GLOBALS, 'ADDON_MODULE_SHORT', 'ACKIT') # Default if missing
+    identifier = f'{module_short.upper()}_NODES'
     
     # Unregister menus first
-    if hasattr(GLOBALS, 'NODE_EDITOR_MENUS') and identifier in GLOBALS.NODE_EDITOR_MENUS:
-        menu_types = GLOBALS.NODE_EDITOR_MENUS.pop(identifier, [])
+    # Use getattr for safer access
+    node_editor_menus = getattr(GLOBALS, 'NODE_EDITOR_MENUS', {})
+    if identifier in node_editor_menus:
+        menu_types = node_editor_menus.pop(identifier, [])
         for menu_type in reversed(menu_types): # Unregister in reverse order
             try:
                 bpy.utils.unregister_class(menu_type)

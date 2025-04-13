@@ -107,64 +107,79 @@ class Matrix4x4Input(ACK.NE.Node):
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Object", tooltip="Object input")
 class ObjectInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.OBJECT)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.OBJECT)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Material", tooltip="Material input")
 class MaterialInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.MATERIAL)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.MATERIAL)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Mesh", tooltip="Mesh input")
 class MeshInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.MESH)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.MESH)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Texture", tooltip="Texture input")
 class TextureInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.TEXTURE)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.TEXTURE)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Collection", tooltip="Collection input")
 class CollectionInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.COLLECTION)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.COLLECTION)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Scene", tooltip="Scene input")
 class SceneInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.SCENE)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.SCENE)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="World", tooltip="World input")
 class WorldInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.WORLD)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.WORLD)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Image", tooltip="Image input")
 class ImageInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.IMAGE)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.IMAGE)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Armature", tooltip="Armature input")
 class ArmatureInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.ARMATURE)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.ARMATURE)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Action", tooltip="Action input")
 class ActionInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.ACTION)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.ACTION)
 
 
 @ACK.NE.add_node_to_category("Inputs/Data")
 @ACK.NE.add_node_metadata(label="Text", tooltip="Text input")
 class TextInput(ACK.NE.Node):
-    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DATA.TEXT)
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.TEXT)
+
+
+# --- Custom-Property based Inputs ---
+
+
+@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_metadata(label="Custom Property", tooltip="Custom Property input")
+class DictInput(ACK.NE.Node):
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.PyData.DICT)
+
+
+@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_metadata(label="List", tooltip="List input")
+class ListInput(ACK.NE.Node):
+    value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.PyData.LIST)

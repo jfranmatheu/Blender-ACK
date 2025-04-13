@@ -103,11 +103,10 @@ class ACK:
             """Adds metadata to an Operator class. Alias for metadata.Operator."""
             return _MetadataOperatorFunc(label=label, tooltip=tooltip)
 
-        # Assign flag classes/enums directly using ClassVar
-        add_flag: ClassVar[Type[_FlagsOperatorClass]] = _FlagsOperatorClass
-        add_modal_flag: ClassVar[Type[_FlagsModalClass]] = _FlagsModalClass
+        # --- Renamed Aliases for Flags/Polling --- 
+        Flags: ClassVar[Type[_FlagsOperatorClass]] = _FlagsOperatorClass
+        ModalFlags: ClassVar[Type[_FlagsModalClass]] = _FlagsModalClass
         
-        add_run_condition = Polling # alias of ACK.Poll
         # Other (Example)
         # register_shortcut = ... # TODO
 
@@ -124,9 +123,8 @@ class ACK:
         create_piemenu_from_func = PieMenu.from_function # Standardized name
         create_popover_from_func = Popover.from_function # Standardized name
         # Configuration
-        # Assign flag enum directly using ClassVar
-        add_panel_flag: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum
-        add_display_condition = Polling # alias of ACK.Poll
+        # --- Renamed Aliases for Flags/Polling --- 
+        PanelFlags: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""

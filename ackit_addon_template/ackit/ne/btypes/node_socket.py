@@ -85,7 +85,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         return not self.is_output
 
     @property
-    def value(self) -> Union[T, None]:
+    def value(self) -> T:
         return self.get_value()
 
     @value.setter

@@ -5,7 +5,7 @@ from ....ackit import ACK
 
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Add", tooltip="Add 2 numbers", icon='ADD')
+@ACK.NE.add_node_metadata(label="Add", tooltip="Add 2 numbers", icon='ADD')
 class Add(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -20,7 +20,7 @@ class Add(ACK.NE.Node):
         self.Result.name = str(result)
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Subtract", tooltip="Subtract 2 numbers", icon='REMOVE')
+@ACK.NE.add_node_metadata(label="Subtract", tooltip="Subtract 2 numbers", icon='REMOVE')
 class Subtract(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -35,7 +35,7 @@ class Subtract(ACK.NE.Node):
         self.Result.name = str(result)
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Multiply", tooltip="Multiply 2 numbers", icon='X')
+@ACK.NE.add_node_metadata(label="Multiply", tooltip="Multiply 2 numbers", icon='X')
 class Multiply(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -50,7 +50,7 @@ class Multiply(ACK.NE.Node):
         self.Result.name = str(result)
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Divide", tooltip="Divide 2 numbers", icon='FIXED_SIZE')
+@ACK.NE.add_node_metadata(label="Divide", tooltip="Divide 2 numbers", icon='FIXED_SIZE')
 class Divide(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -70,7 +70,7 @@ class Divide(ACK.NE.Node):
         self.Result.name = str(result)
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Modulo", tooltip="Modulo 2 numbers")
+@ACK.NE.add_node_metadata(label="Modulo", tooltip="Modulo 2 numbers")
 class Modulo(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -85,7 +85,7 @@ class Modulo(ACK.NE.Node):
         self.Result.name = str(result)
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Power", tooltip="Power 2 numbers", icon='CON_TRANSLIKE')
+@ACK.NE.add_node_metadata(label="Power", tooltip="Power 2 numbers", icon='CON_TRANSLIKE')
 class Power(ACK.NE.Node):
     # Inputs.
     Base = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -101,7 +101,7 @@ class Power(ACK.NE.Node):
 
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Square Root", tooltip="Square root of a number", icon='IPO_QUAD')
+@ACK.NE.add_node_metadata(label="Square Root", tooltip="Square root of a number", icon='IPO_QUAD')
 class SquareRoot(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -116,7 +116,7 @@ class SquareRoot(ACK.NE.Node):
 
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Logarithm", tooltip="Logarithm of a number")
+@ACK.NE.add_node_metadata(label="Logarithm", tooltip="Logarithm of a number")
 class Logarithm(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)
@@ -140,7 +140,7 @@ class Logarithm(ACK.NE.Node):
 
 
 @ACK.NE.add_node_to_category("Math")
-@ACK.NE.add_node_metadata(label="Math: Exponential", tooltip="Exponential of a number", icon='IPO_CIRC')
+@ACK.NE.add_node_metadata(label="Exponential", tooltip="Exponential of a number", icon='IPO_CIRC')
 class Exponential(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.socket_types.NodeSocketFloat)

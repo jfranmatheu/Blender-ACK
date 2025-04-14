@@ -129,7 +129,7 @@ class ACK:
             Decorator to register a function to be appended or prepended to a Blender UI class's draw method.
             
             Usage:
-                @ui_extend(bpy.types.SOME_PT_panel, prepend=True)
+                @ACK.UI.extend_layout(bpy.types.SOME_PT_panel, prepend=True)
                 def my_draw_func(context, layout):
                     layout.label(text="Hello")
 
@@ -141,6 +141,27 @@ class ACK:
                 Callable: The decorated function with (bpy.types.Context, bpy.types.UILayout) arguments.
             """
             return _ui_helpers.ui_extend(target_cls, prepend)
+
+        @staticmethod
+        def override_layout(target_cls: Type[bpy_types.Panel] | Type[bpy_types.Menu], poll: Callable[[bpy_types.Context], bool]):
+            """
+            Decorator to override the layout of a Blender UI class.
+            
+            Usage:
+                @ACK.UI.override_layout(bpy.types.SOME_PT_panel, poll=lambda context: context.scene.some_prop)
+                class OverrideOfSomePanel(bpy.types.Panel):
+                    def draw(self, context):
+                        # Method to override from the original 'bpy.types.SOME_PT_panel' class.
+                        self.layout.label(text="Hello")
+            
+            Args:
+                target_cls: The Blender Panel or Menu class (e.g., bpy.types.OBJECT_PT_context_menu).
+                poll: A function that returns a boolean indicating if the override should be applied.
+
+            Returns:
+                Callable: The decorated class with the overridden draw method (or any other overriden methods).
+            """
+            return _ui_helpers.UIOverride.decodecorator(target_cls, poll)
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""

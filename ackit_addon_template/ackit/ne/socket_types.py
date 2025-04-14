@@ -92,6 +92,16 @@ class NodeSocketBool(NodeSocket[bool]):
     property = Prop.Bool(name="State", default=False)
     color = SocketColor.BOOLEAN.value
 
+class NodeSocketBoolVector2(NodeSocket[Tuple[bool, bool]]):
+    label = 'Vector2'
+    property = Prop.Vector(name="Vector2", size=2, type=bool)
+    color = SocketColor.VECTOR.value
+
+class NodeSocketBoolVector3(NodeSocket[Tuple[bool, bool, bool]]):
+    label = 'Vector3'
+    property = Prop.Vector(name="Vector3", size=3, type=bool)
+    color = SocketColor.VECTOR.value
+
 class NodeSocketString(NodeSocket[str]):
     label = 'Text'
     property = Prop.String(name="Text", default="")
@@ -226,6 +236,8 @@ class SocketTypes:
     FLOAT_VECTOR2 = NodeSocketFloatVector2
     INT_VECTOR3 = NodeSocketIntVector3
     INT_VECTOR2 = NodeSocketIntVector2
+    BOOL_VECTOR2 = NodeSocketBoolVector2
+    BOOL_VECTOR3 = NodeSocketBoolVector3
 
     # Path types
     DIR_PATH = NodeSocketDirPath

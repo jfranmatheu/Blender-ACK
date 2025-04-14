@@ -8,13 +8,13 @@ class FloatInput(ACK.NE.Node):
     Value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FLOAT)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Vector")
 @ACK.NE.add_node_metadata(label="FloatVector3", tooltip="Float Vector3 input")
 class FloatVector3Input(ACK.NE.Node):
     Vector3 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FLOAT_VECTOR3)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Vector")
 @ACK.NE.add_node_metadata(label="FloatVector2", tooltip="Float Vector2 input")
 class FloatVector2Input(ACK.NE.Node):
     Vector2 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FLOAT_VECTOR2)
@@ -26,13 +26,13 @@ class IntInput(ACK.NE.Node):
     Value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.INT)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Vector")
 @ACK.NE.add_node_metadata(label="IntVector3", tooltip="Int Vector3 input")
 class IntVector3Input(ACK.NE.Node):
     Vector3 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.INT_VECTOR3)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Vector")
 @ACK.NE.add_node_metadata(label="IntVector2", tooltip="Int Vector2 input")
 class IntVector2Input(ACK.NE.Node):
     Vector2 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.INT_VECTOR2)
@@ -44,37 +44,49 @@ class BoolInput(ACK.NE.Node):
     Bool = ACK.NE.OutputSocket(ACK.NE.SocketTypes.BOOL)
 
 
+@ACK.NE.add_node_to_category("Inputs/Vector")
+@ACK.NE.add_node_metadata(label="BoolVector2", tooltip="Boolean Vector2 input")
+class BoolVector2Input(ACK.NE.Node):
+    Vector2 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.BOOL_VECTOR2)
+
+
+@ACK.NE.add_node_to_category("Inputs/Vector")
+@ACK.NE.add_node_metadata(label="BoolVector3", tooltip="Boolean Vector3 input")
+class BoolVector3Input(ACK.NE.Node):
+    Vector3 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.BOOL_VECTOR3)
+
+
 @ACK.NE.add_node_to_category("Inputs")
 @ACK.NE.add_node_metadata(label="String", tooltip="String input")
 class StringInput(ACK.NE.Node):
     String = ACK.NE.OutputSocket(ACK.NE.SocketTypes.STRING)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Path")
 @ACK.NE.add_node_metadata(label="Dir Path", tooltip="Directory Path input")
 class DirPathInput(ACK.NE.Node):
     DirPath = ACK.NE.OutputSocket(ACK.NE.SocketTypes.DIR_PATH)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Path")
 @ACK.NE.add_node_metadata(label="File Path", tooltip="File Path input")
 class FilePathInput(ACK.NE.Node):
     FilePath = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FILE_PATH)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Path")
 @ACK.NE.add_node_metadata(label="File Name", tooltip="File Name input")
 class FileNameInput(ACK.NE.Node):
     FileName = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FILE_NAME)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Color")
 @ACK.NE.add_node_metadata(label="RGB", tooltip="RGB Color input")
 class RGBInput(ACK.NE.Node):
     RGB = ACK.NE.OutputSocket(ACK.NE.SocketTypes.RGB)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Color")
 @ACK.NE.add_node_metadata(label="RGBA", tooltip="RGBA Color input")
 class RGBAInput(ACK.NE.Node):
     RGBA = ACK.NE.OutputSocket(ACK.NE.SocketTypes.RGBA)
@@ -92,13 +104,13 @@ class FactorInput(ACK.NE.Node):
     Value = ACK.NE.OutputSocket(ACK.NE.SocketTypes.FACTOR)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Matrix")
 @ACK.NE.add_node_metadata(label="Matrix3x3", tooltip="Matrix 3x3 input")
 class Matrix3x3Input(ACK.NE.Node):
     Matrix3x3 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.MATRIX3X3)
 
 
-@ACK.NE.add_node_to_category("Inputs")
+@ACK.NE.add_node_to_category("Inputs/Matrix")
 @ACK.NE.add_node_metadata(label="Matrix4x4", tooltip="Matrix 4x4 input")
 class Matrix4x4Input(ACK.NE.Node):
     Matrix4x4 = ACK.NE.OutputSocket(ACK.NE.SocketTypes.MATRIX4X4)

@@ -1,12 +1,11 @@
 import sys
-from collections import defaultdict
+from typing import Callable, Set
 
 from bpy.utils import register_class, unregister_class
 
 from ..globals import GLOBALS
 from .reg_utils import get_all_submodules
 from .reg_utils import get_ordered_classes_to_register
-from ..auto_code import AutoCode
 from ..utils.callback import CallbackDict
 from ..debug import print_debug
 
@@ -45,7 +44,7 @@ class AddonLoader:
     module_callbacks = CallbackDict()
 
     @classmethod
-    def init_modules(cls, use_autoload: bool = False, auto_code: set[AutoCode] = set()):
+    def init_modules(cls, use_autoload: bool = False, auto_code: Set[Callable[[], None]] = set()):
         print_debug("Initializing...")
         cls.use_autoload = use_autoload
 

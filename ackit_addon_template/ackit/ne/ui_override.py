@@ -1,7 +1,7 @@
 from bl_ui.space_node import NODE_PT_active_node_generic
 
-from ...ackit import ACK
-from .node_tree import NodeTree
+from .. import ACK
+from .btypes.node_tree import NodeTree
 
 
 @ACK.UI.override_layout(NODE_PT_active_node_generic, poll=lambda ctx: NodeTree.poll_space(ctx))

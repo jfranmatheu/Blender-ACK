@@ -68,6 +68,9 @@ class Node(BaseType, bpy_types.Node):
         self.label = self.name
         self.name = uid
         self.setup_sockets()
+        
+        import bpy
+        bpy.ops.node.translate_attach('INVOKE_DEFAULT', TRANSFORM_OT_translate={"value": (0.0, 0.0, 0.0)})
 
     def setup_sockets(self):
         # Call the new class methods to get descriptors

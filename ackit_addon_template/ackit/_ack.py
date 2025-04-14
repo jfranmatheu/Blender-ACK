@@ -1,6 +1,8 @@
 from enum import Enum, auto
 from typing import Callable, Type, Any, Literal, overload, Union, Annotated, TypeVar, ClassVar
 
+from bpy import types as bpy_types
+
 # --- Core Imports ---
 from . import core # For potential access if needed
 
@@ -81,6 +83,7 @@ __all__ = [
 # el cual usamos para definir el tipo de socket para inputs y outputs.
 SocketT = TypeVar('SocketT', bound=NodeSocket)
 
+UIDrawFunc = Callable[[bpy_types.Context, bpy_types.UILayout], None]
 
 
 class ACK:
@@ -120,7 +123,24 @@ class ACK:
         # --- Renamed Aliases for Flags/Polling --- 
         PanelFlags: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum
         # UI Draw Helpers
-        extend_layout = _ui_helpers.ui_extend
+        @staticmethod
+        def extend_layout(target_cls: Type[bpy_types.Panel] | Type[bpy_types.Menu], prepend: bool = False) -> Callable[[UIDrawFunc], UIDrawFunc]:
+            """
+            Decorator to register a function to be appended or prepended to a Blender UI class's draw method.
+            
+            Usage:
+                @ui_extend(bpy.types.SOME_PT_panel, prepend=True)
+                def my_draw_func(context, layout):
+                    layout.label(text="Hello")
+
+            Args:
+                target_cls: The Blender Panel or Menu class (e.g., bpy.types.OBJECT_MT_context_menu).
+                prepend: Whether to prepend the function instead of appending.
+                
+            Returns:
+                Callable: The decorated function with (bpy.types.Context, bpy.types.UILayout) arguments.
+            """
+            return _ui_helpers.ui_extend(target_cls, prepend)
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""

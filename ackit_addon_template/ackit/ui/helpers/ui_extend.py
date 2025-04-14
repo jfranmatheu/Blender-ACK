@@ -19,7 +19,7 @@ _ui_extensions: List[UIExtension] = []
 
 # --- Decorators ---
 
-def ui_extend(target_cls: Type, prepend: bool = False) -> Callable[[UIDrawFunc], UIDrawFunc]:
+def ui_extend(target_cls: Type[Panel] | Type[Menu], prepend: bool = False) -> Callable[[UIDrawFunc], UIDrawFunc]:
     """
     Decorator to register a function to be appended or prepended to a Blender UI class's draw method.
     
@@ -61,7 +61,7 @@ def append_to(target_cls: Type) -> Callable[[UIDrawFunc], UIDrawFunc]:
 
     def decorator(func: UIDrawFunc) -> UIDrawFunc:
         _log.debug(f"Queueing '{func.__name__}' for appending to '{target_cls.__name__}'")
-        _ui_extensions.append((target_cls, func, 'append'))
+        _ui_extensions.append((target_cls, lambda ui, context: func(context, ui.layout), 'append'))
         # Return the original function unmodified. Registration happens later.
         return func
     return decorator

@@ -1,4 +1,5 @@
 from .btypes import *
+from . import helpers
 
 __all__ = [
     'Menu',
@@ -7,4 +8,5 @@ __all__ = [
     'PieMenu',
     'Popover',
     'UIList',
+    'helpers',
 ] 

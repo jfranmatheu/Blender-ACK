@@ -165,6 +165,8 @@ class ACK:
             """Adds a category to a Node class. Alias for flags.NODE_CATEGORY."""
             return _NodeCategoryFunc(category=category)
 
+        NodeFlags = flags.NodeFlags
+
         # Socket Definition
         SocketTypes = _socket_types_module.SocketTypes
 

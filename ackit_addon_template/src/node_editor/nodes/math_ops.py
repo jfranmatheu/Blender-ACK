@@ -5,6 +5,7 @@ from ....ackit import ACK
 
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Add", tooltip="Add 2 numbers", icon='ADD')
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class Add(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)
@@ -18,8 +19,10 @@ class Add(ACK.NE.Node):
         self.Result.value = result
         self.Result.name = str(result)
 
+
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Subtract", tooltip="Subtract 2 numbers", icon='REMOVE')
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class Subtract(ACK.NE.Node):
     # Inputs.
     A = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)
@@ -85,6 +88,7 @@ class Modulo(ACK.NE.Node):
 
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Power", tooltip="Power 2 numbers", icon='CON_TRANSLIKE')
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class Power(ACK.NE.Node):
     # Inputs.
     Base = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)
@@ -101,6 +105,7 @@ class Power(ACK.NE.Node):
 
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Square Root", tooltip="Square root of a number", icon='IPO_QUAD')
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class SquareRoot(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)
@@ -116,6 +121,7 @@ class SquareRoot(ACK.NE.Node):
 
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Logarithm", tooltip="Logarithm of a number")
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class Logarithm(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)
@@ -140,6 +146,7 @@ class Logarithm(ACK.NE.Node):
 
 @ACK.NE.add_node_to_category("Math")
 @ACK.NE.add_node_metadata(label="Exponential", tooltip="Exponential of a number", icon='IPO_CIRC')
+@ACK.NE.NodeFlags.ColorTag.VECTOR
 class Exponential(ACK.NE.Node):
     # Inputs.
     Number = ACK.NE.InputSocket(ACK.NE.SocketTypes.FLOAT)

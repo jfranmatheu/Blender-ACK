@@ -249,3 +249,34 @@ def NODE_CATEGORY(category: str) -> Callable[[Type[NodeT]], Type[NodeT]]:
         cls._node_category = category
         return cls
     return wrapper 
+
+
+class NodeColorTag(Enum):
+    """
+    Decorator utility to set the color tag of a node.
+    """
+    NONE = auto()
+    ATTRIBUTE = auto()
+    COLOR = auto()
+    CONVERTER = auto()
+    DISTORT = auto()
+    FILTER = auto()
+    GEOMETRY = auto()
+    INPUT = auto()
+    MATTE = auto()
+    OUTPUT = auto()
+    SCRIPT = auto()
+    SHADER = auto()
+    TEXTURE = auto()
+    VECTOR = auto()
+    PATTERN = auto()
+    INTERFACE = auto()
+    GROUP = auto()
+    
+    def __call__(self, _deco_cls: Type[NodeT]) -> Type[NodeT]:
+        _deco_cls._color_tag = self.name
+        return _deco_cls
+
+
+class NodeFlags:
+    ColorTag = NodeColorTag

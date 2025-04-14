@@ -16,6 +16,7 @@ class Node(BaseType, bpy_types.Node):
     _addon_short = GLOBALS.ADDON_MODULE_SHORT or "ACK" # Provide default if None
     _node_tree_type: str = f"{_addon_short.upper()}_TREETYPE"
     _node_category: str
+    _color_tag: str = 'NONE'
 
     @classmethod
     def poll(cls, node_tree: bpy_types.NodeTree) -> bool:

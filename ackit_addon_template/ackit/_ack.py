@@ -38,6 +38,7 @@ from .ui import Menu
 from .ui import PieMenu
 from .ui import Popover
 from .ui import UIList
+from .ui import helpers as _ui_helpers # Import the helpers module
 
 # NE
 from .ne import Node as _Node
@@ -118,6 +119,8 @@ class ACK:
         # Configuration
         # --- Renamed Aliases for Flags/Polling --- 
         PanelFlags: ClassVar[Type[_FlagsPanelEnum]] = _FlagsPanelEnum
+        # UI Draw Helpers
+        extend_layout = _ui_helpers.ui_extend
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""

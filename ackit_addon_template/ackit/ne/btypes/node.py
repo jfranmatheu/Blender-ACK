@@ -1,4 +1,5 @@
 from typing import Set, Dict, Any, Union, List, ItemsView
+from uuid import uuid4
 
 from bpy import types as bpy_types
 
@@ -17,6 +18,10 @@ class Node(BaseType, bpy_types.Node):
     _node_tree_type: str = f"{_addon_short.upper()}_TREETYPE"
     _node_category: str
     _color_tag: str = 'NONE'
+
+    @property
+    def uid(self) -> str:
+        return self.name
 
     @classmethod
     def poll(cls, node_tree: bpy_types.NodeTree) -> bool:
@@ -58,7 +63,10 @@ class Node(BaseType, bpy_types.Node):
 
     def init(self, context: bpy_types.Context) -> None:
         """When the node is created. """
-        print("Node.init:", self.name)
+        uid = uuid4().hex
+        print("Node.init:", self.name, uid)
+        self.label = self.name
+        self.name = uid
         self.setup_sockets()
 
     def setup_sockets(self):

@@ -8,6 +8,11 @@
 .idea/
 .cursor/prompts/
 
+# ACKIT specific gitignore rules.
+**/icons_data.dir
+**/icons_data.bak
+**/icons_data.dat
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -126,10 +126,6 @@ class BaseType(object):
         # Mark as registered
         cls.registered = True
 
-        if isinstance(cls, bpy.types.Node):
-            cls._input_descriptors = {}
-            cls._output_descriptors = {}
-
         # Handle wrapped properties (Descriptors) - Generic part
         for name, value in list(cls.__dict__.items()):
             # WrappedPropertyDescriptor.

@@ -14,10 +14,7 @@ __all__ = ['NodeSocket']
 
 T = TypeVar('T')
 
-
-
 cached_node_cls_type: Dict[Type['NodeSocket'], Type] = {}
-
 
 # Helper functions (consider moving to a utils module later)
 def _get_generic_type(instance: 'NodeSocket') -> Type[Any] | None:
@@ -83,21 +80,14 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
     property_name: str = 'property'
-    property_cast: Callable[[Any], Any] | None = None
     use_custom_property: bool = False
-    # cast: ClassVar[Tuple[SocketCast, ...]] = ()
-    # _cast_compatible_types: ClassVar[Dict[Type, Callable[[Any], Any]]]
+    # Casting.
+    property_cast: Callable[[Any], Any] | None = None
     cast_from_socket: ClassVar[Dict[str, Callable[[Any], Any]]] = {}  # Cast from socket type.
     cast_from_types: ClassVar[Dict[Type, Callable[[Any], Any]]] = {}  # Cast from defined property value type.
     # Extended properties
     uid: Prop.STRING(default='', options={'HIDDEN'})
     block_property_update: Prop.BOOL(default=False, options={'HIDDEN', 'SKIP_SAVE'})
-
-    # @classmethod
-    # def tag_register(cls, **kwargs):
-    #     new_cls = super().tag_register(**kwargs)
-    #     new_cls._cast_compatible_types = {socket_cast.get_cast_type(): socket_cast.cast for socket_cast in cls.cast}
-    #     return new_cls
 
     @property
     def is_input(self) -> bool:
@@ -155,21 +145,8 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
             val = self.property_cast(val)
         return val
 
-    '''def get_casted_value(self, socket: 'NodeSocket') -> Union[T, None]:
-        """ Gets the value of the socket, casted to the correct type. """
-        value = self.get_value()
-        if value is None:
-            return None
-        return self.cast_value(value, cast_type=socket.value_type)'''
-
     def set_value(self, value: T):
         """ Sets the value of the socket, if possible (based on the `cast` class variable). """
-        # TODO: support casting of value to the correct type, since now it's only done for socket type 'T' (NodeSocket(Generic[T])).
-        '''try:
-            value = self.cast_value(value)
-        except ValueError as e:
-            print(f"Error setting value for socket {self.name}: {e}")
-            return'''
         if self.use_custom_property:
             self[self.property_name] = value
         else:
@@ -180,31 +157,6 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         self.block_property_update = True
         self.set_value(value)
         self.block_property_update = False
-
-    '''def can_cast_type(self, value_type: Type[Any]) -> bool:
-        """ Checks if a type can be cast to the type of the socket. """
-        if value_type == self.value_type:
-            return True
-        return value_type in self._cast_compatible_types
-
-    def can_cast_socket(self, socket: 'NodeSocket') -> bool:
-        """ Checks if a socket can be cast to the type of the socket. """
-        return self.can_cast_type(socket.value_type)
-
-    def can_cast_value(self, value: Any) -> bool:
-        """ Checks if a value can be cast to the type of the socket. """
-        return self.can_cast_type(type(value))
-
-    def cast_value(self, value: Any, cast_type: Type[Any] | None = None) -> Any:
-        """ Casts a value to the type of the socket, if possible (based on the `cast` class variable). """
-        if cast_type is None:
-            if not self.can_cast_value(value):
-                raise ValueError(f"Value {value} of type {type(value)} cannot be cast to {self.value_type}")
-            return self._cast_compatible_types[type(value)](value)
-        else:
-            if not self.can_cast_type(cast_type):
-                raise ValueError(f"Value {value} of type {type(value)} cannot be cast to {cast_type}")
-            return self._cast_compatible_types[cast_type](value)'''
 
     def can_cast_from_socket(self, socket: 'NodeSocket') -> bool:
         """ Checks if a socket can be cast to the type of the socket. """

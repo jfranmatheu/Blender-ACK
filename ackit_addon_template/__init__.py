@@ -13,13 +13,11 @@
 
 from .ackit import AddonLoader, AutoCode
 
-AddonLoader.init_modules(
-    use_autoload=False,
-    auto_code={AutoCode.OPS, AutoCode.ICONS, AutoCode.TYPES}
-)
-
-
 def register():
+    AddonLoader.init_modules(
+        use_autoload=False,
+        auto_code={AutoCode.OPS, AutoCode.ICONS, AutoCode.TYPES}
+    )
     AddonLoader.register_modules()
 
 

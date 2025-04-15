@@ -15,15 +15,21 @@ T = TypeVar('T')
 
 
 
+cached_node_cls_type: Dict[Type['NodeSocket'], Type] = {}
+
+
 # Helper functions (consider moving to a utils module later)
-def _get_generic_type(instance):
+def _get_generic_type(instance: 'NodeSocket') -> Type[Any] | None:
     """Attempts to get the generic type T from a NodeSocket subclass instance."""
+    if instance.__class__ in cached_node_cls_type:
+        return cached_node_cls_type[instance.__class__]
     # Check __orig_bases__ first (standard for generic subclasses)
     for base in getattr(instance.__class__, '__orig_bases__', []):
         origin = typing.get_origin(base)
         if origin is NodeSocket:
             args = typing.get_args(base)
             if args:
+                cached_node_cls_type[instance.__class__] = args[0]
                 return args[0]
     # Fallback: Check direct annotations if it's not a direct subclass maybe?
     # This part is less reliable for complex hierarchies
@@ -96,6 +102,11 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     def value(self, value: T):
         """ Sets the value of the socket. """
         self.set_value(value)
+
+    @property
+    def value_type(self) -> Union[Type[T], None]:
+        """ Gets the type of the socket value. """
+        return _get_generic_type(self)
 
     def get_value(self) -> Union[T, None]:
         """ Gets the value of the socket. """

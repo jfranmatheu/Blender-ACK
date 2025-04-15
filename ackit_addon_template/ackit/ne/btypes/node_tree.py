@@ -17,7 +17,7 @@ class NodeTree(BaseType, bpy_types.NodeTree):
     bl_icon: str = 'DOT'
     
     to_remove_links: List[Tuple[bpy_types.NodeSocket, bpy_types.NodeSocket]] = []
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.to_remove_links = []
@@ -31,6 +31,12 @@ class NodeTree(BaseType, bpy_types.NodeTree):
     def poll(cls, context: bpy_types.Context) -> bool:
         """Check visibility in the editor"""
         return True
+
+    def tag_remove_link(self, link: bpy_types.NodeLink):
+        """Tag a link for removal"""
+        if not hasattr(self, "to_remove_links"):
+            self.to_remove_links = []
+        self.to_remove_links.append((link.from_socket.uid, link.to_socket.uid))
 
     def get_input_nodes(self):
         """Get all nodes that have no inputs or unconnected inputs"""
@@ -51,11 +57,12 @@ class NodeTree(BaseType, bpy_types.NodeTree):
             return
 
         # Remove links
-        for (from_socket, to_socket) in self.to_remove_links:
-            for link in reversed(from_socket.links):
-                if link.to_socket == to_socket and link.from_socket == from_socket:
-                    self.links.remove(link)
-        self.to_remove_links.clear()
+        if hasattr(self, "to_remove_links") and len(self.to_remove_links) > 0:
+            for (from_socket, to_socket) in self.to_remove_links:
+                for link in reversed(from_socket.links):
+                    if link.to_socket.uid == to_socket and link.from_socket.uid == from_socket:
+                        self.links.remove(link)
+            self.to_remove_links.clear()
 
         # Only evaluate from input nodes
         for input_node in self.get_input_nodes():

@@ -2,6 +2,7 @@ from .btypes import *
 from .categories import register as register_node_categories, unregister as unregister_node_categories
 from .socket_types import * # Expose all specific socket types
 from .annotations import NodeInput, NodeOutput
+from .socket_casting import SocketCast
 
 # Expose base types
 __all__ = [
@@ -13,6 +14,7 @@ __all__ = [
     'register_node_categories', # Function to register categories
     'unregister_node_categories', # Function to unregister categories
     'SocketTypes',
+    'SocketCast',
 ]
 
 # Add all socket types from socket_types.py to __all__

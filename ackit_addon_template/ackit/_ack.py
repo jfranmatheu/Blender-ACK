@@ -190,6 +190,9 @@ class ACK:
 
         # Socket Definition
         SocketTypes = _socket_types_module.SocketTypes
+        
+        # Socket Casting
+        SocketCast = ne.SocketCast
 
         # Explicitly annotate the NodeInput and NodeOutput with proper signatures
         @staticmethod

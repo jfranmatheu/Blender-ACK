@@ -198,7 +198,7 @@ class NodeSocketRGB(NodeSocket[Color]):
         float: lambda val: (val, val, val),
     }
     cast_from_socket = {
-        'NodeSocketRGBA': lambda color: (color.r, color.g, color.b),
+        'NodeSocketRGBA': lambda color: (color.r, color.g, color.b),  # remove alpha channel
         'NodeSocketFloatVector3': lambda vec: (vec[0], vec[1], vec[2]),
     }
 

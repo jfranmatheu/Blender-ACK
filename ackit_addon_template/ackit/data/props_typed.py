@@ -272,3 +272,15 @@ class WrappedTypedPropertyTypes:
         @staticmethod
         def Text(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Text]:
             return WrappedPropertyDescriptor[btypes.Text](PointerProperty, name=name, type=btypes.Text, **kwargs)
+
+        @staticmethod
+        def Light(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Light]:
+            return WrappedPropertyDescriptor[btypes.Light](PointerProperty, name=name, type=btypes.Light, **kwargs)
+
+        @staticmethod
+        def Curve(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Curve]:
+            return WrappedPropertyDescriptor[btypes.Curve](PointerProperty, name=name, type=btypes.Curve, **kwargs)
+
+        @staticmethod
+        def Camera(name: str = '', **kwargs) -> WrappedPropertyDescriptor[btypes.Camera]:
+            return WrappedPropertyDescriptor[btypes.Camera](PointerProperty, name=name, type=btypes.Camera, **kwargs)

@@ -26,17 +26,20 @@ __all__ = [
     'NodeSocketFactor',
     'NodeSocketMatrix3x3',
     'NodeSocketMatrix4x4',
-    'NodeSocketObject',
-    'NodeSocketMaterial',
-    'NodeSocketMesh',
-    'NodeSocketTexture',
-    'NodeSocketCollection',
-    'NodeSocketScene',
-    'NodeSocketWorld',
-    'NodeSocketImage',
-    'NodeSocketArmature',
-    'NodeSocketAction',
-    'NodeSocketText',
+    'NodeSocketDataObject',
+    'NodeSocketDataMaterial',
+    'NodeSocketDataMesh',
+    'NodeSocketDataTexture',
+    'NodeSocketDataCollection',
+    'NodeSocketDataScene',
+    'NodeSocketDataWorld',
+    'NodeSocketDataImage',
+    'NodeSocketDataArmature',
+    'NodeSocketDataAction',
+    'NodeSocketDataText',
+    'NodeSocketDataLight',
+    'NodeSocketDataCurve',
+    'NodeSocketDataCamera',
     'SocketTypes',
 ]
 
@@ -208,6 +211,26 @@ class NodeSocketText(NodeSocket[Text]):
     property = Prop.Data.Text(name="Text")
     color = SocketColor.DATA.value
 
+class NodeSocketDataLight(NodeSocket[Light]):
+    label = 'Light'
+    property = Prop.Data.Light(name="Light")
+    color = SocketColor.DATA.value
+    cast_from_socket = {
+        'NodeSocketObject': lambda obj: obj.data if obj.type == 'LIGHT' else None,
+    }
+
+class NodeSocketDataCurve(NodeSocket[Curve]):
+    label = 'Curve'
+    property = Prop.Data.Curve(name="Curve")
+    color = SocketColor.DATA.value
+
+
+class NodeSocketDataCamera(NodeSocket[Camera]):
+    label = 'Camera'
+    property = Prop.Data.Camera(name="Camera")
+    color = SocketColor.DATA.value
+
+
 
 # --- Custom-Property based Sockets ---
 
@@ -260,17 +283,20 @@ class SocketTypes:
 
     # Data types
     class Data:
-        OBJECT = NodeSocketObject
-        MATERIAL = NodeSocketMaterial
-        MESH = NodeSocketMesh
-        TEXTURE = NodeSocketTexture
-        COLLECTION = NodeSocketCollection
-        SCENE = NodeSocketScene
-        WORLD = NodeSocketWorld
-        IMAGE = NodeSocketImage
-        ARMATURE = NodeSocketArmature
-        ACTION = NodeSocketAction
-        TEXT = NodeSocketText
+        OBJECT = NodeSocketDataObject
+        MATERIAL = NodeSocketDataMaterial
+        MESH = NodeSocketDataMesh
+        TEXTURE = NodeSocketDataTexture
+        COLLECTION = NodeSocketDataCollection
+        SCENE = NodeSocketDataScene
+        WORLD = NodeSocketDataWorld
+        IMAGE = NodeSocketDataImage
+        ARMATURE = NodeSocketDataArmature
+        ACTION = NodeSocketDataAction
+        TEXT = NodeSocketDataText
+        LIGHT = NodeSocketDataLight
+        CURVE = NodeSocketDataCurve
+        CAMERA = NodeSocketDataCamera
 
     # Custom-Property based types
     class PyData:

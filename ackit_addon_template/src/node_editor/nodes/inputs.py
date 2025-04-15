@@ -182,8 +182,25 @@ class TextInput(ACK.NE.Node):
     Text = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.TEXT)
 
 
-# --- Custom-Property based Inputs ---
+@ACK.NE.add_node_to_category("Inputs/Data")
+@ACK.NE.add_node_metadata(label="Light", tooltip="Light input")
+class LightInput(ACK.NE.Node):
+    Light = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.LIGHT)
+    
 
+@ACK.NE.add_node_to_category("Inputs/Data")
+@ACK.NE.add_node_metadata(label="Curve", tooltip="Curve input")
+class CurveInput(ACK.NE.Node):
+    Curve = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.CURVE)
+
+
+@ACK.NE.add_node_to_category("Inputs/Data")
+@ACK.NE.add_node_metadata(label="Camera", tooltip="Camera input")
+class CameraInput(ACK.NE.Node):
+    Camera = ACK.NE.OutputSocket(ACK.NE.SocketTypes.Data.CAMERA)
+
+
+# --- Custom-Property based Inputs ---
 
 @ACK.NE.add_node_to_category("Inputs/Python")
 @ACK.NE.add_node_metadata(label="PyDict", tooltip="Custom Property dictionary input")

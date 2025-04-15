@@ -82,6 +82,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     label: str
     color: tuple[float, float, float, float] = (.5, .5, .5, 1.0)
     property_name: str = 'property'
+    property_cast: Callable[[Any], Any] | None = None
     use_custom_property: bool = False
 
     # Extended properties
@@ -119,10 +120,16 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
                 # They take its values from the links.
                 return None
         if self.use_custom_property:
-            if self.property_name in self:
-                return self[self.property_name]
-            return None
-        val = getattr(self, self.property_name)
+            if self.property_name not in self:
+                return None
+            val = self[self.property_name]
+        else:
+            val = getattr(self, self.property_name)
+        if self.property_cast is not None:
+            # NOTE: Some properties needs to be casted to the correct type, for example:
+            # - Python lists are stored as IDPropertyArray, we need to cast it to a tuple or list, same for Python dictionaries.
+            # - Vector properties (and RGBA color) are interpreted as 'bpy_prop_array', so we need to cast it to a tuple.
+            val = self.property_cast(val)
         return val
 
     def set_value(self, value: T):

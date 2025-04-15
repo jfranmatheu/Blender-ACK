@@ -68,11 +68,13 @@ class NodeSocketFloat(NodeSocket[float]):
 class NodeSocketFloatVector3(NodeSocket[Tuple[float, float, float]]):
     label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=float)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.VECTOR.value
 
 class NodeSocketFloatVector2(NodeSocket[Tuple[float, float]]):
     label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=float)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.VECTOR.value
 
 class NodeSocketInt(NodeSocket[int]):
@@ -83,11 +85,13 @@ class NodeSocketInt(NodeSocket[int]):
 class NodeSocketIntVector3(NodeSocket[Tuple[int, int, int]]):
     label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=int)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.VECTOR.value
 
 class NodeSocketIntVector2(NodeSocket[Tuple[int, int]]):
     label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=int)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.VECTOR.value
     
 class NodeSocketBool(NodeSocket[bool]):
@@ -99,10 +103,12 @@ class NodeSocketBoolVector2(NodeSocket[Tuple[bool, bool]]):
     label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=bool)
     color = SocketColor.VECTOR.value
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
 
 class NodeSocketBoolVector3(NodeSocket[Tuple[bool, bool, bool]]):
     label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=bool)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.VECTOR.value
 
 class NodeSocketString(NodeSocket[str]):
@@ -133,6 +139,7 @@ class NodeSocketRGB(NodeSocket[Tuple[float, float, float]]):
 class NodeSocketRGBA(NodeSocket[Tuple[float, float, float, float]]):
     label = 'Color (RGBA)'
     property = Prop.Color(name="RGBA", use_alpha=True)
+    property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
     color = SocketColor.COLOR.value
 
 class NodeSocketAngle(NodeSocket[float]):
@@ -238,11 +245,13 @@ class NodeSocketPyDict(NodeSocket[dict]):
     label = 'PyDict'
     use_custom_property = True
     color = SocketColor.PY_DATA.value
+    property_cast = dict
 
 class NodeSocketPyList(NodeSocket[list]):
     label = 'PyList'
     use_custom_property = True
     color = SocketColor.PY_DATA.value
+    property_cast = list
 
 
 # --- Socket Types Facade helper ---

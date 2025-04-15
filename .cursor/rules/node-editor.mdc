@@ -1,0 +1,129 @@
+---
+description: Guide on using the ackit.ne module for creating custom Blender Node Editors, Nodes, Sockets, and Trees. Covers core components, decorators, socket definition, and registration process.
+globs: 
+alwaysApply: false
+---
+---
+description: Guide on using the ackit.ne module for creating custom Blender Node Editors, Nodes, Sockets, and Trees. Covers core components, decorators, socket definition, and registration process.
+globs: ["**/ackit/ne/**", "**/node_editor/**", "**/_ack.py"]
+---
+# Using `ackit.ne` for Custom Node Editors
+
+The `ackit.ne` module, accessed primarily through the `ACK.NE` facade, provides a structured way to define custom Node Editors, Nodes, and Sockets in Blender using Python, simplifying registration and configuration compared to using `bpy` directly.
+
+## Core Components
+
+*   **`ACK.NE.Node` (`ackit.ne.btypes.Node`)**: The base class for all custom nodes. Inherit from this to create your node logic.
+*   **`ACK.NE.Socket` (`ackit.ne.btypes.NodeSocket`)**: The base class for custom socket types. While often using predefined types is sufficient, you can inherit from this for highly specialized sockets.
+*   **`ACK.NE.Tree` (`ackit.ne.btypes.NodeTree`)**: The base class for your custom node tree type. This groups your custom nodes together.
+*   **`ACK.NE.SocketTypes` (`ackit.ne.socket_types.SocketTypes`)**: A collection of pre-defined `NodeSocket` subclasses for common data types (Float, Int, Vector, String, Color, Object, Geometry, Collection, Shader, Texture, Image, Boolean, etc.). Use these as the `socket_type` argument when defining inputs/outputs.
+*   **`ACK.NE.SocketCast` (`ackit.ne.socket_casting.SocketCast`)**: Utilities for handling implicit or explicit casting between different socket types if needed (advanced).
+
+## Configuration Decorators
+
+These decorators, used on your custom `Node` and `Socket` classes, replace manual setting of `bl_` attributes and add extra functionality.
+
+*   **`@ACK.NE.add_node_metadata(label: str | None, tooltip: str, icon: str)`**: Sets the `bl_label`, `bl_tooltip`, and `bl_icon` for a Node class. Applied to classes inheriting from `ACK.NE.Node`.
+*   **`@ACK.NE.add_socket_metadata(label: str | None, tooltip: str, subtype_label: str, color: tuple)`**: Sets the `bl_label`, `bl_tooltip`, subtype label (for enums etc.), and draw `color` for a Socket class. Applied to classes inheriting from `ACK.NE.Socket` (or used internally by `SocketTypes`).
+*   **`@ACK.NE.add_node_to_category(category: str)`**: Defines the category under which this node will appear in the "Add Node" menu (`Shift+A`). Applied to classes inheriting from `ACK.NE.Node`.
+*   **`ACK.NE.NodeFlags`**: An enum-like class possibly used for setting boolean flags on nodes (e.g., `use_custom_color`). (Requires inspection of `ackit.flags` for details).
+
+## Defining Sockets on Nodes
+
+Instead of manually creating `bpy.props` for sockets in `init()`, `ackit` uses type annotations with helper functions:
+
+*   **`MyInput: ACK.NE.InputSocket(socket_type: Type[SocketT], multi: bool = False)`**: Defines an input socket.
+    *   `socket_type`: The socket class to use (e.g., `ACK.NE.SocketTypes.Float`). `SocketT` ensures type hinting works correctly.
+    *   `multi`: If `True`, allows multiple connections to this input (like a node group input).
+    *   Use this as a class-level annotation in your `Node` subclass. The actual socket instance is accessed via the node instance (e.g., `self.inputs["MyInput"]`).
+*   **`MyOutput: ACK.NE.OutputSocket(socket_type: Type[SocketT])`**: Defines an output socket.
+    *   `socket_type`: The socket class to use (e.g., `ACK.NE.SocketTypes.Vector`).
+    *   Use this as a class-level annotation. Access via `self.outputs["MyOutput"]`.
+
+## Steps to Create a Custom Node Editor
+
+1.  **Define Custom Sockets (Optional):**
+    *   If the types in `ACK.NE.SocketTypes` are insufficient, create new classes inheriting from `ACK.NE.Socket` (or a more specific type like `ACK.NE.SocketTypes.ValueSocket`).
+    *   Use `@ACK.NE.add_socket_metadata` to configure their appearance.
+    *   Place these in a dedicated module (e.g., `src/node_editor/sockets.py`).
+
+2.  **Define Custom Nodes:**
+    *   Create classes inheriting from `ACK.NE.Node`.
+    *   Use `@ACK.NE.add_node_metadata` for label, tooltip, icon.
+    *   Use `@ACK.NE.add_node_to_category` for the "Add" menu. Use '/' character to specify subcategories.
+    *   Define inputs and outputs using `InputSocket` and `OutputSocket` class annotations, referencing types from `ACK.NE.SocketTypes` or your custom sockets.
+    *   Implement the node's logic, typically in methods like `init(self, context)`, `update(self)`, `draw_buttons(self, context, layout)`, `draw_label(self)`.
+    *   Place these in dedicated modules (e.g., `src/node_editor/nodes/logic_node.py`, `src/node_editor/nodes/data_node.py`).
+
+3.  **Define the Custom Node Tree:**
+    *   Create a class inheriting from `ACK.NE.Tree`.
+    *   Set `bl_idname`, `bl_label`, and `bl_icon` directly on the class (or potentially via a decorator if `ackit` adds one later).
+    *   This class acts as the container for your node system. Blender associates editors with specific tree types.
+    *   Place this in a dedicated module (e.g., `src/node_editor/node_tree.py`).
+
+4.  **Registration:**
+    *   Ensure all modules containing your Nodes, Sockets (if custom), and the NodeTree are imported somewhere the `AddonLoader` can find them (e.g., in `src/node_editor/__init__.py`, which is then imported by the addon's root `__init__.py`).
+    *   `ackit.AddonLoader.register_modules()` will automatically discover and register all classes inheriting from `ACK.NE.Node`, `ACK.NE.Socket`, and `ACK.NE.Tree`.
+
+## Example Snippet (Conceptual)
+
+```python
+# src/node_editor/nodes/simple_math.py
+from ackit import ACK
+
+@ACK.NE.add_node_metadata(label="Simple Math", tooltip="Performs basic math operations")
+@ACK.NE.add_node_to_category("Math")
+class MyMathNode(ACK.NE.Node):
+    # Define Sockets using annotations
+    InputA: ACK.NE.InputSocket(ACK.NE.SocketTypes.Float)
+    InputB: ACK.NE.InputSocket(ACK.NE.SocketTypes.Float)
+    Output: ACK.NE.OutputSocket(ACK.NE.SocketTypes.Float)
+
+    # Example property for node settings
+    operation: ACK.Prop.Enum(
+        items=[('ADD', 'Add', ''), ('SUB', 'Subtract', '')],
+        name="Operation"
+    ) # type: ignore -> bpy.props.EnumProperty
+
+    def init(self, context):
+        # Sockets are automatically created based on annotations
+        # self.inputs['InputA'].default_value = 0.0 # Set defaults if needed
+        # self.outputs['Output'].default_value = 0.0
+        pass
+
+    def update(self):
+        # Called when inputs change
+        in_a = self.InputA.value
+        in_b = self.InputB.value
+
+        if self.operation == 'ADD':
+            result = in_a + in_b
+        else: # SUBTRACT
+            result = in_a - in_b
+
+        self.Output.value = result
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "operation", text="") # Draw the enum property
+
+# src/node_editor/node_tree.py
+from ackit import ACK
+
+class MyCustomTree(ACK.NE.Tree):
+    bl_idname = 'MyCustomTreeType'
+    bl_label = 'My Custom Node Tree'
+    bl_icon = 'NODETREE'
+
+# src/node_editor/__init__.py
+# Import nodes and tree so AddonLoader finds them
+from . import simple_math
+from . import node_tree
+
+# addon/__init__.py
+# ...
+# AddonLoader.init_modules(MODULES)
+# AddonLoader.register_modules()
+# ...
+```
+
+This structure allows `ackit` to handle the boilerplate of registering the tree type, node types, and setting up socket properties based on the declarative annotations and decorators. 

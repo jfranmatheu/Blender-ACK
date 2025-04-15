@@ -10,7 +10,6 @@ from mathutils import Color, Vector, Matrix
 from .btypes.node_socket import NodeSocket
 from ..data.props_typed import WrappedTypedPropertyTypes as Prop
 from .socket_casting import SocketCast
-from ..metadata import NodeSocket as add_socket_metadata
 
 
 __all__ = [
@@ -77,108 +76,123 @@ class SocketColor(Enum):
 
 # --- Socket definitions ---
 
-@add_socket_metadata(label='Value', color=SocketColor.VALUE.value)
 class NodeSocketFloat(NodeSocket[float]):
+    label = 'Value'
     property = Prop.Float(name="Value", default=0.0)
+    color = SocketColor.VALUE.value
     cast_from_types = {
         int: float,
         bool: float,
     }
 
-@add_socket_metadata(label='Vector3', color=SocketColor.VECTOR.value)
 class NodeSocketFloatVector3(NodeSocket[TYPE_VECTOR_3]):
+    label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=float)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketIntVector3': lambda v: (float(v[0]), float(v[1]), float(v[2])),
         'NodeSocketBoolVector3': lambda v: (float(v[0]), float(v[1]), float(v[2])),
     }
 
-@add_socket_metadata(label='Vector2', color=SocketColor.VECTOR.value)
 class NodeSocketFloatVector2(NodeSocket[TYPE_VECTOR_2]):
+    label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=float)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketIntVector2': lambda v: (float(v[0]), float(v[1])),
         'NodeSocketBoolVector2': lambda v: (float(v[0]), float(v[1])),
     }
 
-@add_socket_metadata(label='Integer', color=SocketColor.INTEGER.value)
+
 class NodeSocketInt(NodeSocket[int]):
+    label = 'Value'
     property = Prop.Int(name="Value", default=0)
+    color = SocketColor.INTEGER.value
     cast_from_types = {
         float: int,
         bool: int,
     }
 
-@add_socket_metadata(label='Vector3', color=SocketColor.VECTOR.value)
 class NodeSocketIntVector3(NodeSocket[TYPE_IVECTOR_3]):
+    label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=int)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketBoolVector3': lambda v: (int(v[0]), int(v[1]), int(v[2])),
         'NodeSocketFloatVector3': lambda v: (int(v[0]), int(v[1]), int(v[2])),
     }
 
-@add_socket_metadata(label='Vector2', color=SocketColor.VECTOR.value)
 class NodeSocketIntVector2(NodeSocket[TYPE_IVECTOR_2]):
+    label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=int)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketBoolVector2': lambda v: (int(v[0]), int(v[1])),
         'NodeSocketFloatVector2': lambda v: (int(v[0]), int(v[1])),
     }
 
-@add_socket_metadata(label='State', color=SocketColor.BOOLEAN.value)
 class NodeSocketBool(NodeSocket[bool]):
+    label = 'State'
     property = Prop.Bool(name="State", default=False)
+    color = SocketColor.BOOLEAN.value
     cast_from_types = {
         int: bool,
         float: bool,
     }
 
-@add_socket_metadata(label='Vector2', color=SocketColor.VECTOR.value)
 class NodeSocketBoolVector2(NodeSocket[TYPE_BVECTOR_2]):
+    label = 'Vector2'
     property = Prop.Vector(name="Vector2", size=2, type=bool)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketIntVector2': lambda v: (bool(v[0]), bool(v[1])),
         'NodeSocketFloatVector2': lambda v: (bool(v[0]), bool(v[1])),
     }
 
-@add_socket_metadata(label='Vector3', color=SocketColor.VECTOR.value)
 class NodeSocketBoolVector3(NodeSocket[TYPE_BVECTOR_3]):
+    label = 'Vector3'
     property = Prop.Vector(name="Vector3", size=3, type=bool)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
+    color = SocketColor.VECTOR.value
     cast_from_socket = {
         'NodeSocketIntVector3': lambda v: (bool(v[0]), bool(v[1]), bool(v[2])),
         'NodeSocketFloatVector3': lambda v: (bool(v[0]), bool(v[1]), bool(v[2])),
     }
 
-@add_socket_metadata(label='Text', color=SocketColor.STRING.value)
 class NodeSocketString(NodeSocket[str]):
+    label = 'Text'
     property = Prop.String(name="Text", default="")
+    color = SocketColor.STRING.value
     cast_from_types = {
         int: str,
         float: str,
         bool: str,
     }
 
-@add_socket_metadata(label='Directory Path', color=SocketColor.STRING.value)
 class NodeSocketDirPath(NodeSocket[str]):
+    label = 'Directory Path'
     property = Prop.DirPath(name="Directory Path")
+    color = SocketColor.STRING.value
 
-@add_socket_metadata(label='File Path', color=SocketColor.STRING.value)
 class NodeSocketFilePath(NodeSocket[str]):
+    label = 'File Path'
     property = Prop.FilePath(name="File Path")
+    color = SocketColor.STRING.value
 
-@add_socket_metadata(label='File Name', color=SocketColor.STRING.value)
 class NodeSocketFileName(NodeSocket[str]):
+    label = 'File Name'
     property = Prop.FileName(name="File Name")
+    color = SocketColor.STRING.value
 
-@add_socket_metadata(label='Color (RGB)', color=SocketColor.COLOR.value)
 class NodeSocketRGB(NodeSocket[Color]):
+    label = 'Color (RGB)'
     property = Prop.Color(name="RGB", use_alpha=False)
+    color = SocketColor.COLOR.value
     cast_from_types = {
         float: lambda val: (val, val, val),
     }
@@ -187,112 +201,127 @@ class NodeSocketRGB(NodeSocket[Color]):
         'NodeSocketFloatVector3': lambda vec: (vec[0], vec[1], vec[2]),
     }
 
-@add_socket_metadata(label='Color (RGBA)', color=SocketColor.COLOR.value)
 class NodeSocketRGBA(NodeSocket[TYPE_RGBA]):
+    label = 'Color (RGBA)'
     property = Prop.Color(name="RGBA", use_alpha=True)
     property_cast = tuple  # Blender interprets the property as 'bpy_prop_array', so we need to cast it to a tuple.
-    cast_from_socket = {
-        'NodeSocketRGB': lambda color: (color.r, color.g, color.b, 1.0),
-        'NodeSocketFloatVector4': lambda vec: (vec[0], vec[1], vec[2], vec[3]),
-    }
+    color = SocketColor.COLOR.value
 
-@add_socket_metadata(label='Angle', color=SocketColor.VALUE.value)
 class NodeSocketAngle(NodeSocket[float]):
+    label = 'Angle'
     property = Prop.Angle(name="Angle", default=0.0)
+    color = SocketColor.VALUE.value
 
-@add_socket_metadata(label='Factor', color=SocketColor.VALUE.value)
 class NodeSocketFactor(NodeSocket[float]):
+    label = 'Factor'
     property = Prop.Factor(name="Factor", default=0.5)
+    color = SocketColor.VALUE.value
     cast_from_types = {
         int: float,
         bool: float,
     }
 
-@add_socket_metadata(label='Matrix 3x3', color=SocketColor.MATRIX.value)
 class NodeSocketMatrix3x3(NodeSocket[Matrix]):
+    label = 'Matrix 3x3'
     property = Prop.Matrix3x3(name="Matrix 3x3")
+    color = SocketColor.MATRIX.value
     cast_from_socket = {
         'NodeSocketMatrix4x4': lambda mat: mat.to_3x3(),
     }
 
-@add_socket_metadata(label='Matrix 4x4', color=SocketColor.MATRIX.value)
 class NodeSocketMatrix4x4(NodeSocket[Matrix]):
+    label = 'Matrix 4x4'
     property = Prop.Matrix4x4(name="Matrix 4x4")
+    color = SocketColor.MATRIX.value
     cast_from_socket = {
         'NodeSocketMatrix3x3': lambda mat: mat.to_4x4(),
     }
 
 # Data Sockets
-@add_socket_metadata(label='Object', color=SocketColor.DATA.value)
 class NodeSocketDataObject(NodeSocket[Object]):
+    label = 'Object'
     property = Prop.Data.Object(name="Object")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Material', color=SocketColor.DATA.value)
 class NodeSocketDataMaterial(NodeSocket[Material]):
+    label = 'Material'
     property = Prop.Data.Material(name="Material")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Mesh', color=SocketColor.DATA.value)
 class NodeSocketDataMesh(NodeSocket[Mesh]):
+    label = 'Mesh'
     property = Prop.Data.Mesh(name="Mesh")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.data if obj.type == 'MESH' else None,
     }
 
-@add_socket_metadata(label='Texture', color=SocketColor.DATA.value)
 class NodeSocketDataTexture(NodeSocket[Texture]):
+    label = 'Texture'
     property = Prop.Data.Texture(name="Texture")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Collection', color=SocketColor.DATA.value)
 class NodeSocketDataCollection(NodeSocket[Collection]):
+    label = 'Collection'
     property = Prop.Data.Collection(name="Collection")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Scene', color=SocketColor.DATA.value)
 class NodeSocketDataScene(NodeSocket[Scene]):
+    label = 'Scene'
     property = Prop.Data.Scene(name="Scene")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='World', color=SocketColor.DATA.value)
 class NodeSocketDataWorld(NodeSocket[World]):
+    label = 'World'
     property = Prop.Data.World(name="World")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Image', color=SocketColor.DATA.value)
 class NodeSocketDataImage(NodeSocket[Image]):
+    label = 'Image'
     property = Prop.Data.Image(name="Image")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Armature', color=SocketColor.DATA.value)
 class NodeSocketDataArmature(NodeSocket[Armature]):
+    label = 'Armature'
     property = Prop.Data.Armature(name="Armature")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.data if obj.type == 'ARMATURE' else None,
     }
 
-@add_socket_metadata(label='Action', color=SocketColor.DATA.value)
 class NodeSocketDataAction(NodeSocket[Action]):
+    label = 'Action'
     property = Prop.Data.Action(name="Action")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.animation_data.action if obj.animation_data and obj.animation_data.action else None,
     }
 
-@add_socket_metadata(label='Text', color=SocketColor.DATA.value)
 class NodeSocketDataText(NodeSocket[Text]):
+    label = 'Text'
     property = Prop.Data.Text(name="Text")
+    color = SocketColor.DATA.value
 
-@add_socket_metadata(label='Light', color=SocketColor.DATA.value)
 class NodeSocketDataLight(NodeSocket[Light]):
+    label = 'Light'
     property = Prop.Data.Light(name="Light")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.data if obj.type == 'LIGHT' else None,
     }
 
-@add_socket_metadata(label='Curve', color=SocketColor.DATA.value)
 class NodeSocketDataCurve(NodeSocket[Curve]):
+    label = 'Curve'
     property = Prop.Data.Curve(name="Curve")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.data if obj.type == 'CURVE' else None,
     }
 
-@add_socket_metadata(label='Camera', color=SocketColor.DATA.value)
 class NodeSocketDataCamera(NodeSocket[Camera]):
+    label = 'Camera'
     property = Prop.Data.Camera(name="Camera")
+    color = SocketColor.DATA.value
     cast_from_socket = {
         'NodeSocketObject': lambda obj: obj.data if obj.type == 'CAMERA' else None,
     }
@@ -301,14 +330,16 @@ class NodeSocketDataCamera(NodeSocket[Camera]):
 
 # --- Custom-Property based Sockets ---
 
-@add_socket_metadata(label='PyDict', color=SocketColor.PY_DATA.value)
 class NodeSocketPyDict(NodeSocket[dict]):
+    label = 'PyDict'
     use_custom_property = True
+    color = SocketColor.PY_DATA.value
     property_cast = dict
 
-@add_socket_metadata(label='PyList', color=SocketColor.PY_DATA.value)
 class NodeSocketPyList(NodeSocket[list]):
+    label = 'PyList'
     use_custom_property = True
+    color = SocketColor.PY_DATA.value
     property_cast = list
 
 

@@ -1,5 +1,6 @@
 import typing
-from typing import Any, TypeVar, Generic, Optional, cast, Union
+import uuid
+from typing import Any, TypeVar, Generic, Optional, cast, Union, Type, Dict, Set, ClassVar, Tuple, Callable
 
 from bpy import types as bpy_types
 
@@ -78,6 +79,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     use_custom_property: bool = False
 
     # Extended properties
+    uid: Prop.STRING(default='', options={'HIDDEN'})
     block_property_update: Prop.BOOL(default=False, options={'HIDDEN', 'SKIP_SAVE'})
 
     @property
@@ -131,6 +133,7 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
 
     def init(self, node: bpy_types.Node):
         """ Called when the socket is created for the first time. """
+        self.uid = str(uuid.uuid4())
         if self.use_custom_property:
             try:
                 typ = _get_generic_type(self)

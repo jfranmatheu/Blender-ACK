@@ -6,6 +6,7 @@ from bpy import types as bpy_types
 
 from ...core.base_type import BaseType
 from ...data.props import PropertyTypes as Prop
+from ..socket_casting import SocketCast
 
 
 __all__ = ['NodeSocket']
@@ -84,10 +85,19 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     property_name: str = 'property'
     property_cast: Callable[[Any], Any] | None = None
     use_custom_property: bool = False
-
+    # cast: ClassVar[Tuple[SocketCast, ...]] = ()
+    # _cast_compatible_types: ClassVar[Dict[Type, Callable[[Any], Any]]]
+    cast_from_socket: ClassVar[Dict[str, Callable[[Any], Any]]] = {}  # Cast from socket type.
+    cast_from_types: ClassVar[Dict[Type, Callable[[Any], Any]]] = {}  # Cast from defined property value type.
     # Extended properties
     uid: Prop.STRING(default='', options={'HIDDEN'})
     block_property_update: Prop.BOOL(default=False, options={'HIDDEN', 'SKIP_SAVE'})
+
+    # @classmethod
+    # def tag_register(cls, **kwargs):
+    #     new_cls = super().tag_register(**kwargs)
+    #     new_cls._cast_compatible_types = {socket_cast.get_cast_type(): socket_cast.cast for socket_cast in cls.cast}
+    #     return new_cls
 
     @property
     def is_input(self) -> bool:
@@ -113,8 +123,21 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         """ Gets the value of the socket. """
         if self.is_input:
             if self.is_linked:
-                # TODO: support multi-input sockets.
+                # TODO: support multi-input sockets (value retrieval from multiple links).
                 from_socket: NodeSocket = self.links[0].from_socket
+                from_value = from_socket.get_value()
+                if from_value is None:
+                    return None
+                if from_socket.__class__.__name__ == self.__class__.__name__:
+                    return from_value
+                # NOTE: I have doubts about 'value_type' comparison.
+                if self.value_type == from_socket.value_type or self.value_type == type(from_value): # type(from_value):
+                    return from_value
+                if socket_cast := self.cast_from_socket.get(from_socket.__class__.__name__, None):
+                    return socket_cast(from_value)
+                if socket_cast := self.cast_from_types.get(type(from_value), None):
+                    return socket_cast(from_value)
+                raise ValueError(f"Sockets are incompatible: {from_socket.__class__.__name__} -> {self.__class__.__name__}")
             if self.is_multi_input:
                 # Multi-input sockets have no value.
                 # They take its values from the links.
@@ -132,7 +155,21 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
             val = self.property_cast(val)
         return val
 
+    '''def get_casted_value(self, socket: 'NodeSocket') -> Union[T, None]:
+        """ Gets the value of the socket, casted to the correct type. """
+        value = self.get_value()
+        if value is None:
+            return None
+        return self.cast_value(value, cast_type=socket.value_type)'''
+
     def set_value(self, value: T):
+        """ Sets the value of the socket, if possible (based on the `cast` class variable). """
+        # TODO: support casting of value to the correct type, since now it's only done for socket type 'T' (NodeSocket(Generic[T])).
+        '''try:
+            value = self.cast_value(value)
+        except ValueError as e:
+            print(f"Error setting value for socket {self.name}: {e}")
+            return'''
         if self.use_custom_property:
             self[self.property_name] = value
         else:
@@ -143,6 +180,43 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
         self.block_property_update = True
         self.set_value(value)
         self.block_property_update = False
+
+    '''def can_cast_type(self, value_type: Type[Any]) -> bool:
+        """ Checks if a type can be cast to the type of the socket. """
+        if value_type == self.value_type:
+            return True
+        return value_type in self._cast_compatible_types
+
+    def can_cast_socket(self, socket: 'NodeSocket') -> bool:
+        """ Checks if a socket can be cast to the type of the socket. """
+        return self.can_cast_type(socket.value_type)
+
+    def can_cast_value(self, value: Any) -> bool:
+        """ Checks if a value can be cast to the type of the socket. """
+        return self.can_cast_type(type(value))
+
+    def cast_value(self, value: Any, cast_type: Type[Any] | None = None) -> Any:
+        """ Casts a value to the type of the socket, if possible (based on the `cast` class variable). """
+        if cast_type is None:
+            if not self.can_cast_value(value):
+                raise ValueError(f"Value {value} of type {type(value)} cannot be cast to {self.value_type}")
+            return self._cast_compatible_types[type(value)](value)
+        else:
+            if not self.can_cast_type(cast_type):
+                raise ValueError(f"Value {value} of type {type(value)} cannot be cast to {cast_type}")
+            return self._cast_compatible_types[cast_type](value)'''
+
+    def can_cast_from_socket(self, socket: 'NodeSocket') -> bool:
+        """ Checks if a socket can be cast to the type of the socket. """
+        return self.cast_from_socket.get(socket.__class__.__name__, None) is not None
+
+    def can_cast_from_type(self, value_type: Type[Any]) -> bool:
+        """ Checks if a type can be cast to the type of the socket. """
+        return self.cast_from_types.get(value_type, None) is not None
+
+    def can_cast_from_value(self, value: Any) -> bool:
+        """ Checks if a value can be cast to the type of the socket. """
+        return self.cast_from_types.get(type(value), None) is not None
 
     def on_property_update(self, context: bpy_types.Context):
         """ Called when the property of the socket is updated. """

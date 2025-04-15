@@ -88,6 +88,41 @@ class Node(BaseType, bpy_types.Node):
             output_wrapper._ensure_socket_exists(self)
             ## print("setup output socket!", output_name, output_wrapper)
 
+    def verify_link(self, link: bpy_types.NodeLink) -> bool:
+        """Verify if the link is valid"""
+        from_socket: NodeSocket = link.from_socket  # cast to ACK NodeSocket
+        to_socket: NodeSocket = link.to_socket  # cast to ACK NodeSocket
+        if from_socket.__class__ == to_socket.__class__:
+            # Same socket type.
+            return True
+        from_socket_type: Type[Any] | None = from_socket.value_type
+        to_socket_type: Type[Any] | None = to_socket.value_type
+        assert from_socket_type is not None and to_socket_type is not None, f"Link {link} has invalid socket types: {from_socket_type} -> {to_socket_type}"
+        '''if from_socket_type == to_socket_type:
+            # Strictly equal types. (tho they could be vector/matrix with different lengths that should be casted)
+            return True'''
+        if to_socket.can_cast_from_socket(from_socket):
+            return True
+        if to_socket.can_cast_from_type(from_socket_type):  # NOTE: I have doubts about this one.
+            return True
+        if to_socket.can_cast_from_value(from_socket.value):
+            return True
+        return False
+
+    def insert_link(self, link: bpy_types.NodeLink):
+        """Handle creation of a link to or from the node
+
+        :param link: Link, Node link that will be inserted
+        :type link: 'bpy.types.NodeLink'
+        """
+        # This will be called for both nodes this link connects.
+        # So we need to check only one of the nodes.
+        if link.from_node == self:
+            return
+        if not self.verify_link(link):
+            self.node_tree.tag_remove_link(link)
+            return
+
     def get_dependent_nodes(self) -> List['Node']:
         """Get all nodes that depend on this node's outputs"""
         dependent_nodes = []

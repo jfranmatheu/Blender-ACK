@@ -83,10 +83,12 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     block_property_update: Prop.BOOL(default=False, options={'HIDDEN', 'SKIP_SAVE'})
 
     @property
+    def is_input(self) -> bool:
         """ Gets whether the socket is an input socket. """
         return not self.is_output
 
     @property
+    def value(self) -> Union[T, None]:
         """ Gets the value of the socket. """
         return self.get_value()
 

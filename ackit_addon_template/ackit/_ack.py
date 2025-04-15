@@ -41,6 +41,8 @@ from .ui import PieMenu
 from .ui import Popover
 from .ui import UIList
 from .ui import helpers as _ui_helpers # Import the helpers module
+from .ui.helpers import ui_extend as _ui_extend_func
+from .ui.helpers import UIOverride as _UIOverride_class
 
 # NE
 from .ne import Node as _Node
@@ -140,7 +142,7 @@ class ACK:
             Returns:
                 Callable: The decorated function with (bpy.types.Context, bpy.types.UILayout) arguments.
             """
-            return _ui_helpers.ui_extend(target_cls, prepend)
+            return _ui_extend_func(target_cls, prepend)
 
         @staticmethod
         def override_layout(target_cls: Type[bpy_types.Panel] | Type[bpy_types.Menu], poll: Callable[[bpy_types.Context], bool]):
@@ -161,7 +163,7 @@ class ACK:
             Returns:
                 Callable: The decorated class with the overridden draw method (or any other overriden methods).
             """
-            return _ui_helpers.UIOverride.decodecorator(target_cls, poll)
+            return _UIOverride_class.decodecorator(target_cls, poll)
 
     class NE: # Node Editor
         """Base types, creators, and config for Node Editor."""

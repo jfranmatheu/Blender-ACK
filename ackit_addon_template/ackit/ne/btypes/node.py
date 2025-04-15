@@ -1,11 +1,12 @@
-from typing import Set, Dict, Any, Union, List, ItemsView
+from typing import Set, Dict, Any, Union, List, ItemsView, Type
 from uuid import uuid4
 
 from bpy import types as bpy_types
 
 from ...core.base_type import BaseType
 from ...globals import GLOBALS
-from ..annotations_internal import NodeSocketWrapper
+from ..annotations_internal import NodeSocketWrapper, NodeSocket
+from .node_tree import NodeTree
 
 __all__ = ['Node']
 
@@ -24,11 +25,11 @@ class Node(BaseType, bpy_types.Node):
         return self.name
 
     @classmethod
-    def poll(cls, node_tree: bpy_types.NodeTree) -> bool:
+    def poll(cls, node_tree: NodeTree) -> bool:
         return node_tree.bl_idname == cls._node_tree_type
 
     @property
-    def node_tree(self) -> bpy_types.NodeTree:
+    def node_tree(self) -> NodeTree:
         return self.id_data
 
     @property

@@ -59,7 +59,7 @@ class NodeTree(BaseType, bpy_types.NodeTree):
         # Remove links
         if hasattr(self, "to_remove_links") and len(self.to_remove_links) > 0:
             for (from_socket, to_socket) in self.to_remove_links:
-                for link in reversed(from_socket.links):
+                for link in reversed(self.links):
                     if link.to_socket.uid == to_socket and link.from_socket.uid == from_socket:
                         self.links.remove(link)
                         break

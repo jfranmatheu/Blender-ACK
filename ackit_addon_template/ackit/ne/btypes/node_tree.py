@@ -62,6 +62,7 @@ class NodeTree(BaseType, bpy_types.NodeTree):
                 for link in reversed(from_socket.links):
                     if link.to_socket.uid == to_socket and link.from_socket.uid == from_socket:
                         self.links.remove(link)
+                        break
             self.to_remove_links.clear()
 
         # Only evaluate from input nodes

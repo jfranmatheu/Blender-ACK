@@ -166,7 +166,8 @@ class ACK:
             return _UIOverride_class.decodecorator(target_cls, poll)
 
     class NE: # Node Editor
-        """Base types, creators, and config for Node Editor."""
+        """Base types, creators, and config for Node Editor.
+            WARNING: You might get quite some ACkNE if writing too much NodeEditor code."""
         # Define base types as direct aliases
         Node = _Node
         Tree = NodeTree

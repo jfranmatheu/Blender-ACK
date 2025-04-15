@@ -22,11 +22,12 @@ def Node(label: str | None = None, tooltip: str = "", icon: str = 'NONE') -> Cal
     return wrapper
 
 
-def NodeSocket(label: str | None = None, tooltip: str = "", subtype_label: str = '') -> Callable[[Type[NodeSocketTypeVar]], Type[NodeSocketTypeVar]]:
+def NodeSocket(label: str | None = None, tooltip: str = "", subtype_label: str = '', color: tuple[float, float, float, float] = (0.5, 0.5, 0.5, 1.0)) -> Callable[[Type[NodeSocketTypeVar]], Type[NodeSocketTypeVar]]:
     def wrapper(cls: Type[NodeSocketTypeVar]) -> Type[NodeSocketTypeVar]:
         cls.bl_label = label or cls.__name__
-        cls.description = tooltip
+        cls.bl_description = tooltip
         cls.bl_subtype_label = subtype_label
+        cls.color = color
         return cls
     return wrapper
 

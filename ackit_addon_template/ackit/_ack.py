@@ -179,9 +179,9 @@ class ACK:
             return _MetadataNodeFunc(label=label, tooltip=tooltip, icon=icon)
 
         @staticmethod
-        def add_socket_metadata(label: str | None = None, tooltip: str = "", subtype_label: str = '') -> Callable[[Type[_MetadataNodeSocketTypeVar]], Type[_MetadataNodeSocketTypeVar]]:
+        def add_socket_metadata(label: str | None = None, tooltip: str = "", subtype_label: str = '', color: tuple[float, float, float, float] = (0.5, 0.5, 0.5, 1.0)) -> Callable[[Type[_MetadataNodeSocketTypeVar]], Type[_MetadataNodeSocketTypeVar]]:
             """Adds metadata to a NodeSocket class. Alias for metadata.NodeSocket."""
-            return _MetadataSocketFunc(label=label, tooltip=tooltip, subtype_label=subtype_label)
+            return _MetadataSocketFunc(label=label, tooltip=tooltip, subtype_label=subtype_label, color=color)
 
         @staticmethod
         def add_node_to_category(category: str) -> Callable[[Type[_FlagsNodeT]], Type[_FlagsNodeT]]:

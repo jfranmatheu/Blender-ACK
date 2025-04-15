@@ -97,7 +97,10 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
             if self.is_linked:
                 # TODO: support multi-input sockets.
                 from_socket: NodeSocket = self.links[0].from_socket
-                return from_socket.get_value()
+            if self.is_multi_input:
+                # Multi-input sockets have no value.
+                # They take its values from the links.
+                return None
         if self.use_custom_property:
             if self.property_name in self:
                 return self[self.property_name]

@@ -83,18 +83,20 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
     block_property_update: Prop.BOOL(default=False, options={'HIDDEN', 'SKIP_SAVE'})
 
     @property
-    def is_input(self):
+        """ Gets whether the socket is an input socket. """
         return not self.is_output
 
     @property
-    def value(self) -> T:
+        """ Gets the value of the socket. """
         return self.get_value()
 
     @value.setter
     def value(self, value: T):
+        """ Sets the value of the socket. """
         self.set_value(value)
 
     def get_value(self) -> Union[T, None]:
+        """ Gets the value of the socket. """
         if self.is_input:
             if self.is_linked:
                 # TODO: support multi-input sockets.
@@ -117,11 +119,13 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
             setattr(self, self.property_name, value)
 
     def set_value_with_block_update(self, value):
+        """ Sets the value of the socket, blocking property updates. """
         self.block_property_update = True
         self.set_value(value)
         self.block_property_update = False
 
     def on_property_update(self, context: bpy_types.Context):
+        """ Called when the property of the socket is updated. """
         if not self.is_input:
             return
         print(f"NodeSocket.on_property_update: {self.property_name}")
@@ -147,14 +151,17 @@ class NodeSocket(BaseType, bpy_types.NodeSocket, Generic[T]):
                 print(f"Error setting default value for custom property {self.property_name}: {e}")
 
     def get_links(self):
+        """ Gets the links of the socket. """
         return self.links  # if self.is_linked else []
         # return (*self.links, *self.portal_links) if self.use_portal_links and self.is_linked else self.links if not self.use_portal_links and self.is_linked else self.portal_links if self.use_portal_links else []
 
     def draw_color(self, context: bpy_types.Context, node: bpy_types.Node) -> tuple[float, float, float, float]:
+        """ Draws the color of the socket. """
         # print(node, self, self.name, self.property_name, self.property, node.tree_prop_idname)
         return self.color
 
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
+        """ Draws the socket layout. """
         if not self.use_custom_property and ((self.is_input and not self.is_linked) or (self.is_output and len(self.node.inputs) == 0)):
             show_label = not (self.is_output and len(self.node.outputs) == 1 and len(self.node.inputs) == 0)
             layout.prop(self, self.property_name, text=self.name if show_label else '')

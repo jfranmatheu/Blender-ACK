@@ -202,7 +202,7 @@ class ACK:
 
         # Explicitly annotate the NodeInput and NodeOutput with proper signatures
         @staticmethod
-        def InputSocket(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
+        def InputSocket(socket_type: Type[SocketT], label: str | None = None, multi: bool = False) -> SocketT:
             """
             Create an input socket annotation.
             
@@ -218,7 +218,7 @@ class ACK:
             return _NodeSocketInput(socket_type, multi) # type: ignore
 
         @staticmethod
-        def OutputSocket(socket_type: Type[SocketT]) -> SocketT:
+        def OutputSocket(socket_type: Type[SocketT], label: str | None = None) -> SocketT:
             """
             Create an output socket annotation.
             

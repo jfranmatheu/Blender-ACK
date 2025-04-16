@@ -102,16 +102,20 @@ class NodeSocketWrapper(Generic[SocketT]): # Make wrapper generic over SocketT
         if socket is None:
             # Use the bl_idname obtained earlier
             socket_idname = self.bl_idname
-            socket = target_collection.new(socket_idname, self.label or self.name, identifier=self.socket_name)
+            kwargs = {'identifier': self.socket_name}
+            if self.is_multi_input:
+                kwargs['use_multi_input'] = self.is_multi_input
+            socket = target_collection.new(socket_idname, self.label or self.name, **kwargs)
             socket.init(node)
             if self.is_multi_input:
+                socket.is_multi_input = True
                 # Assuming bpy has `use_multi_input` attribute on socket creation or afterwards
                 # This might need adjustment based on Blender API version
                 # socket.use_multi_input = True # Example, API might differ
                 # Or pass it in .new() if supported like in the previous version snippet:
                 # socket = node.inputs.new(..., use_multi_input=True)
                 # Re-check Blender API for socket creation with multi_input
-                pass # Placeholder - need to verify multi-input setting
+                # pass # Placeholder - need to verify multi-input setting
             if DEBUG:
                 print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - Socket: {self.socket_name} - Type: {socket_idname}")
         return socket
@@ -122,7 +126,7 @@ class NodeSocketWrapper(Generic[SocketT]): # Make wrapper generic over SocketT
     #     return NodeSocketWrapper(self.socket_type, self.io, self.label)
 
 # Factory functions return the descriptor instance, correctly typed.
-def NodeSocketInput(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
+def NodeSocketInput(socket_type: Type[SocketT], multi: bool = False, label: str | None = None) -> SocketT:
     """
     Create an input socket annotation.
     
@@ -134,9 +138,9 @@ def NodeSocketInput(socket_type: Type[SocketT], multi: bool = False) -> SocketT:
         The actual socket instance (typed as SocketT) when accessed on a node instance.
     """
     # Return type hint SocketT tells the type checker what __get__ will return on an instance.
-    return NodeSocketWrapper[SocketT](socket_type, 'INPUT' if not multi else 'MULTI_INPUT') # type: ignore
+    return NodeSocketWrapper[SocketT](socket_type, 'INPUT' if not multi else 'MULTI_INPUT', label=label) # type: ignore
 
-def NodeSocketOutput(socket_type: Type[SocketT]) -> SocketT:
+def NodeSocketOutput(socket_type: Type[SocketT], label: str | None = None) -> SocketT:
     """
     Create an output socket annotation.
     
@@ -147,4 +151,4 @@ def NodeSocketOutput(socket_type: Type[SocketT]) -> SocketT:
         The actual socket instance (typed as SocketT) when accessed on a node instance.
     """
     # Return type hint SocketT tells the type checker what __get__ will return on an instance.
-    return NodeSocketWrapper[SocketT](socket_type, 'OUTPUT') # type: ignore
+    return NodeSocketWrapper[SocketT](socket_type, 'OUTPUT', label=label) # type: ignore

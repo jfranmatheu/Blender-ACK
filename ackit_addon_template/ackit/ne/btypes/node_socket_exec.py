@@ -31,18 +31,32 @@ class NodeSocketExec(BaseType, bpy_types.NodeSocket, Generic[T]):
 
     @property
     def value(self) -> T | List[T] | None:
-        """ Gets the **default** value of the socket.
-            During execution, linked input values are retrieved by the NodeTreeExec.
+        """ Gets the value from the connected output socket(s).
+            For multi-input, returns a list of values.
+            Returns None if not connected or if the connected socket has no value.
+            NOTE: For structural connections (like ElementSocket), use get_connected_nodes() instead.
         """
         if self.is_input:
             if self.is_linked:
                 if self.is_multi_input:
-                    return [link.from_socket.value for link in self.links]
+                    # Return list of values from connected sockets
+                    vals = []
+                    for link in self.links:
+                        # Ensure the connected socket is also NodeSocketExec or compatible
+                        if hasattr(link.from_socket, 'value'):
+                            vals.append(link.from_socket.value)
+                        else:
+                            vals.append(None) # Or handle error/warning
+                    return vals
                 else:
-                    return self.links[0].from_socket.value
+                    # Return single value from the first link
+                    if self.links and hasattr(self.links[0].from_socket, 'value'):
+                         return self.links[0].from_socket.value
+                    else:
+                         return None # No links or incompatible socket
             else:
-                return None
-        else:
+                return None # Not linked
+        else: # Is Output
             global RUNTIME_DATA
             return RUNTIME_DATA.get(self.uid, None)
 
@@ -88,3 +102,9 @@ class NodeSocketExec(BaseType, bpy_types.NodeSocket, Generic[T]):
     def draw(self, context: bpy_types.Context, layout: bpy_types.UILayout, node: bpy_types.Node, text: str):
         """ Draws the socket layout. """
         layout.label(text=self.name)  # no prop since it's custom data or runtime data.
+
+    def get_connected_nodes(self) -> List[bpy_types.Node]:
+        """Gets the list of nodes connected to this input socket."""
+        if not self.is_input or not self.is_linked:
+            return []
+        return [link.from_node for link in self.links if link.from_node]

@@ -215,7 +215,7 @@ class ACK:
             """
             # Call the correctly typed internal function
             # The type ignore might still be needed if the IDE struggles with the descriptor protocol
-            return _NodeSocketInput(socket_type, multi) # type: ignore
+            return _NodeSocketInput(socket_type, multi, label=label) # type: ignore
 
         @staticmethod
         def OutputSocket(socket_type: Type[SocketT], label: str | None = None) -> SocketT:
@@ -230,7 +230,7 @@ class ACK:
             """
             # Call the correctly typed internal function
             # The type ignore might still be needed
-            return _NodeSocketOutput(socket_type) # type: ignore
+            return _NodeSocketOutput(socket_type, label=label) # type: ignore
 
     class Data:
         """Base types, property definitions, and data-related registration."""

@@ -168,6 +168,9 @@ class Panel(BaseUI, DrawExtension, BlPanel):
             )
             new_cls.__module__ = func.__module__
             new_cls.tag_register()
+            print("****************************** PANEL ******************************")
+            print(new_cls.__name__, func.__name__, new_cls.bl_idname, new_cls)
+            print("****************************** PANEL ******************************")
             return new_cls
         return decorator
 

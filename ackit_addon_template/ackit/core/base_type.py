@@ -29,6 +29,9 @@ type_key_per_bpy_type = {
 }
 
 
+NODE_EDITOR_TYPES = {}
+
+
 class BaseType(object):
     bl_idname: str
     bl_label: str
@@ -63,8 +66,8 @@ class BaseType(object):
 
         # Identify the words at the original class name,
         # useful to create unique identifiers in the correct naming convention.
-        pattern = r'[A-Z][a-z0-9]*|[a-zA-Z0-9]+'
-        keywords = re.findall(pattern, cls.__name__)
+        pattern = r'[A-Z]?[a-z]+|[A-Z]+|\d+'
+        keywords = [word for part in cls.__name__.split('_') for word in re.findall(pattern, part) if word]
         idname: str = '_'.join([word.lower() for word in keywords])
 
         if bpy_type == bpy.types.Operator:
@@ -94,8 +97,8 @@ class BaseType(object):
             new_cls_name = f'{GLOBALS.ADDON_MODULE_UPPER}_AddonPreferences'
         elif type_key is not None:
             # Identify the words in the class name for label generation
-            pattern = r'[A-Z][a-z0-9]*|[a-zA-Z0-9]+'
-            keywords = re.findall(pattern, original_name)  # Use original name for label generation
+            pattern = r'[A-Z]?[a-z]+|[A-Z]+|\d+'
+            keywords = [word for part in original_name.split('_') for word in re.findall(pattern, part) if word] # Use original name for label generation
             
             # Set bl_label if not already set
             if not hasattr(cls, 'bl_label') or not cls.bl_label:
@@ -138,6 +141,10 @@ class BaseType(object):
         btype: BTypes = getattr(BTypes, bpy_type.__name__)
         btype.add_class(cls)
 
+        if bpy_type == bpy.types.NodeTree:
+            NODE_EDITOR_TYPES[cls] = set()
+            ## print(f"INFO! NODE_EDITOR_TYPES[cls] = set() - {cls.__name__} - {cls.__module__}")
+
         return cls
 
 
@@ -151,3 +158,18 @@ def init():
            continue
         # print(f"INFO! tag register: {subcls.__name__} - {subcls.__module__}")
         subcls.tag_register()
+
+    # Add _node_tree_type attribute to the node classes.
+    # It should be done after tag_Register all the classes as the order of registering (first NodeTree classes, then Node classes) is not guaranteed.
+    # We could also do this in the BTypes area, but here it's more straightforward.
+    for node_class in BTypes.Node.get_classes():
+        for node_tree_type in NODE_EDITOR_TYPES.keys():
+            print(f"INFO! {node_class.__name__} - {node_class.__module__} - {node_tree_type.__name__} - {node_tree_type.__module__}")
+            if node_class.__module__.startswith('.'.join(node_tree_type.__module__.split('.')[:-1])):
+                print("INFO! ADDED")
+                NODE_EDITOR_TYPES[node_tree_type].add(node_class)
+                node_class._node_tree_type = node_tree_type
+
+    print("****************************** NODE_EDITOR_TYPES ******************************")
+    print(NODE_EDITOR_TYPES)
+    print("****************************** NODE_EDITOR_TYPES ******************************")

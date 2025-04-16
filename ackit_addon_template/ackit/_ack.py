@@ -45,9 +45,9 @@ from .ui.helpers import ui_extend as _ui_extend_func
 from .ui.helpers import UIOverride as _UIOverride_class
 
 # NE
-from .ne import Node as _Node
-from .ne import NodeTree
-from .ne import NodeSocket
+from .ne import Node as _Node, NodeExec as _NodeExec
+from .ne import NodeTree, NodeTreeExec
+from .ne import NodeSocket, NodeSocketExec
 from .ne.annotations_internal import NodeSocketInput as _NodeSocketInput # Alias internal
 from .ne.annotations_internal import NodeSocketOutput as _NodeSocketOutput # Alias internal
 from .ne import socket_types as _socket_types_module # The module itself
@@ -83,7 +83,7 @@ __all__ = [
 
 # Definir TypeVar. Esto nos ayuda a tener tipado del tipo de NodeSocket suyacente,
 # el cual usamos para definir el tipo de socket para inputs y outputs.
-SocketT = TypeVar('SocketT', bound=NodeSocket)
+SocketT = TypeVar('SocketT', bound=NodeSocket|NodeSocketExec)
 
 UIDrawFunc = Callable[[bpy_types.Context, bpy_types.UILayout], None]
 
@@ -170,10 +170,13 @@ class ACK:
             WARNING: You might get quite some ACkNE if writing too much NodeEditor code."""
         # Define base types as direct aliases
         Node = _Node
+        NodeExec = _NodeExec
         Tree = NodeTree
+        TreeExec = NodeTreeExec
         Socket = NodeSocket
+        SocketExec = NodeSocketExec
         # Configuration - Wrap original functions in staticmethods with precise signatures
-        
+
         @staticmethod
         def add_node_metadata(label: str | None = None, tooltip: str = "", icon: str = 'NONE') -> Callable[[Type[_MetadataNodeTypeVar]], Type[_MetadataNodeTypeVar]]:
             """Adds metadata to a Node class. Alias for metadata.Node."""

@@ -6,14 +6,14 @@ from bpy import types as bpy_types
 
 # Updated relative imports
 from .btypes.node_socket import NodeSocket
-
+from .btypes.node_socket_exec import NodeSocketExec
 
 __all__ = ['NodeSocketInput', 'NodeSocketOutput', 'NodeSocketWrapper']
 
 
 # Define SocketT for the actual socket type (e.g., NodeSocketFloat)
 # Define ValueT for the data type the socket holds (e.g., float)
-SocketT = TypeVar('SocketT', bound=NodeSocket)
+SocketT = TypeVar('SocketT', bound=NodeSocket|NodeSocketExec)
 ValueT = TypeVar('ValueT') # We won't bind this directly here
 
 # Option to completely remove debug prints

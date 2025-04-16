@@ -4,7 +4,6 @@ from uuid import uuid4
 from bpy import types as bpy_types
 
 from ...core.base_type import BaseType
-from ...globals import GLOBALS
 from ..annotations_internal import NodeSocketWrapper, NodeSocket
 from .node_tree import NodeTree
 
@@ -13,10 +12,7 @@ __all__ = ['Node']
 
 
 class Node(BaseType, bpy_types.Node):
-    # Runtime.
-    # Use default tree type value.
-    _addon_short = GLOBALS.ADDON_MODULE_SHORT or "ACK" # Provide default if None
-    _node_tree_type: str = f"{_addon_short.upper()}_TREETYPE"
+    _node_tree_type: Type[NodeTree]
     _node_category: str
     _color_tag: str = 'NONE'
 
@@ -26,7 +22,9 @@ class Node(BaseType, bpy_types.Node):
 
     @classmethod
     def poll(cls, node_tree: NodeTree) -> bool:
-        return node_tree.bl_idname == cls._node_tree_type
+        if hasattr(cls, '_node_tree_type') and cls._node_tree_type is not None:
+            return node_tree.bl_idname == cls._node_tree_type.bl_idname
+        return False
 
     @property
     def node_tree(self) -> NodeTree:
@@ -133,14 +131,14 @@ class Node(BaseType, bpy_types.Node):
         return dependent_nodes
 
     def evaluate(self) -> None:
-        """
+        """[NodeTree ONLY]
         Evaluate the node with the given input values.
         This method should be overridden by node subclasses.
         """
         pass
 
     def process(self) -> None:
-        """
+        """[NodeTree ONLY]
         Process this node and trigger updates to dependent nodes.
         This is the main entry point for node evaluation.
         """

@@ -1,77 +1,43 @@
-from typing import Set, Dict, List, Tuple
+from typing import Dict, List, Tuple
+from collections import defaultdict
 
-from mathutils import Color, Vector
 from bpy import types as bpy_types
 
 from ...core.base_type import BaseType
-from ...globals import GLOBALS
+from .base_tree import BaseNodeTree
 
 
 __all__ = ['NodeTree']
 
 
-class NodeTree(BaseType, bpy_types.NodeTree):
-    bl_idname: str = f"{GLOBALS.ADDON_MODULE_SHORT.upper()}_TREETYPE"
-    bl_label: str
-    bl_description: str
+to_remove_links: Dict[int, List[Tuple[bpy_types.NodeSocket, bpy_types.NodeSocket]]] = defaultdict(list)
+
+
+class NodeTree(BaseNodeTree, BaseType, bpy_types.NodeTree):
     bl_icon: str = 'DOT'
-    
-    to_remove_links: List[Tuple[bpy_types.NodeSocket, bpy_types.NodeSocket]] = []
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.to_remove_links = []
-
-    @classmethod
-    def poll_space(cls, context: bpy_types.Context) -> bool:
-        """Check if the space is a node editor"""
-        return context.space_data.type == 'NODE_EDITOR' and context.space_data.tree_type == cls.bl_idname
-
-    @classmethod
-    def poll(cls, context: bpy_types.Context) -> bool:
-        """Check visibility in the editor"""
-        return True
-
-    def tag_remove_link(self, link: bpy_types.NodeLink):
-        """Tag a link for removal"""
-        if not hasattr(self, "to_remove_links"):
-            self.to_remove_links = []
-        self.to_remove_links.append((link.from_socket.uid, link.to_socket.uid))
-
-    def get_input_nodes(self):
-        """Get all nodes that have no inputs or unconnected inputs"""
-        input_nodes = []
-        for node in self.nodes:
-            is_input = True
-            for input in node.inputs:
-                if input.links:
-                    is_input = False
-                    break
-            if is_input:
-                input_nodes.append(node)
-        return input_nodes
 
     def update(self) -> None:
         """Called when the node tree is modified"""
-        if not self.nodes:
-            return
-
-        # Remove links
-        if hasattr(self, "to_remove_links") and len(self.to_remove_links) > 0:
-            for (from_socket, to_socket) in self.to_remove_links:
-                for link in reversed(self.links):
-                    if link.to_socket.uid == to_socket and link.from_socket.uid == from_socket:
-                        self.links.remove(link)
-                        break
-            self.to_remove_links.clear()
+        self.clear_tagged_links()
 
         # Only evaluate from input nodes
-        for input_node in self.get_input_nodes():
-            if not hasattr(input_node, "process"):
-                print(f"WARN! Node {input_node.name} has no process method!")
-                continue
-            input_node.process()
-
-    def evaluate(self) -> None:
-        """Manual evaluation of the entire node tree"""
-        self.update()
+        try:
+            # Get all input nodes
+            input_nodes = []
+            for node in self.nodes:
+                is_input = True
+                for input in node.inputs:
+                    if hasattr(input, "links") and input.links:
+                        is_input = False
+                        break
+                if is_input:
+                    input_nodes.append(node)
+            
+            # Process input nodes
+            for input_node in input_nodes:
+                if not hasattr(input_node, "process"):
+                    print(f"WARN! Node {input_node.name} has no process method!")
+                    continue
+                input_node.process()
+        except Exception as e:
+            print(f"Error in NodeTree.update: {e}")

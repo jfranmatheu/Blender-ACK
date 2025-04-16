@@ -107,15 +107,6 @@ class NodeSocketWrapper(Generic[SocketT]): # Make wrapper generic over SocketT
                 kwargs['use_multi_input'] = self.is_multi_input
             socket = target_collection.new(socket_idname, self.label or self.name, **kwargs)
             socket.init(node)
-            if self.is_multi_input:
-                socket.is_multi_input = True
-                # Assuming bpy has `use_multi_input` attribute on socket creation or afterwards
-                # This might need adjustment based on Blender API version
-                # socket.use_multi_input = True # Example, API might differ
-                # Or pass it in .new() if supported like in the previous version snippet:
-                # socket = node.inputs.new(..., use_multi_input=True)
-                # Re-check Blender API for socket creation with multi_input
-                # pass # Placeholder - need to verify multi-input setting
             if DEBUG:
                 print(f"NodeSocketWrapper._ensure_socket_exists. Node: {node.name} - Socket: {self.socket_name} - Type: {socket_idname}")
         return socket

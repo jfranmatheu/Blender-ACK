@@ -28,9 +28,8 @@ class LabelNode(ACK.NE.NodeExec):
     Element = ACK.NE.OutputSocket(ElementSocket)
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
+    def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
         parent_layout = kwargs.get('parent_layout')
-        context = kwargs.get('context') # Keep context if needed
 
         if parent_layout:
             parent_layout.label(text=self.text, icon=self.icon)
@@ -56,9 +55,8 @@ class OperatorNode(ACK.NE.NodeExec):
     Element = ACK.NE.OutputSocket(ElementSocket)
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
+    def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
         parent_layout = kwargs.get('parent_layout')
-        context = kwargs.get('context') # Keep context if needed
 
         if parent_layout:
             text = self.text_override or None

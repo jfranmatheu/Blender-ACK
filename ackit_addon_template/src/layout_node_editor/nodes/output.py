@@ -34,4 +34,4 @@ class RootLayoutOutputNode(ACK.NE.NodeExec):
 
         # print(f"RootLayoutOutputNode '{self.name}' execute returning initial layout: {parent_layout}")
         # Return the layout that the connected child should draw into.
-        return context, parent_layout
+        return {'parent_layout': parent_layout}

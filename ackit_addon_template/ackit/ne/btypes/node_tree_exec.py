@@ -1,6 +1,6 @@
-from typing import Set, Dict, List, Optional
+from typing import Set, Dict, List, Optional, Any, Type
 from collections import defaultdict
-
+import bpy
 from bpy import types as bpy_types
 
 from ...core.base_type import BaseType
@@ -12,122 +12,62 @@ from .base_tree import BaseNodeTree
 __all__ = ['NodeTreeExec']
 
 
-nodes_to_execute: Dict[int, List[str]] = defaultdict(list)
-_visited_nodes_walk: Dict[int, Set[str]] = defaultdict(set)
-
-
 class NodeTreeExec(BaseNodeTree, BaseType, bpy_types.NodeTree):
     bl_icon: str = 'SETTINGS'
+    output_node_type: Type[Any] | None = None
 
     def update(self) -> None:
-        """Called when the node tree is modified"""
+        """Called when the node tree is modified.
+           Currently, no pre-calculation needed for execution order.
+           May be used for validation or other updates later.
+        """
         self.clear_tagged_links()
-
-        global nodes_to_execute, _visited_nodes_walk
-
-        if not self.nodes:
-            nodes_to_execute.clear()
-            return
-
-        # The executable NodeTree has no evaluation logic.
-        # Instead, in the update method, we will do a tree walk to sort and gather the nodes in RTL branching order.
-        # This is so that the interpreter can execute the nodes in the correct order via 'tree.execute()' method.
-        try:
-            self.walk_tree()
-        except Exception as e:
-            import traceback
-            print(f"Error walking node tree: {e}")
-            traceback.print_exc()
-            nodes_to_execute.clear()  # Clear on error
-
-    def _walk_backwards(self, node: Optional[bpy_types.Node]) -> None:
-        """Recursive helper for post-order traversal."""
-        global nodes_to_execute, _visited_nodes_walk
-
-        if not node or node.name in _visited_nodes_walk:
-            return
-        _visited_nodes_walk[id(self)].add(node.name)
-
-        # Recursively visit nodes connected to the inputs of this node
-        for input_socket in node.inputs:
-            for link in input_socket.links:
-                # Check if the link originates from a valid node within the tree
-                if link.from_node:
-                    # Recursively call on the dependency (node connected to input)
-                    self._walk_backwards(link.from_node)
-
-        # After visiting all preceding nodes (dependencies), add this node
-        # ensuring it hasn't been added already through another path.
-        if node.name not in nodes_to_execute[id(self)]:
-            nodes_to_execute[id(self)].append(node.name)
-
-    def walk_tree(self) -> None:
-        """Walk the tree backwards and gather nodes in execution order using post-order traversal."""
-        # Clear previous results and visited set for the new walk
-        global nodes_to_execute, _visited_nodes_walk
-
-        nodes_to_execute[id(self)].clear()
-        _visited_nodes_walk[id(self)].clear()
-
-        if not self.nodes:
-            return # Nothing to walk
-
-        # Iterate through all nodes to ensure disconnected graphs are handled.
-        # The `_visited_nodes_walk` set prevents processing nodes multiple times.
-        for node in self.nodes:
-            # If a node hasn't been visited yet, start a walk from it.
-            # This ensures all nodes (even in disconnected parts) are considered.
-            if node.name not in _visited_nodes_walk[id(self)]:
-                self._walk_backwards(node)
-        # self.nodes_to_execute now contains the node names in execution order
+        # No tree walking needed here anymore
+        pass
 
     def execute(self, *args, **kwargs) -> None:
-        """Execute the node tree logic sequentially.
+        """Execute the node tree logic starting from the designated output node.
 
         Args:
-            *args: Positional arguments passed down to each node's execute method.
-            **kwargs: Keyword arguments passed down to each node's execute method.
-                      These can be used for passing context (like 'context', 'layout').
+            *args: Positional arguments.
+            **kwargs: Keyword arguments.
         """
-        
-        global nodes_to_execute
-
-        # Ensure execution order is up-to-date
-        if not nodes_to_execute:
-            self.update()
-
-        if not nodes_to_execute:
-            print("NodeTreeExec: No nodes to execute.")
+        if not self.nodes:
+            print(f"NodeTreeExec: Tree '{self.name}' has no nodes.")
             return
 
-        # Iterate through nodes in execution order
-        tree_id = id(self)
-        print(f"Executing Tree: {self.name} with nodes {nodes_to_execute.get(tree_id, [])}") # Debug
-        for node_name in nodes_to_execute.get(tree_id, []): # Iterate over names for this tree_id
-            node: Optional[bpy_types.Node] = self.nodes.get(node_name, None) # Use node_name string key
-            
-            if node is None:
-                print(f"Warning: Node '{node_name}' not found in tree.")
-                continue
+        # 1. Find the Output Node
+        output_node: Optional[bpy_types.Node] = None
+        output_type = getattr(self, 'output_node_type', None) # Get from subclass or default
 
-            if not hasattr(node, 'execute'):
-                print(f"Warning: Node '{node_name}' has no execute method.")
-                continue
+        if not output_type:
+            print(f"Error: NodeTreeExec '{self.name}' has no 'output_type' defined.")
+            return
 
-            # Execute the node
-            try:
-                # Cast to expected type if needed, or ensure NodeSocketExec is the base type
-                # Assuming nodes retrieved are compatible with execute call signature
-                print("Executing node:", node.label)
-                node.execute(*args, **kwargs) 
-            except Exception as e:
-                import traceback
-                print(f"Error executing node '{node_name}': {e}")
-                traceback.print_exc()
-                # Optionally, stop execution or continue with next node
-                break
+        for node in self.nodes:
+            if node.__class__ == output_type:
+                output_node = node
+                break # Found the output node
 
+        if output_node is None:
+            print(f"Error: Output node of type '{output_type}' not found in tree '{self.name}'.")
+            return
 
-    def evaluate(self) -> None:
-        """Manual evaluation of the entire node tree"""
-        self.update()
+        # Check for the internal execute method now
+        if not hasattr(output_node, '_internal_execute'):
+            print(f"Error: Output node '{output_node.name}' has no _internal_execute method.")
+            return
+
+        # 2. Initialize Execution Context
+        execution_tracker: Set[str] = set()
+
+        print(f"Executing Tree: {self.name} starting from Output Node: {output_node.name}")
+
+        # 3. Start Execution from the Output Node's internal method
+        try:
+            # Pass all received args/kwargs directly, plus the tracker
+            output_node._internal_execute(*args, _execution_tracker=execution_tracker, **kwargs)
+        except Exception as e:
+            import traceback
+            print(f"Error executing output node '{output_node.name}': {e}")
+            traceback.print_exc()

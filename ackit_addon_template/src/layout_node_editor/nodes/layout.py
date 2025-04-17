@@ -1,80 +1,86 @@
-from ....ackit import ACK
-from ..sockets import LayoutSocket
-
+from typing import Dict, Any, Set, Optional
+import bpy
 from bpy import types as bpy_types
-from typing import Dict, Any
+
+from ....ackit import ACK
+from ..sockets import ElementSocket
+
+# Make sure output node is imported if needed elsewhere, but not directly used here
+# from .output import RootLayoutOutputNode
+
+__all__ = [
+    'RowLayoutNode',
+    'ColumnLayoutNode',
+    'BoxLayoutNode',
+    # 'SplitLayoutNode', # Removed for now
+]
 
 
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Row", tooltip="Row layout node")
 class RowLayoutNode(ACK.NE.NodeExec):
     # --- Inputs ---
-    InLayout = ACK.NE.InputSocket(LayoutSocket)
+    # Unified input for child elements and nested layouts (Child -> Parent)
+    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
 
     # --- Properties ---
     align = ACK.PropTyped.Bool(name="Align", default=False)
 
     # --- Outputs ---
-    OutLayout = ACK.NE.OutputSocket(LayoutSocket)
+    # Allows this node to be connected as a child to another layout's InContents
+    Element = ACK.NE.OutputSocket(ElementSocket, label="Self")
+
+    # Execute is called by _internal_execute
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout = kwargs.get('parent_layout')
+        context = kwargs.get('context') # Keep context if needed
+
+        if not parent_layout:
+            print(f"Warning: RowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None # Cannot create layout
+
+        # Create the specific layout
+        my_layout = parent_layout.row(align=self.align)
+
+        # Return the arguments for children, providing the new layout context
+        return {'parent_layout': my_layout}
+        # Child execution is handled by base _internal_execute after this returns
 
 
-    def execute(self, *args, **kwargs):
-        layout = self.InLayout.value
-        if layout is not None:
-            layout = layout.row(align=self.align)
-        self.OutLayout.set_value(layout)
-
+# --- Update ColumnLayoutNode similarly ---
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Column", tooltip="Column layout node")
 class ColumnLayoutNode(ACK.NE.NodeExec):
-    # --- Inputs ---
-    InLayout = ACK.NE.InputSocket(LayoutSocket)
-
-    # --- Properties ---
+    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
     align = ACK.PropTyped.Bool(name="Align", default=False)
+    Element = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
-    # --- Outputs ---
-    OutLayout = ACK.NE.OutputSocket(LayoutSocket)
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout = kwargs.get('parent_layout')
+        context = kwargs.get('context') # Keep context if needed
+
+        if not parent_layout:
+            print(f"Warning: ColumnLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None
+        my_layout = parent_layout.column(align=self.align)
+        return {'parent_layout': my_layout}
 
 
-    def execute(self, *args, **kwargs):
-        layout = self.InLayout.value
-        if layout is not None:
-            layout = layout.column(align=self.align)
-        self.OutLayout.set_value(layout)
-
-
+# --- Update BoxLayoutNode similarly ---
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Box", tooltip="Box layout node")
 class BoxLayoutNode(ACK.NE.NodeExec):
-    # --- Inputs ---
-    InLayout = ACK.NE.InputSocket(LayoutSocket)
+    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
+    Element = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
-    # --- Outputs ---
-    OutLayout = ACK.NE.OutputSocket(LayoutSocket)
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout = kwargs.get('parent_layout')
+        context = kwargs.get('context') # Keep context if needed
 
-    def execute(self, *args, **kwargs):
-        layout = self.InLayout.value
-        if layout is not None:
-            layout = layout.box()
-        self.OutLayout.set_value(layout)
+        if not parent_layout:
+            print(f"Warning: BoxLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None
+        my_layout = parent_layout.box()
+        return {'parent_layout': my_layout}
 
-
-@ACK.NE.add_node_to_category("Layout")
-@ACK.NE.add_node_metadata(label="Split", tooltip="Split layout node")
-class SplitLayoutNode(ACK.NE.NodeExec):
-    # --- In    puts ---
-    InLayout = ACK.NE.InputSocket(LayoutSocket)
-
-    # --- Properties ---
-    align = ACK.PropTyped.Bool(name="Align", default=False)
-    factor = ACK.PropTyped.Float(name="Factor", default=0.5)
-
-    # --- Outputs ---
-    OutLayout = ACK.NE.OutputSocket(LayoutSocket)
-
-    def execute(self, *args, **kwargs):
-        layout = self.InLayout.value
-        if layout is not None:
-            split = layout.split(align=self.align, factor=self.factor)
-            self.OutLayout.set_value(split)
+# --- SplitLayoutNode removed ---

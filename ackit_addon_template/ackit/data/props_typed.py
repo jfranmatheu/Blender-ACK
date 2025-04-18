@@ -30,6 +30,8 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._flags: set[str] = set()
         self._draw_order = -1
         self._draw_kwargs = {}
+        self._draw_node_order = -1
+        self._draw_node_kwargs = {}
 
     def __set_name__(self, owner, name):
         """Called when the descriptor is assigned to the owner class"""
@@ -139,16 +141,27 @@ class WrappedPropertyDescriptor(Generic[T]):
     def has_flag(self, flag: str) -> bool:
         """Check if the property has a flag"""
         return flag in self._flags
-    
+
     def is_drawable(self) -> bool:
         """Check if the property is drawable"""
         return 'DRAW_IN_LAYOUT' in self._flags
+    
+    def is_node_drawable(self) -> bool:
+        """Check if the property is drawable in a node layout"""
+        return 'DRAW_IN_NODE_LAYOUT' in self._flags
 
     def tag_drawable(self, order: int = -1, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
         """Tag the property to be drawn in a layout (wether it is a node, a socket, a panel, an operator, etc.)"""
         self._flags.add('DRAW_IN_LAYOUT')
         self._draw_order = order
         self._draw_kwargs = draw_kwargs
+        return self
+
+    def tag_node_drawable(self, order: int = -1, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
+        """Tag the property to be drawn in a node layout"""
+        self._flags.add('DRAW_IN_NODE_LAYOUT')
+        self._draw_node_order = order
+        self._draw_node_kwargs = draw_kwargs
         return self
 
 

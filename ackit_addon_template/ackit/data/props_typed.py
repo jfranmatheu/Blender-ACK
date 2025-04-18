@@ -138,6 +138,11 @@ class WrappedPropertyDescriptor(Generic[T]):
         # Use the internal name derived from __set_name__
         layout.prop(prop_owner, self._prop_name, **self._draw_kwargs)
 
+    def draw_in_node_layout(self, layout: 'btypes.UILayout', prop_owner: Any):
+        """Draw the property in a node layout"""
+        # Use the internal name derived from __set_name__
+        layout.prop(prop_owner, self._prop_name, **self._draw_node_kwargs)
+
     def has_flag(self, flag: str) -> bool:
         """Check if the property has a flag"""
         return flag in self._flags

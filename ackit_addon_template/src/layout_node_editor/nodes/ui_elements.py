@@ -20,12 +20,12 @@ class LabelNode(ACK.NE.NodeExec):
     # --- Inputs --- (None)
 
     # --- Properties ---
-    text = ACK.PropTyped.String(name="Text", default="Label")
-    icon = ACK.PropTyped.String(name="Icon", default="NONE")
+    text = ACK.PropTyped.String(name="Text", default="Label").tag_node_drawable(order=0)
+    icon = ACK.PropTyped.String(name="Icon", default="NONE").tag_node_drawable(order=1)
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
-    Element = ACK.NE.OutputSocket(ElementSocket)
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
     # Execute is called by _internal_execute
     def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
@@ -46,13 +46,13 @@ class OperatorNode(ACK.NE.NodeExec):
     # --- Inputs --- (None)
 
     # --- Properties ---
-    operator_id = ACK.PropTyped.String(name="Operator ID", default="wm.operator_defaults")
-    text_override = ACK.PropTyped.String(name="Button Text", default="")
-    icon_override = ACK.PropTyped.String(name="Button Icon", default="")
+    operator_id = ACK.PropTyped.String(name="Operator ID", default="wm.operator_defaults", description="The bl_idname of the operator to run").tag_node_drawable(order=0)
+    text_override = ACK.PropTyped.String(name="Button Text", default="", description="Optional text override for the button (uses operator label if empty)").tag_node_drawable(order=1)
+    icon_override = ACK.PropTyped.String(name="Button Icon", default="", description="Optional icon override (e.g., 'CANCEL', uses operator icon if empty)").tag_node_drawable(order=2)
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
-    Element = ACK.NE.OutputSocket(ElementSocket)
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
     # Execute is called by _internal_execute
     def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None

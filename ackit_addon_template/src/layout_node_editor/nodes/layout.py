@@ -81,6 +81,20 @@ class LayoutNodeBase:
         parent_layout = kwargs.get('parent_layout')
         return {'parent_layout': parent_layout} # Pass through
 
+    def draw_buttons_ext(self, context: bpy_types.Context, layout: bpy_types.UILayout):
+        """ Draw the properties in the sidebar layout """
+        layout.prop(self, 'alert')
+        layout.prop(self, 'alignment')
+        layout.prop(self, 'emboss')
+        layout.prop(self, 'enabled')
+        col = layout.column()
+        col.prop(self, 'scale_x')
+        col.prop(self, 'scale_y')
+        col.separator()
+        col.prop(self, 'ui_units_x')
+        col.prop(self, 'ui_units_y')
+        layout.prop(self, 'use_property_decorate')
+        layout.prop(self, 'use_property_split')
 
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Row", tooltip="Row layout node")

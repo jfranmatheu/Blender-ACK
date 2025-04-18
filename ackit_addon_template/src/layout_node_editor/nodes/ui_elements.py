@@ -6,6 +6,7 @@ from bpy import types as bpy_types
 from ....ackit import ACK
 # Import ElementSocket from the sockets file in the same editor definition
 from ..sockets import ElementSocket
+from .enums import search_icon_items, icons_ids_set
 
 __all__ = [
     'LabelNode',
@@ -21,7 +22,7 @@ class LabelNode(ACK.NE.NodeExec):
 
     # --- Properties ---
     text = ACK.PropTyped.String(name="Text", default="Label").tag_node_drawable(order=0)
-    icon = ACK.PropTyped.String(name="Icon", default="NONE").tag_node_drawable(order=1)
+    icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=1)
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
@@ -32,7 +33,7 @@ class LabelNode(ACK.NE.NodeExec):
         parent_layout = kwargs.get('parent_layout')
 
         if parent_layout:
-            parent_layout.label(text=self.text, icon=self.icon)
+            parent_layout.label(text=self.text, icon=self.icon if self.icon and self.icon in icons_ids_set else 'NONE')
         else:
             print(f"Warning: LabelNode '{self.name}' executed without 'parent_layout' in kwargs.")
         # Return None or {} as this node doesn't change the context for subsequent children
@@ -47,8 +48,8 @@ class OperatorNode(ACK.NE.NodeExec):
 
     # --- Properties ---
     operator_id = ACK.PropTyped.String(name="Operator ID", default="wm.operator_defaults", description="The bl_idname of the operator to run").tag_node_drawable(order=0)
-    text_override = ACK.PropTyped.String(name="Button Text", default="", description="Optional text override for the button (uses operator label if empty)").tag_node_drawable(order=1)
-    icon_override = ACK.PropTyped.String(name="Button Icon", default="", description="Optional icon override (e.g., 'CANCEL', uses operator icon if empty)").tag_node_drawable(order=2)
+    text_override = ACK.PropTyped.String(name="Text", default="", description="Optional text override for the button (uses operator label if empty)").tag_node_drawable(order=1)
+    icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=2)
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
@@ -59,9 +60,8 @@ class OperatorNode(ACK.NE.NodeExec):
         parent_layout = kwargs.get('parent_layout')
 
         if parent_layout:
-            text = self.text_override or None
-            icon = self.icon_override or 'NONE'
-            parent_layout.operator(self.operator_id, text=text, icon=icon)
+            icon = self.icon if self.icon and self.icon in icons_ids_set else 'NONE'
+            parent_layout.operator(self.operator_id, text=self.text_override or None, icon=icon)
         else:
             print(f"Warning: OperatorNode '{self.name}' executed without 'parent_layout' in kwargs.")
         # Return None or {}

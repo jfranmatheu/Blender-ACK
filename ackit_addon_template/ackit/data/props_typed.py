@@ -27,6 +27,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self.kwargs = kwargs
         self._update_callback_set = CallbackList()
         self._prop_name = None
+        self._flags: set[str] = set()
 
     def __set_name__(self, owner, name):
         """Called when the descriptor is assigned to the owner class"""
@@ -132,6 +133,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         """Draw the property in a layout"""
         # Use the internal name derived from __set_name__
         layout.prop(prop_owner, self._prop_name)
+
 
 class WrappedTypedPropertyTypes:
     """Factory for creating wrapped properties with proper typing.

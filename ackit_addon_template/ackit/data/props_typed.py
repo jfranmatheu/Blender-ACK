@@ -28,6 +28,8 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._update_callback_set = CallbackList()
         self._prop_name = None
         self._flags: set[str] = set()
+        self._draw_order = -1
+        self._draw_kwargs = {}
 
     def __set_name__(self, owner, name):
         """Called when the descriptor is assigned to the owner class"""
@@ -132,7 +134,22 @@ class WrappedPropertyDescriptor(Generic[T]):
     def draw_in_layout(self, layout: 'btypes.UILayout', prop_owner: Any):
         """Draw the property in a layout"""
         # Use the internal name derived from __set_name__
-        layout.prop(prop_owner, self._prop_name)
+        layout.prop(prop_owner, self._prop_name, **self._draw_kwargs)
+
+    def has_flag(self, flag: str) -> bool:
+        """Check if the property has a flag"""
+        return flag in self._flags
+    
+    def is_drawable(self) -> bool:
+        """Check if the property is drawable"""
+        return 'DRAW_IN_LAYOUT' in self._flags
+
+    def tag_drawable(self, order: int = -1, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
+        """Tag the property to be drawn in a layout (wether it is a node, a socket, a panel, an operator, etc.)"""
+        self._flags.add('DRAW_IN_LAYOUT')
+        self._draw_order = order
+        self._draw_kwargs = draw_kwargs
+        return self
 
 
 class WrappedTypedPropertyTypes:

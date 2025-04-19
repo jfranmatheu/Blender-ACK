@@ -1,7 +1,9 @@
 from typing import Set, Dict, Any, Union, List, ItemsView, Type
 from uuid import uuid4
+from collections import OrderedDict
 
 from bpy import types as bpy_types
+from bpy import props as bpy_props
 
 from ...core.base_type import BaseType
 from ..annotations_internal import NodeSocketWrapper, NodeSocket
@@ -155,26 +157,72 @@ class Node(BaseType, bpy_types.Node):
 
     def draw_buttons(self, context: bpy_types.Context, layout: bpy_types.UILayout):
         """Draw the properties in the node layout"""
-        props_to_draw: list[tuple[WrappedPropertyDescriptor, int]] = []
+        # Use OrderedDict to preserve insertion order which corresponds to definition order (Python 3.7+)
+        props_by_order: Dict[int, List[WrappedPropertyDescriptor]] = {}
         for name, value in self.__class__.__dict__.items():
             if isinstance(value, WrappedPropertyDescriptor):
                 if value.is_node_drawable():
-                    props_to_draw.append((value, value._draw_node_order))
+                    order = value._draw_node_order
+                    if order not in props_by_order:
+                        props_by_order[order] = []
+                    props_by_order[order].append(value) # Appends in definition order
 
-        # print("Node.draw_buttons:", self.name, props_to_draw)
-
-        for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
-            prop_wrapper.draw_in_node_layout(layout, self, context)
+        # print("Node.draw_buttons:", self.name, props_by_order)
+        # Sort groups by order number
+        for order in sorted(props_by_order.keys()):
+            props_to_draw = props_by_order[order]
+            if len(props_to_draw) == 1:
+                # Draw single property directly
+                props_to_draw[0].draw_in_node_layout(layout, self, context)
+            elif len(props_to_draw) > 1:
+                # Draw properties in the order they were appended (definition order)
+                print(props_to_draw[0], props_to_draw[0].property_type)
+                if props_to_draw[0].property_type == bpy_props.BoolProperty:
+                    toggle_prop = props_to_draw.pop(0)
+                    # Draw multiple properties in a row
+                    row = layout.row(align=True, heading=toggle_prop.kwargs['name'])
+                    toggle_prop.draw_in_node_layout(row, self, context)
+                    row = row.row(align=True)
+                    row.enabled = getattr(self, toggle_prop._prop_name, False)
+                else:
+                    # Draw multiple properties in a row
+                    row = layout.row(align=True)
+                # Draw properties in the order they were appended (definition order)
+                for prop_wrapper in props_to_draw:
+                    prop_wrapper.draw_in_node_layout(row, self, context)
 
     def draw_buttons_ext(self, context: bpy_types.Context, layout: bpy_types.UILayout):
         """Draw the properties in the sidebar layout"""
-        props_to_draw: list[tuple[WrappedPropertyDescriptor, int]] = []
+        # Use OrderedDict to preserve insertion order which corresponds to definition order (Python 3.7+)
+        props_by_order: Dict[int, List[WrappedPropertyDescriptor]] = {}
         for name, value in self.__class__.__dict__.items():
             if isinstance(value, WrappedPropertyDescriptor):
                 if value.is_drawable():
-                    props_to_draw.append((value, value._draw_order))
+                    order = value._draw_order
+                    if order not in props_by_order:
+                        props_by_order[order] = []
+                    props_by_order[order].append(value) # Appends in definition order
 
-        # print("Node.draw_buttons_ext:", self.name, props_to_draw)
+        # print("Node.draw_buttons_ext:", self.name, props_by_order)
 
-        for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
-            prop_wrapper.draw_in_layout(layout, self, context)
+        # Sort groups by order number
+        for order in sorted(props_by_order.keys()):
+            props_to_draw = props_by_order[order]
+            if len(props_to_draw) == 1:
+                # Draw single property directly
+                props_to_draw[0].draw_in_layout(layout, self, context)
+            elif len(props_to_draw) > 1:
+                
+                # Draw properties in the order they were appended (definition order)
+                print(props_to_draw[0], props_to_draw[0].property_type)
+                if props_to_draw[0].property_type == bpy_props.BoolProperty:
+                    toggle_prop = props_to_draw.pop(0)
+                    # Draw multiple properties in a row
+                    row = layout.row(align=True, heading="caca")
+                    # row.use_property_split = False
+                    toggle_prop.draw_in_layout(row, self, context)
+                else:
+                    # Draw multiple properties in a row
+                    row = layout.row(align=True)
+                for prop_wrapper in props_to_draw:
+                    prop_wrapper.draw_in_layout(row, self, context)

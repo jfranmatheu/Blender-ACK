@@ -13,7 +13,7 @@ __all__ = [
     'ColumnLayoutNode',
     'BoxLayoutNode',
     'SplitLayoutNode',
-    # 'SplitLayoutNode', # Removed for now
+    'SeparatorLayoutNode',
 ]
 
 # --- Helper for Enum Properties ---
@@ -184,3 +184,31 @@ class SplitLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
         self.apply_layout_properties(split_layout)
         # Return the created layout for children to use
         return {'parent_layout': split_layout}
+
+
+
+@ACK.NE.add_node_to_category("Layout")
+@ACK.NE.add_node_metadata(label="Separator", tooltip="Adds a separator line to the layout")
+class SeparatorLayoutNode(ACK.NE.NodeExec):
+
+    # --- Inputs ---
+    # Needs an input to receive the execution flow and parent_layout
+    #InElement = ACK.NE.InputSocket(ElementSocket, label="Element")
+
+    # --- Properties ---
+    factor = ACK.PropTyped.Float(name="Factor", default=0.5, min=0.0, max=10.0, description="Split factor (percentage for the left side)").tag_node_drawable(order=0)
+
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
+
+    # Execute is called by _internal_execute
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
+        if not parent_layout:
+            print(f"Warning: SeparatorLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None
+        # Use factor property correctly
+        parent_layout.separator(factor=self.factor)
+        # Return None as it doesn't provide a new layout context
+        return None

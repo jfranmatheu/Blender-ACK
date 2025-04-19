@@ -53,10 +53,6 @@ class LayoutNodeBase:
     use_property_decorate: ACK.Prop.BOOL(name="Decorate Props", default=True, description="Draw decoration around properties")
     use_property_split: ACK.Prop.BOOL(name="Split Props", default=False, description="Split properties layout")
 
-    # --- Outputs ---
-    # Output socket remains an assignment as it's a descriptor itself
-    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
-
     # --- Helper Method ---
     def apply_layout_properties(self, layout: bpy.types.UILayout):
         """ Helper to apply common properties to a created layout """
@@ -105,7 +101,9 @@ class RowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     # --- Properties ---
     align = ACK.PropTyped.Bool(name="Align", default=False, description="Align elements within the row").tag_node_drawable() # Keep specific align for row()
 
-    # Inherits common properties and Element output from LayoutNodeBase
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
     def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
@@ -127,7 +125,9 @@ class ColumnLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     # --- Properties ---
     align = ACK.PropTyped.Bool(name="Align", default=False, description="Align elements within the column").tag_node_drawable()
 
-    # Inherits common properties and Element output from LayoutNodeBase
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
     def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
@@ -146,7 +146,9 @@ class BoxLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     # --- Inputs ---
     InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
 
-    # Inherits common properties and Element output from LayoutNodeBase
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
     def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
@@ -170,7 +172,9 @@ class SplitLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     align = ACK.PropTyped.Bool(name="Align", default=False, description="Align the split layout within its parent").tag_node_drawable(order=0)
     factor = ACK.PropTyped.Float(name="Factor", default=0.5, min=0.0, max=1.0, description="Split factor (percentage for the left side)").tag_node_drawable(order=1)
 
-    # Inherits common properties and Element output from LayoutNodeBase
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
     def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:

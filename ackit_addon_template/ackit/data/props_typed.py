@@ -138,7 +138,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self.kwargs['description'] = text
         return self
 
-    def draw_in_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: bpy.types.Context | None = None):
+    def draw_in_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: btypes.Context | None = None):
         """Draw the property in a layout"""
         # Use the internal name derived from __set_name__
         if poll_context is not None and self._draw_poll is not None and callable(self._draw_poll):
@@ -146,7 +146,7 @@ class WrappedPropertyDescriptor(Generic[T]):
                 return
         layout.prop(prop_owner, self._prop_name, **self._draw_kwargs)
 
-    def draw_in_node_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: bpy.types.Context | None = None):
+    def draw_in_node_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: btypes.Context | None = None):
         """Draw the property in a node layout"""
         # Use the internal name derived from __set_name__
         if poll_context is not None and self._draw_node_poll is not None and callable(self._draw_node_poll):

@@ -164,7 +164,7 @@ class Node(BaseType, bpy_types.Node):
         print("Node.draw_buttons:", self.name, props_to_draw)
 
         for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
-            prop_wrapper.draw_in_node_layout(layout, self)
+            prop_wrapper.draw_in_node_layout(layout, self, context)
 
     def draw_buttons_ext(self, context: bpy_types.Context, layout: bpy_types.UILayout):
         """Draw the properties in the sidebar layout"""
@@ -177,4 +177,4 @@ class Node(BaseType, bpy_types.Node):
         print("Node.draw_buttons_ext:", self.name, props_to_draw)
 
         for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
-            prop_wrapper.draw_in_layout(layout, self)
+            prop_wrapper.draw_in_layout(layout, self, context)

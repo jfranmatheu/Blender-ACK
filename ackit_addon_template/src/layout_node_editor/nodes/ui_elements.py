@@ -50,6 +50,7 @@ class OperatorNode(ACK.NE.NodeExec):
     operator_id = ACK.PropTyped.String(name="Operator ID", default="wm.operator_defaults", description="The bl_idname of the operator to run").tag_node_drawable(order=0)
     text_override = ACK.PropTyped.String(name="Text", default="", description="Optional text override for the button (uses operator label if empty)").tag_node_drawable(order=1)
     icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=2)
+    emboss = ACK.PropTyped.Bool(name="Emboss", default=True, description="Toggle emboss style for operator")
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
@@ -57,11 +58,12 @@ class OperatorNode(ACK.NE.NodeExec):
 
     # Execute is called by _internal_execute
     def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
-        parent_layout = kwargs.get('parent_layout')
+        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
 
         if parent_layout:
             icon = self.icon if self.icon and self.icon in icons_ids_set else 'NONE'
-            parent_layout.operator(self.operator_id, text=self.text_override or None, icon=icon)
+            # TODO: evaluation input for depress state.
+            parent_layout.operator(self.operator_id, text=self.text_override or None, icon=icon, emboss=self.emboss)
         else:
             print(f"Warning: OperatorNode '{self.name}' executed without 'parent_layout' in kwargs.")
         # Return None or {}

@@ -1,6 +1,6 @@
 from enum import Enum
 from math import pi
-from typing import Any, Callable, Type, TypeVar, Union, Generic
+from typing import Any, Callable, Type, TypeVar, Union, Generic, Optional
 
 from bpy.props import *
 from bpy import types as btypes
@@ -29,8 +29,10 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._prop_name = None
         self._flags: set[str] = set()
         self._draw_order = -1
+        self._draw_poll = None
         self._draw_kwargs = {}
         self._draw_node_order = -1
+        self._draw_node_poll = None
         self._draw_node_kwargs = {}
 
     def __set_name__(self, owner, name):
@@ -133,14 +135,20 @@ class WrappedPropertyDescriptor(Generic[T]):
         self.kwargs['description'] = text
         return self
 
-    def draw_in_layout(self, layout: 'btypes.UILayout', prop_owner: Any):
+    def draw_in_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: bpy.types.Context | None = None):
         """Draw the property in a layout"""
         # Use the internal name derived from __set_name__
+        if poll_context is not None and self._draw_poll is not None and callable(self._draw_poll):
+            if not self._draw_poll(poll_context):
+                return
         layout.prop(prop_owner, self._prop_name, **self._draw_kwargs)
 
-    def draw_in_node_layout(self, layout: 'btypes.UILayout', prop_owner: Any):
+    def draw_in_node_layout(self, layout: 'btypes.UILayout', prop_owner: Any, poll_context: bpy.types.Context | None = None):
         """Draw the property in a node layout"""
         # Use the internal name derived from __set_name__
+        if poll_context is not None and self._draw_node_poll is not None and callable(self._draw_node_poll):
+            if not self._draw_node_poll(poll_context):
+                return
         layout.prop(prop_owner, self._prop_name, **self._draw_node_kwargs)
 
     def has_flag(self, flag: str) -> bool:
@@ -155,18 +163,20 @@ class WrappedPropertyDescriptor(Generic[T]):
         """Check if the property is drawable in a node layout"""
         return 'DRAW_IN_NODE_LAYOUT' in self._flags
 
-    def tag_drawable(self, order: int = -1, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
+    def tag_drawable(self, order: int = -1, poll: Optional[Callable] = None, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
         """Tag the property to be drawn in a layout (wether it is a node, a socket, a panel, an operator, etc.)"""
         self._flags.add('DRAW_IN_LAYOUT')
         self._draw_order = order
         self._draw_kwargs = draw_kwargs
+        self._draw_poll = poll
         return self
 
-    def tag_node_drawable(self, order: int = -1, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
+    def tag_node_drawable(self, order: int = -1, poll: Optional[Callable] = None, **draw_kwargs) -> 'WrappedPropertyDescriptor[T]':
         """Tag the property to be drawn in a node layout"""
         self._flags.add('DRAW_IN_NODE_LAYOUT')
         self._draw_node_order = order
         self._draw_node_kwargs = draw_kwargs
+        self._draw_node_poll = poll
         return self
 
 

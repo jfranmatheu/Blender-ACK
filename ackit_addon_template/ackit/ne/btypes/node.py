@@ -161,7 +161,7 @@ class Node(BaseType, bpy_types.Node):
                 if value.is_node_drawable():
                     props_to_draw.append((value, value._draw_node_order))
 
-        print("Node.draw_buttons:", self.name, props_to_draw)
+        # print("Node.draw_buttons:", self.name, props_to_draw)
 
         for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
             prop_wrapper.draw_in_node_layout(layout, self, context)
@@ -174,7 +174,7 @@ class Node(BaseType, bpy_types.Node):
                 if value.is_drawable():
                     props_to_draw.append((value, value._draw_order))
 
-        print("Node.draw_buttons_ext:", self.name, props_to_draw)
+        # print("Node.draw_buttons_ext:", self.name, props_to_draw)
 
         for prop_wrapper, order in sorted(props_to_draw, key=lambda x: x[1]):
             prop_wrapper.draw_in_layout(layout, self, context)

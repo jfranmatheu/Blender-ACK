@@ -44,6 +44,9 @@ class LabelNode(ACK.NE.NodeExec):
 @ACK.NE.add_node_metadata(label="Operator Button", tooltip="Display a button that runs an operator", icon='PLAY')
 class OperatorNode(ACK.NE.NodeExec):
     """Node that draws an operator button into a layout."""
+    bl_width_default = 220
+    bl_width_min = 180
+    
     # --- Inputs --- (None)
 
     # --- Properties ---

@@ -97,3 +97,6 @@ class NodeExec(Node):
 
     def evaluate(self) -> None:
         raise NotImplementedError("Method not available for NodeExec.")
+    
+    def on_property_update(self, context: bpy_types.Context, prop_name: str):
+        pass

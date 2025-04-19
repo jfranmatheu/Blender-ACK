@@ -25,8 +25,8 @@ class SectionLayoutNode(ACK.NE.NodeExec):
     # --- Properties ---
     align_content = ACK.PropTyped.Bool(name="Align Content", default=False, description="Align the split layout within its parent").tag_node_drawable(order=0)
 
-    header_text = ACK.PropTyped.String(name="Text", default="Header Title").tag_node_drawable(order=0, poll=lambda node, _ctx: not node.InHeader.is_linked)
-    header_icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=1, poll=lambda node, _ctx: not node.InHeader.is_linked)
+    header_text = ACK.PropTyped.String(name="Text", default="Header Title").tag_node_drawable(order=1, poll=lambda node, _ctx: not node.InHeader.is_linked)
+    header_icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=2, poll=lambda node, _ctx: not node.InHeader.is_linked)
 
     # --- Outputs ---
     # Output socket remains an assignment as it's a descriptor itself

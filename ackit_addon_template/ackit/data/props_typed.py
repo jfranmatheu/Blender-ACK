@@ -27,6 +27,7 @@ class WrappedPropertyDescriptor(Generic[T]):
         self.kwargs = kwargs
         self._update_callback_set = CallbackList()
         self._prop_name = None
+        self._owner_cls = None
         self._flags: set[str] = set()
         self._draw_order = -1
         self._draw_poll = None
@@ -38,6 +39,7 @@ class WrappedPropertyDescriptor(Generic[T]):
     def __set_name__(self, owner, name):
         """Called when the descriptor is assigned to the owner class"""
         self._prop_name = name
+        self._owner_cls = owner
         if not hasattr(owner, '__annotations__'):
             owner.__annotations__ = {}
 
@@ -64,6 +66,7 @@ class WrappedPropertyDescriptor(Generic[T]):
 
     def create_property(self, idname: str | None = None, owner_cls: Type = None) -> Any:
         """Create the actual bpy property during registration"""
+        owner_cls = owner_cls or self._owner_cls
         prop_name = idname or self._prop_name
         if not prop_name:
              raise ValueError("Property name must be set either via __set_name__ or provided to create_property")

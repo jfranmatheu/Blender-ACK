@@ -176,7 +176,6 @@ class Node(BaseType, bpy_types.Node):
                 props_to_draw[0].draw_in_node_layout(layout, self, context)
             elif len(props_to_draw) > 1:
                 # Draw properties in the order they were appended (definition order)
-                print(props_to_draw[0], props_to_draw[0].property_type)
                 if props_to_draw[0].property_type == bpy_props.BoolProperty:
                     toggle_prop = props_to_draw.pop(0)
                     # Draw multiple properties in a row
@@ -214,7 +213,6 @@ class Node(BaseType, bpy_types.Node):
             elif len(props_to_draw) > 1:
                 
                 # Draw properties in the order they were appended (definition order)
-                print(props_to_draw[0], props_to_draw[0].property_type)
                 if props_to_draw[0].property_type == bpy_props.BoolProperty:
                     toggle_prop = props_to_draw.pop(0)
                     # Draw multiple properties in a row

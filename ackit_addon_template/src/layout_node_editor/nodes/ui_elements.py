@@ -54,7 +54,8 @@ class OperatorNode(ACK.NE.NodeExec):
     use_text_override = ACK.PropTyped.Bool(name="Text Override", default=False, description="Enable Text Override").tag_node_drawable(order=1, text='')
     text_override = ACK.PropTyped.String(name="", default="", description="Optional text override for the button (uses operator label if empty)").tag_node_drawable(order=1, text='')
     icon = ACK.PropTyped.String(name="Icon", default="NONE", search=search_icon_items).tag_node_drawable(order=2)
-    emboss = ACK.PropTyped.Bool(name="Emboss", default=True, description="Toggle emboss style for operator")
+    icon_only = ACK.PropTyped.Bool(name="Only", default=False, description="Only display the icon").tag_node_drawable(order=2, toggle=True)
+    emboss = ACK.PropTyped.Bool(name="Emboss", default=True, description="Toggle emboss style for operator").tag_node_drawable(order=3)
 
     # --- Outputs ---
     # Used to connect to LayoutNode.InContents (Child -> Parent)
@@ -67,7 +68,10 @@ class OperatorNode(ACK.NE.NodeExec):
         if parent_layout:
             icon = self.icon if self.icon and self.icon in icons_ids_set else 'NONE'
             # TODO: evaluation input for depress state.
-            parent_layout.operator(self.operator_id, text=self.text_override if self.use_text_override else None, icon=icon, emboss=self.emboss)
+            parent_layout.operator(self.operator_id,
+                                   text='' if self.icon_only else self.text_override if self.use_text_override else None,
+                                   icon=icon,
+                                   emboss=self.emboss)
         else:
             print(f"Warning: OperatorNode '{self.name}' executed without 'parent_layout' in kwargs.")
         # Return None or {}

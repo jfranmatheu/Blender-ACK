@@ -216,3 +216,57 @@ class SeparatorLayoutNode(ACK.NE.NodeExec):
         parent_layout.separator(factor=self.factor)
         # Return None as it doesn't provide a new layout context
         return None
+
+
+
+@ACK.NE.add_node_to_category("Layout")
+@ACK.NE.add_node_metadata(label="Column Flow", tooltip="Column Flow layout node")
+class ColumnFlowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
+    # --- Inputs ---
+    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
+
+    # --- Properties ---
+    columns = ACK.PropTyped.Int(name="Columns", default=0, min=0, soft_max=10, description="Number of columns, 0 is automatic").tag_node_drawable(order=0)
+    align = ACK.PropTyped.Bool(name="Align", default=False, description="Align columns within the layout").tag_node_drawable(order=1) # Keep specific align for row()
+
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
+
+    # Execute is called by _internal_execute
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
+        if not parent_layout:
+            print(f"Warning: ColumnFlowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None
+        my_layout = parent_layout.column_flow(columns=self.columns, align=self.align)
+        self.apply_layout_properties(my_layout) # Apply common props
+        return {'parent_layout': my_layout}
+
+
+@ACK.NE.add_node_to_category("Layout")
+@ACK.NE.add_node_metadata(label="Grid Flow", tooltip="Grid Flow layout node")
+class GridFlowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
+    # --- Inputs ---
+    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
+
+    # --- Properties ---
+    row_major = ACK.PropTyped.Bool(name="Row Major", default=True, description="If true, the grid will be laid out row by row, otherwise column by column").tag_node_drawable(order=0)
+    columns = ACK.PropTyped.Int(name="Columns", default=0, soft_min=-10, soft_max=10, description="Number of columns, 0 is automatic, negative are automatic multiple numbers along major axis (eg. -2 will only produce 2, 4, 6 etc.)").tag_node_drawable(order=1)
+    even_columns = ACK.PropTyped.Bool(name="Even Columns", default=True, description="If true, the columns will be evened out to the nearest whole number").tag_node_drawable(order=2)
+    even_rows = ACK.PropTyped.Bool(name="Even Rows", default=True, description="If true, the rows will be evened out to the nearest whole number").tag_node_drawable(order=3)
+    align = ACK.PropTyped.Bool(name="Align", default=False, description="Align grid slots within the layout").tag_node_drawable(order=4) # Keep specific align for row()
+
+    # --- Outputs ---
+    # Output socket remains an assignment as it's a descriptor itself
+    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
+
+    # Execute is called by _internal_execute
+    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
+        if not parent_layout:
+            print(f"Warning: ColumnFlowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
+            return None
+        my_layout = parent_layout.grid_flow(row_major=self.row_major, columns=self.columns, even_columns=self.even_columns, even_rows=self.even_rows, align=self.align)
+        self.apply_layout_properties(my_layout) # Apply common props
+        return {'parent_layout': my_layout}

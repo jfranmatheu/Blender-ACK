@@ -12,8 +12,8 @@ from .enums import search_icon_items, icons_ids_set
 
 __all__ = [
     'SectionLayoutNode',
+    'PanelLayoutNode',
 ]
-
 
 @ACK.NE.add_node_to_category("Layout/Advanced")
 @ACK.NE.add_node_metadata(label="Section", tooltip="Section layout node")

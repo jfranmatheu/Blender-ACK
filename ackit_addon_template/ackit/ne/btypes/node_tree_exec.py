@@ -1,4 +1,4 @@
-from typing import Set, Dict, List, Optional, Any, Type
+from typing import Set, Dict, List, Optional, Any, Type, Tuple
 from collections import defaultdict
 import bpy
 from bpy import types as bpy_types
@@ -7,6 +7,7 @@ from ...core.base_type import BaseType
 
 from .node_socket_exec import NodeSocketExec
 from .base_tree import BaseNodeTree
+from .node_exec import NodeExec # Import NodeExec
 
 
 __all__ = ['NodeTreeExec']
@@ -15,6 +16,13 @@ __all__ = ['NodeTreeExec']
 class NodeTreeExec(BaseNodeTree, BaseType, bpy_types.NodeTree):
     bl_icon: str = 'SETTINGS'
     output_node_type: Type[Any] | None = None
+    
+    @property
+    def output_node(self) -> Optional[bpy_types.Node]:
+        if not self.nodes:
+            print(f"NodeTreeExec: Tree '{self.name}' has no nodes.")
+            return None
+        return next((node for node in self.nodes if node.__class__ == self.output_node_type), None)
 
     def update(self) -> None:
         """Called when the node tree is modified.
@@ -32,25 +40,11 @@ class NodeTreeExec(BaseNodeTree, BaseType, bpy_types.NodeTree):
             *args: Positional arguments.
             **kwargs: Keyword arguments.
         """
-        if not self.nodes:
-            print(f"NodeTreeExec: Tree '{self.name}' has no nodes.")
-            return
-
         # 1. Find the Output Node
-        output_node: Optional[bpy_types.Node] = None
-        output_type = getattr(self, 'output_node_type', None) # Get from subclass or default
-
-        if not output_type:
-            print(f"Error: NodeTreeExec '{self.name}' has no 'output_type' defined.")
-            return
-
-        for node in self.nodes:
-            if node.__class__ == output_type:
-                output_node = node
-                break # Found the output node
+        output_node: Optional[bpy_types.Node] = self.output_node
 
         if output_node is None:
-            print(f"Error: Output node of type '{output_type}' not found in tree '{self.name}'.")
+            print(f"Error: Output node of type '{self.output_node_type}' not found in tree '{self.name}'.")
             return
 
         # Check for the internal execute method now

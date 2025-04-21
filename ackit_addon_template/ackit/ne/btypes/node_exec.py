@@ -1,10 +1,13 @@
 from .node import Node
-from typing import Dict, Any, Type, Set, List, Optional
+from typing import Dict, Any, Type, Set, List, Optional, Tuple, TYPE_CHECKING
 
 from bpy import types as bpy_types
 import bpy
 
 from .node_socket_exec import NodeSocketExec
+
+if TYPE_CHECKING:
+    from .node_tree_exec import NodeTreeExec # Import for type hinting
 
 __all__ = ['NodeExec']
 
@@ -68,11 +71,17 @@ class NodeExec(Node):
                         child_kwargs.update(socket_specific_args)
                         # print(f"Node '{self.name}': Passing specific kwargs for socket '{socket.identifier}': {list(socket_specific_args.keys())}")
                 else:
-                    child_kwargs.update(socket_specific_kwargs_map)
+                    # Check if it's a dict before updating (handles None or non-dict returns)
+                    if isinstance(socket_specific_kwargs_map, dict):
+                         child_kwargs.update(socket_specific_kwargs_map)
+                    # If socket_specific_kwargs_map is None or not a dict, child_kwargs remains unchanged
 
                 # Execute all children connected to this socket
                 for link in socket.links:
-                    child_node = link.from_node
+                    # Original code links from parent OUTPUT to child INPUT.
+                    # So, for an INPUT socket (`socket`), the link goes *to* it.
+                    # The node providing the connection is link.from_node.
+                    child_node = link.from_node # Node connected to this input socket
                     if child_node and hasattr(child_node, '_internal_execute'):
                         try:
                             # Pass original args, the potentially updated child_kwargs, and tracker

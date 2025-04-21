@@ -9,12 +9,13 @@ from ...core.base_type import BaseType
 from ..annotations_internal import NodeSocketWrapper, NodeSocket
 from .node_tree import NodeTree
 from ...data.props_typed import WrappedPropertyDescriptor
+from .base_node import BaseNode
 
 __all__ = ['Node']
 
 
 
-class Node(BaseType, bpy_types.Node):
+class Node(BaseNode, BaseType, bpy_types.Node):
     _node_tree_type: Type[NodeTree]
     _node_category: str
     _color_tag: str = 'NONE'

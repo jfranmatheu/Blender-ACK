@@ -12,7 +12,7 @@ class RootLayoutOutputNode(ACK.NE.NodeExec):
 
     # --- Inputs ---
     # Receives the final element/layout to be drawn directly into the initial layout
-    InElement = ACK.NE.InputSocket(ElementSocket, label="Root Element")
+    InElement = ACK.NE.InputSocket(ElementSocket, label="Root Element", multi=True)
 
     # --- Outputs --- (None)
 

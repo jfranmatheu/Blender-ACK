@@ -1,6 +1,7 @@
 from .ops import generate_ops_py
 from .icons import generate_icons_py
 from .types import generate_types_py
+from .nodes import generate_nodes_py
 
 __all__ = ['AutoCode']
 
@@ -20,3 +21,8 @@ class AutoCode:
     def TYPES(filename: str = 'types'):
         ''' Generate a {filename}.py file with typed PropertyGroup classes, as well as AddonPreferences and extended bpy.types. '''
         generate_types_py(filename)
+
+    @staticmethod
+    def NODES(filename: str = 'nodes'):
+        ''' Generate a {filename}.py file with Node classes. '''
+        generate_nodes_py(filename)

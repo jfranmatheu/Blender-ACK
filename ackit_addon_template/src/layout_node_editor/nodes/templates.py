@@ -7,6 +7,11 @@ from ....ackit import ACK
 # Import ElementSocket from the sockets file in the same editor definition
 from ..sockets import ElementSocket
 from .enums import search_icon_items, icons_ids_set
+from .base import BaseNode
+
+
+class TemplateNode(BaseNode):
+    pass
 
 
 # --- UI List Types ---
@@ -46,7 +51,7 @@ def search_list_type_idname(self, context, edit_text):
 
 @ACK.NE.add_node_to_category("Elements/Templates")
 @ACK.NE.add_node_metadata(label="List", tooltip="Display a list of items from a data path", icon='RNA')
-class TemplateListNode(ACK.NE.NodeExec):
+class TemplateListNode(TemplateNode, ACK.NE.NodeExec):
     """Node that draws a list of items from a data path."""
     bl_width_default = 250
     bl_width_min = 200 # Allow slightly narrower
@@ -142,12 +147,7 @@ class TemplateListNode(ACK.NE.NodeExec):
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
     # --- Execute Method ---
-    def execute(self, context: bpy.types.Context, root_layout: bpy.types.UILayout, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]:
-        parent_layout: bpy.types.UILayout = kwargs.get('parent_layout', None)
-        if not parent_layout:
-            # print(f"Warning: PropNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-
+    def execute(self, context: bpy.types.Context, layout: bpy.types.UILayout) -> None:
         global ui_list_types_x_names
         if ui_list_types_x_names is None:
             update_ui_list_types()
@@ -180,7 +180,7 @@ class TemplateListNode(ACK.NE.NodeExec):
         ## print(f"owner: {owner}")
         ## print(f"active_owner: {active_owner}")
 
-        parent_layout.template_list(
+        layout.template_list(
             list_type.bl_idname if hasattr(list_type, 'bl_idname') else list_type.__name__, "",
             owner,
             self.propname,
@@ -194,6 +194,3 @@ class TemplateListNode(ACK.NE.NodeExec):
             sort_reverse=False, #self.sort_reverse,
             sort_lock=False #self.sort_lock
         )
-
-        # Return None as this node doesn't provide context for children via inputs
-        return None

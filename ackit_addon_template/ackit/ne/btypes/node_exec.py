@@ -49,7 +49,7 @@ class NodeExec(Node):
         #    It now returns a mapping from input socket identifiers to their specific kwargs.
         socket_specific_kwargs_map: Optional[Dict[str, Dict[str, Any]]] = None
         try:
-            socket_specific_kwargs_map = self.execute(*args, **kwargs)
+            socket_specific_kwargs_map = self._execute(*args, **kwargs)
         except Exception as e:
             import traceback
             print(f"Error during user execute of node '{self.name}': {e}")
@@ -93,6 +93,11 @@ class NodeExec(Node):
                     elif child_node:
                         print(f"Warning: Connected node '{child_node.name}' to '{self.name}.{socket.identifier}' has no _internal_execute method.")
 
+    def _execute(self, *args, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]:
+        """
+        User-defined execution logic for the node. Use this for custom execution logic in base classes.
+        """
+        return self.execute(*args, **kwargs)
 
     # User-defined execute method - MUST be overridden by subclasses
     def execute(self, *args, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]:

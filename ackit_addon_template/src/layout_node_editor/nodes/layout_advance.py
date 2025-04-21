@@ -1,4 +1,4 @@
-from typing import Dict, Any, Set, Optional
+from typing import Dict, Any, Set, Optional, Tuple
 import bpy
 from bpy import types as bpy_types
 
@@ -6,6 +6,7 @@ from ....ackit import ACK
 from ..sockets import ElementSocket
 
 from .enums import search_icon_items, icons_ids_set
+from .base import BaseNode
 
 # Make sure output node is imported if needed elsewhere, but not directly used here
 # from .output import RootLayoutOutputNode
@@ -15,9 +16,14 @@ __all__ = [
     'PanelLayoutNode',
 ]
 
+
+class AdvancedLayoutNode(BaseNode):
+    pass
+
+
 @ACK.NE.add_node_to_category("Layout/Advanced")
 @ACK.NE.add_node_metadata(label="Section", tooltip="Section layout node")
-class SectionLayoutNode(ACK.NE.NodeExec):
+class SectionLayoutNode(AdvancedLayoutNode, ACK.NE.NodeExec):
     # --- Inputs ---
     InHeader = ACK.NE.InputSocket(ElementSocket, label="Header", multi=True)
     InContent = ACK.NE.InputSocket(ElementSocket, label="Content", multi=True)
@@ -32,23 +38,11 @@ class SectionLayoutNode(ACK.NE.NodeExec):
     # Output socket remains an assignment as it's a descriptor itself
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
-    # Execute is called by _internal_execute
-    # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]: # Updated return type annotation
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: SectionLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-
-        # Check if header should be drawn by connected nodes or default label
-        # Note: The original code had 'use_def_header = self.InHeader.is_linked'
-        # which seems reversed. If InHeader IS linked, we should execute the
-        # connected nodes, not draw the default label. Let's assume the default
-        # label is drawn only if InHeader is NOT linked.
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> Tuple[bpy_types.UILayout, bpy_types.UILayout]:
         draw_default_header = not self.InHeader.is_linked
 
         # Create the layouts
-        section_layout = parent_layout.column(align=True) # Main container for the section
+        section_layout = layout.column(align=True) # Main container for the section
         header_layout = section_layout.box().row(align=True) # Layout for the header elements
         content_layout = section_layout.box().column(align=self.align_content) # Layout for the content elements
 
@@ -58,22 +52,12 @@ class SectionLayoutNode(ACK.NE.NodeExec):
              icon = getattr(self, 'header_icon', 'NONE') # Safely get icon property
              header_layout.label(text=self.header_text, icon=icon if icon in icons_ids_set else 'NONE')
 
-        # Define the specific context for each input socket
-        # Use socket.identifier to get the unique key for the mapping
-        child_kwargs_map = {
-            self.InHeader: {'parent_layout': header_layout},
-            self.InContent: {'parent_layout': content_layout}
-        }
-
-        # Return the mapping. The _internal_execute method will use this
-        # to pass the correct 'parent_layout' to children connected to
-        # InHeader vs InContent.
-        return child_kwargs_map
+        return header_layout, content_layout
 
 
 @ACK.NE.add_node_to_category("Layout/Advanced")
 @ACK.NE.add_node_metadata(label="Panel", tooltip="Panel layout node")
-class PanelLayoutNode(ACK.NE.NodeExec):
+class PanelLayoutNode(AdvancedLayoutNode, ACK.NE.NodeExec):
     # --- Inputs ---
     InHeader = ACK.NE.InputSocket(ElementSocket, label="Header", multi=True)
     InContent = ACK.NE.InputSocket(ElementSocket, label="Content", multi=True)
@@ -88,14 +72,8 @@ class PanelLayoutNode(ACK.NE.NodeExec):
     # Output socket remains an assignment as it's a descriptor itself
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
-    # Execute is called by _internal_execute
-    # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]: # Updated return type annotation
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout', None)
-        if not parent_layout:
-            print(f"Warning: SectionLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
 
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> Tuple[bpy_types.UILayout, bpy_types.UILayout]:
         # Check if header should be drawn by connected nodes or default label
         # Note: The original code had 'use_def_header = self.InHeader.is_linked'
         # which seems reversed. If InHeader IS linked, we should execute the
@@ -104,7 +82,7 @@ class PanelLayoutNode(ACK.NE.NodeExec):
         draw_default_header = not self.InHeader.is_linked
 
         # Create the layouts
-        header, panel = parent_layout.panel(self.uid, default_closed=False)
+        header, panel = layout.panel(self.uid, default_closed=False)
         if self.align_content and panel:
             panel = panel.column(align=True)
 
@@ -114,14 +92,4 @@ class PanelLayoutNode(ACK.NE.NodeExec):
             icon = getattr(self, 'header_icon', 'NONE') # Safely get icon property
             header.label(text=self.header_text, icon=icon if icon in icons_ids_set else 'NONE')
 
-        # Define the specific context for each input socket
-        # Use socket.identifier to get the unique key for the mapping
-        child_kwargs_map = {
-            self.InHeader: {'parent_layout': header},
-            self.InContent: {'parent_layout': panel}
-        }
-
-        # Return the mapping. The _internal_execute method will use this
-        # to pass the correct 'parent_layout' to children connected to
-        # InHeader vs InContent.
-        return child_kwargs_map
+        return header, panel

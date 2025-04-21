@@ -4,6 +4,7 @@ from bpy import types as bpy_types
 
 from ....ackit import ACK
 from ..sockets import ElementSocket
+from .base import BaseNode
 
 # Make sure output node is imported if needed elsewhere, but not directly used here
 # from .output import RootLayoutOutputNode
@@ -38,7 +39,7 @@ emboss_items = [
 
 
 # --- Base Class for Layout Properties ---
-class LayoutNodeBase:
+class LayoutNodeBase(BaseNode):
     """ Base class to hold common layout properties """
 
     # --- Properties (Common UILayout settings) using Annotations ---
@@ -71,12 +72,6 @@ class LayoutNodeBase:
         layout.use_property_decorate = self.use_property_decorate
         layout.use_property_split = self.use_property_split
 
-    # Default execute - subclasses should override to create specific layout type
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        print(f"Warning: LayoutNodeBase execute called directly for {self.name}. Subclass should override.")
-        parent_layout = kwargs.get('parent_layout')
-        return {'parent_layout': parent_layout} # Pass through
-
     def draw_buttons_ext(self, context: bpy_types.Context, layout: bpy_types.UILayout):
         """ Draw the properties in the sidebar layout """
         layout.prop(self, 'alert')
@@ -96,48 +91,36 @@ class LayoutNodeBase:
 @ACK.NE.add_node_metadata(label="Row", tooltip="Row layout node")
 class RowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     # --- Inputs ---
-    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
+    Contents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
 
     # --- Properties ---
     align = ACK.PropTyped.Bool(name="Align", default=False, description="Align elements within the row").tag_node_drawable() # Keep specific align for row()
 
     # --- Outputs ---
     # Output socket remains an assignment as it's a descriptor itself
-    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
+    Element = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: RowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        my_layout = parent_layout.row(align=self.align)
-        self.apply_layout_properties(my_layout) # Apply common props
-        return {'parent_layout': my_layout}
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.row(align=self.align)
 
 
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Column", tooltip="Column layout node")
 class ColumnLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     # --- Inputs ---
-    InContents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
+    Contents = ACK.NE.InputSocket(ElementSocket, label="Contents", multi=True)
 
     # --- Properties ---
     align = ACK.PropTyped.Bool(name="Align", default=False, description="Align elements within the column").tag_node_drawable()
 
     # --- Outputs ---
     # Output socket remains an assignment as it's a descriptor itself
-    OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
+    Element = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: ColumnLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        my_layout = parent_layout.column(align=self.align)
-        self.apply_layout_properties(my_layout) # Apply common props
-        return {'parent_layout': my_layout}
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.column(align=self.align)
 
 
 @ACK.NE.add_node_to_category("Layout")
@@ -151,14 +134,8 @@ class BoxLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: BoxLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        my_layout = parent_layout.box()
-        self.apply_layout_properties(my_layout) # Apply common props
-        return {'parent_layout': my_layout}
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.box()
 
 
 @ACK.NE.add_node_to_category("Layout")
@@ -177,28 +154,13 @@ class SplitLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: SplitLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        # Create the specific split layout
-        split_layout = parent_layout.split(factor=self.factor, align=self.align)
-        # Apply common properties from base class helper
-        self.apply_layout_properties(split_layout)
-        # Return the created layout for children to use
-        return {'parent_layout': split_layout}
-
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.split(factor=self.factor, align=self.align)
 
 
 @ACK.NE.add_node_to_category("Layout")
 @ACK.NE.add_node_metadata(label="Separator", tooltip="Adds a separator line to the layout")
 class SeparatorLayoutNode(ACK.NE.NodeExec):
-
-    # --- Inputs ---
-    # Needs an input to receive the execution flow and parent_layout
-    #InElement = ACK.NE.InputSocket(ElementSocket, label="Element")
-
     # --- Properties ---
     factor = ACK.PropTyped.Float(name="Factor", default=0.5, min=0.0, max=10.0, description="Split factor (percentage for the left side)").tag_node_drawable(order=0)
 
@@ -207,16 +169,8 @@ class SeparatorLayoutNode(ACK.NE.NodeExec):
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: SeparatorLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        # Use factor property correctly
-        parent_layout.separator(factor=self.factor)
-        # Return None as it doesn't provide a new layout context
-        return None
-
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> None:
+        layout.separator(factor=self.factor)
 
 
 @ACK.NE.add_node_to_category("Layout")
@@ -234,14 +188,8 @@ class ColumnFlowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: ColumnFlowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        my_layout = parent_layout.column_flow(columns=self.columns, align=self.align)
-        self.apply_layout_properties(my_layout) # Apply common props
-        return {'parent_layout': my_layout}
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.column_flow(columns=self.columns, align=self.align)
 
 
 @ACK.NE.add_node_to_category("Layout")
@@ -262,11 +210,5 @@ class GridFlowLayoutNode(LayoutNodeBase, ACK.NE.NodeExec): # Inherit from base
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Self")
 
     # Execute is called by _internal_execute
-    def execute(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
-        if not parent_layout:
-            print(f"Warning: ColumnFlowLayoutNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-        my_layout = parent_layout.grid_flow(row_major=self.row_major, columns=self.columns, even_columns=self.even_columns, even_rows=self.even_rows, align=self.align)
-        self.apply_layout_properties(my_layout) # Apply common props
-        return {'parent_layout': my_layout}
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> bpy_types.UILayout:
+        return layout.grid_flow(row_major=self.row_major, columns=self.columns, even_columns=self.even_columns, even_rows=self.even_rows, align=self.align)

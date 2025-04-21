@@ -7,12 +7,18 @@ from ....ackit import ACK
 # Import ElementSocket from the sockets file in the same editor definition
 from ..sockets import ElementSocket
 from .enums import search_icon_items, icons_ids_set
+from .base import BaseNode
 
 __all__ = [
     'LabelNode',
     'OperatorNode',
     'PropNode',
 ]
+
+
+class UIElementsNode(BaseNode):
+    pass
+
 
 # --- Enum Items for PropNode ---
 
@@ -80,7 +86,7 @@ def search_data_items(self, context, edit_text):
 
 @ACK.NE.add_node_to_category("Elements")
 @ACK.NE.add_node_metadata(label="Label", tooltip="Display a text label in a layout", icon='FONT_DATA')
-class LabelNode(ACK.NE.NodeExec):
+class LabelNode(UIElementsNode, ACK.NE.NodeExec):
     """Node that draws a label into a layout."""
     # --- Inputs --- (None)
 
@@ -92,21 +98,13 @@ class LabelNode(ACK.NE.NodeExec):
     # Used to connect to LayoutNode.InContents (Child -> Parent)
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
-    # Execute is called by _internal_execute
-    def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
-        parent_layout = kwargs.get('parent_layout')
-
-        if parent_layout:
-            parent_layout.label(text=self.text, icon=self.icon if self.icon and self.icon in icons_ids_set else 'NONE')
-        else:
-            print(f"Warning: LabelNode '{self.name}' executed without 'parent_layout' in kwargs.")
-        # Return None or {} as this node doesn't change the context for subsequent children
-        return None
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> None:
+        layout.label(text=self.text, icon=self.icon if self.icon and self.icon in icons_ids_set else 'NONE')
 
 
 @ACK.NE.add_node_to_category("Elements")
 @ACK.NE.add_node_metadata(label="Operator Button", tooltip="Display a button that runs an operator", icon='PLAY')
-class OperatorNode(ACK.NE.NodeExec):
+class OperatorNode(UIElementsNode, ACK.NE.NodeExec):
     """Node that draws an operator button into a layout."""
     bl_width_default = 220
     bl_width_min = 180
@@ -126,20 +124,13 @@ class OperatorNode(ACK.NE.NodeExec):
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
     # Execute is called by _internal_execute
-    def execute(self, context: bpy_types.Context, root_layout: bpy_types.UILayout, **kwargs) -> Optional[Dict[str, Any]]: # Return type is dict or None
-        parent_layout: bpy_types.UILayout = kwargs.get('parent_layout')
-
-        if parent_layout:
-            icon = self.icon if self.icon and self.icon in icons_ids_set else 'NONE'
-            # TODO: evaluation input for depress state.
-            parent_layout.operator(self.operator_id,
-                                   text='' if self.icon_only else self.text_override if self.use_text_override else None,
-                                   icon=icon,
-                                   emboss=self.emboss)
-        else:
-            print(f"Warning: OperatorNode '{self.name}' executed without 'parent_layout' in kwargs.")
-        # Return None or {}
-        return None
+    def execute(self, context: bpy_types.Context, layout: bpy_types.UILayout) -> None:
+        icon = self.icon if self.icon and self.icon in icons_ids_set else 'NONE'
+        # TODO: evaluation input for depress state.
+        layout.operator(self.operator_id,
+                                text='' if self.icon_only else self.text_override if self.use_text_override else None,
+                                icon=icon,
+                                emboss=self.emboss)
 
 
 # Define items for the source selection EnumProperty
@@ -153,12 +144,10 @@ prop_source_items = [
 
 @ACK.NE.add_node_to_category("Elements")
 @ACK.NE.add_node_metadata(label="Property", tooltip="Display a property from Blender data (Context or bpy.data)", icon='RNA')
-class PropNode(ACK.NE.NodeExec):
+class PropNode(UIElementsNode, ACK.NE.NodeExec):
     """Node that draws a property widget into a layout, accessing data via Context or bpy.data."""
     bl_width_default = 250
     bl_width_min = 200 # Allow slightly narrower
-
-    # --- Inputs --- (None for execution flow)
 
     # --- Properties ---
 
@@ -238,12 +227,7 @@ class PropNode(ACK.NE.NodeExec):
     OutElement = ACK.NE.OutputSocket(ElementSocket, label="Element")
 
     # --- Execute Method ---
-    def execute(self, context: bpy.types.Context, root_layout: bpy.types.UILayout, **kwargs) -> Optional[Dict[str, Dict[str, Any]]]:
-        parent_layout: bpy.types.UILayout = kwargs.get('parent_layout')
-        if not parent_layout:
-            # print(f"Warning: PropNode '{self.name}' executed without 'parent_layout' in kwargs.")
-            return None
-
+    def execute(self, context: bpy.types.Context, layout: bpy.types.UILayout) -> None:
         data_block: Optional[bpy.types.ID] = None
         prop_path: Optional[str] = None
         owner_description = "Unknown" # For error messages
@@ -270,7 +254,7 @@ class PropNode(ACK.NE.NodeExec):
                     owner_description = f"Context Path ('{full_path}')"
                     if not full_path:
                         print(f"Error: PropNode '{self.name}': Invalid Context Path '{full_path}'.")
-                        parent_layout.label(text=f"Invalid Context Path", icon='ERROR')
+                        layout.label(text=f"Invalid Context Path", icon='ERROR')
                         return None
 
                     # Separate owner path from property name
@@ -332,19 +316,15 @@ class PropNode(ACK.NE.NodeExec):
                 display_text = self.text_override
 
             # Draw the property
-            parent_layout.prop(data_block, prop_path, text=display_text)
-
+            layout.prop(data_block, prop_path, text=display_text)
 
         except AttributeError:
             # Handle cases where the prop_path is invalid for the data_block
             print(f"Error: PropNode '{self.name}': Invalid data path '{prop_path}' for source '{owner_description}' ({type(data_block).__name__}).")
-            parent_layout.label(text=f"Invalid Path: '{prop_path}'", icon='ERROR')
+            layout.label(text=f"Invalid Path: '{prop_path}'", icon='ERROR')
         except Exception as e:
             # Catch other potential errors
             print(f"Error executing PropNode '{self.name}': {e}")
             import traceback
             traceback.print_exc()
-            parent_layout.label(text=f"Node Error", icon='ERROR')
-
-        # Return None as this node doesn't provide context for children via inputs
-        return None
+            layout.label(text=f"Node Error", icon='ERROR')

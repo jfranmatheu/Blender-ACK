@@ -18,12 +18,12 @@ class RootLayoutOutputNode(ACK.NE.NodeExec):
 
     # This node's execute is called by _internal_execute
     # It receives the initial layout from the NodeTreeExec call
-    def execute(self, context: bpy.types.Context, parent_layout: bpy.types.UILayout | None, **kwargs):
+    def execute(self, context: bpy.types.Context, root_layout: bpy.types.UILayout | None, **kwargs):
         # The 'parent_layout' received here IS the initial layout for the whole tree.
         # We just need to pass it down to the connected child node.
         # The base _internal_execute will handle calling the child connected to InElement.
 
-        if not parent_layout:
+        if not root_layout:
             print(f"Error: RootLayoutOutputNode '{self.name}' did not receive an initial layout context.")
             return None # Cannot proceed
 
@@ -34,4 +34,4 @@ class RootLayoutOutputNode(ACK.NE.NodeExec):
 
         # print(f"RootLayoutOutputNode '{self.name}' execute returning initial layout: {parent_layout}")
         # Return the layout that the connected child should draw into.
-        return {'parent_layout': parent_layout}
+        return {'parent_layout': root_layout}

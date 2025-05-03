@@ -43,11 +43,13 @@ class WrappedPropertyDescriptor(Generic[T]):
         if not hasattr(owner, '__annotations__'):
             owner.__annotations__ = {}
 
-    def __get__(self, instance, owner) -> T:
+    def __get__(self, instance, owner) -> Union[T, 'WrappedPropertyDescriptor[T]']:
         if instance is None:
             return self
         # Access the underlying Blender property directly using the name
         try:
+            if self._prop_name is None:
+                raise AttributeError(f"Property name not set for descriptor on {owner}")
             return getattr(instance, self._prop_name)
         except AttributeError:
             # Fallback or raise error if property doesn't exist on instance yet
@@ -64,9 +66,11 @@ class WrappedPropertyDescriptor(Generic[T]):
         self._update_callback_set.add_callback(callback)
         return self
 
-    def create_property(self, idname: str | None = None, owner_cls: Type = None) -> Any:
+    def create_property(self, idname: str | None = None, owner_cls: Optional[Type] = None) -> Any:
         """Create the actual bpy property during registration"""
         owner_cls = owner_cls or self._owner_cls
+        if owner_cls is None:
+            raise ValueError("Owner class must be set either via __set_name__ or provided to create_property")
         prop_name = idname or self._prop_name
         if not prop_name:
              raise ValueError("Property name must be set either via __set_name__ or provided to create_property")
